@@ -9,6 +9,7 @@
 #include "elena.h"
 // --------------------------------------------------------------------------
 #include "module.h"
+#include "targetinfo.h"
 #include "errors.h"
 
 using namespace _ELENA_;
@@ -204,13 +205,16 @@ LoadResult Module :: load(StreamReader& reader)
 
    // The payload is a raw image of host structures, so these three properties
    // must match exactly. Each mismatch was previously read as garbage.
-   if (byteOrder != (unsigned int)getHostByteOrder())
+   if (byteOrder != (unsigned int)getModuleByteOrder())
       return lrIncompatibleByteOrder;
 
-   if (encoding != (unsigned int)getHostEncoding())
+   if (encoding != (unsigned int)getModuleEncoding())
       return lrIncompatibleEncoding;
 
-   if (wordBits != (unsigned int)getHostWordBits())
+   // Class records and object sizes are still expressed in bytes computed with
+   // the target's slot size, so a module remains bound to the width it was
+   // compiled for. Making it width-neutral is the remaining format work.
+   if (wordBits != getCurrentTarget()->pointerBits)
       return lrIncompatibleWordSize;
 
    // load name...
@@ -242,9 +246,11 @@ bool Module :: save(StreamWriter& writer)
    writeU16(writer, MODULE_FORMAT_VERSION);
    writeU16(writer, MODULE_HEADER_SIZE);
 
-   writeByte(writer, getHostEncoding());
-   writeByte(writer, getHostByteOrder());
-   writeByte(writer, getHostWordBits());
+   writeByte(writer, getModuleEncoding());
+   writeByte(writer, getModuleByteOrder());
+   // The TARGET's pointer width, not the host's: a cross-compile must record
+   // what the module is for.
+   writeByte(writer, getCurrentTarget()->pointerBits);
    writeByte(writer, mhfNone);
 
    // reserved -- must be zero

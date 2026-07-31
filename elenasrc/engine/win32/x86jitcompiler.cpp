@@ -288,7 +288,10 @@ void _ELENA_::compileMove(int opcode, x86JITScope& scope)
       scope.code->writeByte(0x24);
       scope.code->writeDWord(scope.argument1 << 2);
       scope.code->writeWord(0x9389);
-      scope.code->writeDWord(scope.argument2);
+      // argument2 is now a field INDEX; scale it here, where the target slot
+      // size is known. It used to arrive pre-multiplied from the compiler,
+      // which is what tied the byte code to a 4-byte word.
+      scope.code->writeDWord(scope.argument2 << 2);
    }
    else if (opcode == bcISOperand) {
       // mov edx, [esp]
@@ -367,7 +370,7 @@ void _ELENA_::compileIOCallN(int opcode, x86JITScope& scope)
       // mov eax, reference
       // ircall(0 | 8)
       scope.code->writeByte(0xB8);
-      scope.helper->writeReference(*scope.code, scope.tape->getDWord(), elVMTOffset);
+      scope.helper->writeReference(*scope.code, scope.tape->getU32LE(), elVMTOffset);
 
       // if the message is not predefined it should be resolved
       if (!test(scope.argument1, PREDEFINED_REF)) {
@@ -522,7 +525,7 @@ void x86JITCompiler :: compileMethod(_ReferenceHelper& helper, StreamReader& tap
 {
    x86JITScope scope(&tapeReader, &codeWriter, &helper, this);
 
-   size_t codeSize = tapeReader.getDWord();
+   size_t codeSize = tapeReader.getU32LE();
    size_t endPos = tapeReader.Position() + codeSize;
 
    unsigned char code = 0;
@@ -531,10 +534,10 @@ void x86JITCompiler :: compileMethod(_ReferenceHelper& helper, StreamReader& tap
       code = tapeReader.getByte();
       // if command has an argument
       if ((code & 0x3) != 0) {         
-         scope.argument1 = tapeReader.getDWord();
+         scope.argument1 = tapeReader.getU32LE();
          // if command has second argument
          if (test(code, 0x3)) {
-            scope.argument2 = tapeReader.getDWord();
+            scope.argument2 = tapeReader.getU32LE();
          }
       }
    

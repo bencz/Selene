@@ -168,10 +168,20 @@ struct ByteCommand
    {
       writer->writeByte((unsigned char)code);
       if (!commandOnly && ((int)code & 0x3) != 0) {
-         writer->writeDWord(argument);
+         // Canonical little endian: byte code is a portable artifact and must
+         // not carry the byte order of whichever host compiled it.
+         writer->writeU32LE((unsigned int)argument);
       }
    }
 };
+
+// --- byte code introspection ---
+//
+// Returns NULL for a byte that is not a known opcode.
+const char* getByteCodeName(unsigned char code);
+
+// Number of 32-bit arguments that follow the opcode byte.
+int getByteCodeArgCount(unsigned char code);
 
 // --- CommandTape ---
 typedef BList<ByteCommand>::Iterator ByteCodeIterator; 

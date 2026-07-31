@@ -38,6 +38,12 @@ bool IniConfigFile :: load(const TCHAR* path)
 
       if (emptystr(line)) continue;
 
+      // Comments. The parser had no comment syntax at all, so a '#' line before
+      // the first [section] hit the "no current section" check below and made
+      // the whole file fail to load -- silently, since callers pass
+      // requiered=false for optional configs.
+      if (line[0] == '#' || line[0] == ';') continue;
+
       const TCHAR* value = line;
       if (value[0]=='[' && value[getlength(value) - 1]==']') {
          if (getlength(value) < 3) {

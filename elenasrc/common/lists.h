@@ -1370,7 +1370,7 @@ public:
 
    void write(StreamWriter* writer)
    {
-      writer->writeDWord(_count);
+      writer->writeU32LE((unsigned int)_count);
       Iterator it = start();
       while (!it.Eof()) {
          _writeIterator(writer, it.key(), *it);
@@ -1384,8 +1384,9 @@ public:
       Key key;
       T   value = _defaultItem;
 
-      size_t counter = 0;
-      reader->readDWord(counter);
+      unsigned int rawCounter = 0;
+      reader->readU32LE(rawCounter);
+      size_t counter = (size_t)rawCounter;
       _readToMap(reader, this, counter, key, value);
    }
 
@@ -1440,6 +1441,101 @@ public:
 };
 
 // --- MemoryDump template ---
+
+
+//---------------------------------------------------------------------------
+// Canonical map serialization
+//
+// Memory-backed maps used to be written by blitting their whole MemoryDump to
+// the file. That baked three things into the format that have no business being
+// there: host byte order, host struct layout and padding, and the bucket
+// assignment produced by the hash function.
+//
+// Writing (key, value) pairs and rehashing on load removes all three. In
+// particular it makes the hash function a free implementation choice -- change
+// it and existing files still load.
+//
+// Cost: O(n) inserts on load instead of one memcpy. Measured against the whole
+// standard library that is not detectable.
+//---------------------------------------------------------------------------
+
+inline void _writeScalar(StreamWriter* writer, const TCHAR* key)
+{
+   size_t length = getlength(key);
+
+   writer->writeU32LE((unsigned int)(length * sizeof(TCHAR)));
+   if (length > 0)
+      writer->write(key, length * sizeof(TCHAR));
+}
+
+inline void _writeScalar(StreamWriter* writer, size_t key)
+{
+   writer->writeU32LE((unsigned int)key);
+}
+
+inline void _writeScalar(StreamWriter* writer, int key)
+{
+   writer->writeU32LE((unsigned int)key);
+}
+
+inline void _writeScalar(StreamWriter* writer, bool value)
+{
+   writer->writeU32LE(value ? 1u : 0u);
+}
+
+inline bool _readScalar(StreamReader* reader, const TCHAR*& key, String& buffer)
+{
+   unsigned int bytes = 0;
+
+   if (!reader->readU32LE(bytes))
+      return false;
+
+   size_t length = bytes / sizeof(TCHAR);
+
+   buffer.clear();
+   buffer.reserve(length + 1);
+
+   if (length > 0 && !reader->read(buffer.asString(), bytes))
+      return false;
+
+   buffer.asString()[length] = 0;
+   key = buffer.asString();
+
+   return true;
+}
+
+inline bool _readScalar(StreamReader* reader, size_t& key, String&)
+{
+   unsigned int value = 0;
+
+   if (!reader->readU32LE(value))
+      return false;
+
+   key = (size_t)value;
+   return true;
+}
+
+inline bool _readScalar(StreamReader* reader, int& key, String&)
+{
+   unsigned int value = 0;
+
+   if (!reader->readU32LE(value))
+      return false;
+
+   key = (int)value;
+   return true;
+}
+
+inline bool _readScalar(StreamReader* reader, bool& flag, String&)
+{
+   unsigned int value = 0;
+
+   if (!reader->readU32LE(value))
+      return false;
+
+   flag = (value != 0);
+   return true;
+}
 
 template <class Key, class T, bool KeyStored = true> class MemoryMap
 {
@@ -1634,24 +1730,36 @@ public:
 
    void write(StreamWriter* writer)
    {
-      writer->writeDWord(_buffer.Length());
-      writer->writeDWord(_count);
-      writer->writeDWord(_tale);
+      writer->writeU32LE((unsigned int)_count);
 
-      DumpReader reader(&_buffer);
-      writer->read(&reader, _buffer.Length());
+      Iterator it = start();
+      while (!it.Eof()) {
+         _writeScalar(writer, it.key());
+         _writeScalar(writer, *it);
+
+         it++;
+      }
    }
 
    void read(StreamReader* reader)
    {
-      int length = reader->getDWord();
-      _buffer.reserve(length);
+      clear();
 
-      _count = reader->getDWord();
-      _tale = reader->getDWord();
+      unsigned int count = 0;
+      reader->readU32LE(count);
 
-      DumpWriter writer(&_buffer);
-      writer.read(reader, length);
+      String buffer(0x40);
+      for (unsigned int i = 0 ; i < count ; i++) {
+         Key key;
+         T   value;
+
+         if (!_readScalar(reader, key, buffer))
+            break;
+         if (!_readScalar(reader, value, buffer))
+            break;
+
+         add(key, value);
+      }
    }
 
    void clear()
@@ -2012,8 +2120,11 @@ public:
    Iterator getIt(Key key) const
    {
       int index = _scaleKey(key);
-      if (index > hashSize)
-         index = hashSize - 1;
+      // Modulo, not a clamp. The previous test was `index > hashSize`,
+      // which let index == hashSize through and read one past the end of
+      // the bucket array. It never fired only because the old hash could
+      // not produce a value that large.
+      index %= hashSize;
 
       Item* current = _table[index];
       while (current && (*current < key))
@@ -2047,8 +2158,11 @@ public:
    void add(Key key, T item)
    {
       int index = _scaleKey(key);
-      if (index > hashSize)
-         index = hashSize - 1;
+      // Modulo, not a clamp. The previous test was `index > hashSize`,
+      // which let index == hashSize through and read one past the end of
+      // the bucket array. It never fired only because the old hash could
+      // not produce a value that large.
+      index %= hashSize;
 
       if (_table[index] && *_table[index] <= key) {
          Item* current = _table[index];
@@ -2074,7 +2188,7 @@ public:
 
    void write(StreamWriter* writer)
    {
-      writer->writeDWord(_count);
+      writer->writeU32LE((unsigned int)_count);
       Iterator it = start();
       while (!it.Eof()) {
          _writeIterator(writer, it.key(), *it);
@@ -2088,8 +2202,9 @@ public:
       Key key;
       T   value = _defaultItem;
 
-      size_t counter = 0;
-      reader->readDWord(counter);
+      unsigned int rawCounter = 0;
+      reader->readU32LE(rawCounter);
+      size_t counter = (size_t)rawCounter;
       _readToMap(reader, this, counter, key, value);
    }
 
@@ -2152,12 +2267,31 @@ template <class Key, class T, size_t(_scaleKey)(Key), size_t hashSize, bool KeyS
       {
          _buffer = buffer;
          _current = NULL;
+         _position = 0;
+         _hashIndex = 0;
 
-         if (buffer->Length() > 0) {
-            for(_hashIndex = 0; !(*buffer)[_hashIndex << 2] && _hashIndex < hashSize ; _hashIndex++);
+         // Find the first non-empty bucket.
+         //
+         // The original loop was
+         //    for (_hashIndex = 0; !(*buffer)[_hashIndex << 2] && _hashIndex < hashSize; _hashIndex++);
+         // which has two faults. It indexes the bucket array BEFORE testing the
+         // bound, so an empty table reads one slot past the end; and it then
+         // assigns _current unconditionally, so an empty table yields a bogus
+         // entry instead of Eof.
+         //
+         // Neither ever fired while these tables were serialized by blitting
+         // the whole buffer, because nothing iterated an empty one. Writing
+         // them entry by entry does, and an empty map emitted one phantom pair
+         // that the reader never consumed -- desynchronizing everything after
+         // it in the file.
+         for ( ; _hashIndex < hashSize ; _hashIndex++) {
+            size_t position = (*_buffer)[_hashIndex << 2];
 
-            _position = (*_buffer)[_hashIndex << 2];
-            _current = (Item*)_buffer->get(_position);
+            if (position) {
+               _position = position;
+               _current = (Item*)_buffer->get(position);
+               break;
+            }
          }
       }
 
@@ -2243,8 +2377,11 @@ public:
       size_t beginning = (size_t)_buffer.getArray();
 
       size_t index = _scaleKey(key);
-      if (index > hashSize)
-         index = hashSize - 1;
+      // Modulo, not a clamp. The previous test was `index > hashSize`,
+      // which let index == hashSize through and read one past the end of
+      // the bucket array. It never fired only because the old hash could
+      // not produce a value that large.
+      index %= hashSize;
 
       size_t position = _buffer[index << 2];
       Item* current = (position != 0) ? (Item*)(beginning + position) : NULL;
@@ -2312,8 +2449,11 @@ public:
       Item item(key, value, 0);
 
       size_t index = _scaleKey(key);
-      if (index > hashSize)
-         index = hashSize - 1;
+      // Modulo, not a clamp. The previous test was `index > hashSize`,
+      // which let index == hashSize through and read one past the end of
+      // the bucket array. It never fired only because the old hash could
+      // not produce a value that large.
+      index %= hashSize;
 
       int position = _buffer[index << 2];
 
@@ -2360,30 +2500,49 @@ public:
 
    void write(StreamWriter* writer)
    {
-      writer->writeDWord(_buffer.Length());
-      writer->writeDWord(_count);
+      writer->writeU32LE((unsigned int)_count);
 
-      DumpReader reader(&_buffer);
-      writer->read(&reader, _buffer.Length());
+      Iterator it = start();
+      while (!it.Eof()) {
+         _writeScalar(writer, it.key());
+         _writeScalar(writer, *it);
+
+         it++;
+      }
    }
 
    void read(StreamReader* reader)
    {
-      _buffer.clear();
+      clear();
 
-      int length = reader->getDWord();
-      _buffer.reserve(length);
+      unsigned int count = 0;
+      reader->readU32LE(count);
 
-      _count = reader->getDWord();
+      String buffer(0x40);
+      for (unsigned int i = 0 ; i < count ; i++) {
+         Key key;
+         T   value;
 
-      DumpWriter writer(&_buffer);
-      writer.read(reader, length);
+         if (!_readScalar(reader, key, buffer))
+            break;
+         if (!_readScalar(reader, value, buffer))
+            break;
+
+         add(key, value);
+      }
    }
 
    void clear()
    {
       _buffer.clear();
       _count = 0;
+
+      // Re-create the bucket array. clear() must leave the table USABLE, not
+      // merely empty: the constructor lays hashSize bucket slots at the head of
+      // the buffer and add() indexes into them. Before load() started calling
+      // clear(), this only ever ran from the destructor, so wiping the buckets
+      // went unnoticed.
+      _buffer.writeBytes(0, 0, hashSize << 2);
    }
 
    MemoryHashTable(T defaultItem)

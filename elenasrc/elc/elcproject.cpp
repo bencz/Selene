@@ -83,8 +83,15 @@ void _ELC_::Project :: loadCategory(_ConfigFile& config, const TCHAR* path, Proj
       if (!emptystr(path)) {
          LocalPath filePath(path, value);
 
-         _settings.add(setting, key, _tcslwr(_ELENA_::strdup(filePath)));
+         // NOT lowercased. When a path is prepended the value is a FILE PATH,
+         // and lowercasing it breaks on any case-sensitive filesystem the
+         // moment a directory has a capital in it -- which is why templates,
+         // sources and primitives silently failed to load on Linux while
+         // appearing to work on Windows.
+         _settings.add(setting, key, _ELENA_::strdup(filePath));
       }
+      // With no path the value is a reference name, and Selene resolves those
+      // case-insensitively, so lowercasing is correct here.
       else _settings.add(setting, key, _tcslwr(_ELENA_::strdup(value)));
 
       it++;
@@ -110,7 +117,11 @@ void _ELC_::Project :: loadConfig(const TCHAR* path, bool requiered)
    configPath.copyPath(path);
 
    if (!config.load(path)) {
-      raiseErrorIf(requiered, ELC_ERR_INVALID_PATH, path);
+      // raiseErrorIf prints unconditionally and only the THROW is conditional,
+      // so an optional config that is simply absent used to report an error.
+      if (requiered)
+         raiseError(ELC_ERR_INVALID_PATH, path);
+
       return;
    }
 

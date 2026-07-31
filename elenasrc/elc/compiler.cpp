@@ -869,7 +869,10 @@ void Compiler :: compileSymbolExpression(DNode node, CodeScope& ownerScope, Inli
          ObjectInfo info = (*outer_it).outerObject;
 
          _coder.pushObject(*ownerScope.tape, info);
-         _coder.moveToObjectPtr(*ownerScope.tape, ObjectInfo(otLocal, 1), (((*outer_it).reference - 1) << 2));
+         // Field INDEX, not a byte offset: the backend multiplies by the target
+      // slot size. See doc/todo.txt:334 -- the original author identified this
+      // in 2009 as the thing that makes byte code processor-specific.
+      _coder.moveToObjectPtr(*ownerScope.tape, ObjectInfo(otLocal, 1), ((*outer_it).reference - 1));
          _coder.endStatement(*ownerScope.tape);
 
          outer_it++;
@@ -1001,7 +1004,8 @@ void Compiler :: compileCollection(DNode node, CodeScope& scope, int mode, ref_t
    int index = 0;
    while (node != nsNone) {
       compileExpression(node, scope, mode);
-      _coder.moveToObjectPtr(*scope.tape, ObjectInfo(otLocal, 1), (index << 2));
+      // Field index, not a byte offset -- see the note above.
+      _coder.moveToObjectPtr(*scope.tape, ObjectInfo(otLocal, 1), index);
       _coder.endStatement(*scope.tape);
 
       node = node.nextNode();

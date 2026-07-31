@@ -27,6 +27,51 @@ public:
 
    virtual bool read(void* s, size_t length) = 0;
 
+   //-----------------------------------------------------------------------
+   // Canonical little-endian primitives.
+   //
+   // Module files are written in ONE byte order regardless of host, so a
+   // module produced on s390x or ppc64 is readable on x86 and vice versa.
+   // readDWord()/getDWord() below copy raw host bytes and must not be used
+   // for anything that reaches a file.
+   //-----------------------------------------------------------------------
+
+   bool readU32LE(unsigned int& value)
+   {
+      unsigned char b[4];
+
+      if (!read(b, 4))
+         return false;
+
+      value = (unsigned int)b[0]        | ((unsigned int)b[1] << 8)
+            | ((unsigned int)b[2] << 16) | ((unsigned int)b[3] << 24);
+
+      return true;
+   }
+
+   bool readU16LE(unsigned int& value)
+   {
+      unsigned char b[2];
+
+      if (!read(b, 2))
+         return false;
+
+      value = (unsigned int)b[0] | ((unsigned int)b[1] << 8);
+
+      return true;
+   }
+
+   // Value-returning form, mirroring getDWord(). Returns 0 on a short read,
+   // which matches the existing getDWord() contract.
+   unsigned int getU32LE()
+   {
+      unsigned int value = 0;
+
+      readU32LE(value);
+
+      return value;
+   }
+
    virtual const TCHAR* getLiteral() = 0;
 
    int getDWord()
@@ -122,6 +167,32 @@ public:
    virtual size_t Position() const = 0;
 
    virtual bool write(const void* s, size_t length) = 0;
+
+   //-----------------------------------------------------------------------
+   // Canonical little-endian primitives -- see the note in StreamReader.
+   //-----------------------------------------------------------------------
+
+   bool writeU32LE(unsigned int value)
+   {
+      unsigned char b[4];
+
+      b[0] = (unsigned char)(value & 0xFF);
+      b[1] = (unsigned char)((value >> 8) & 0xFF);
+      b[2] = (unsigned char)((value >> 16) & 0xFF);
+      b[3] = (unsigned char)((value >> 24) & 0xFF);
+
+      return write(b, 4);
+   }
+
+   bool writeU16LE(unsigned int value)
+   {
+      unsigned char b[2];
+
+      b[0] = (unsigned char)(value & 0xFF);
+      b[1] = (unsigned char)((value >> 8) & 0xFF);
+
+      return write(b, 2);
+   }
 
    bool writeLiteral(const TCHAR* s)
    {

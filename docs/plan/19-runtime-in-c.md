@@ -93,6 +93,66 @@ the right fences for each target.
 
 ---
 
+## 3.1 Numbered runtime routines must become named symbols
+
+The `#inline pkg'N` problem has a second, less visible face: the runtime routines
+are referenced **by number** from three different places, and only one of them is
+even halfway fixed.
+
+| Surface | Today | Count |
+|---|---|---|
+| C++ compiler | `#define ALLOC_FUNCTION _T("$package'elena'1")` — named at the call site, numbered at the binding | 25 constants (`elenaconst.h:43-69`) |
+| Project config | `start = $package'elena'3` in `templates/console.cfg`, `'elena'35` in `gui.cfg` | 2 |
+| Library sources | `#inline elena'8` | ~109 |
+
+A flat numeric namespace over ~37 routines, with gaps — `elena'27` does not exist
+at all. Renumber `elena.asm` and every one of these silently rebinds to the wrong
+routine. Nothing detects it.
+
+### What `elena'3` actually is
+
+Worth spelling out, because the number hides it. `elena.asm:490`:
+
+```asm
+mov  ecx, ['gc_static_size]        ; zero the static root array
+...
+call 'dlls'kernel32.GetProcessHeap
+call 'dlls'kernel32.HeapAlloc      ; allocate the entire GC heap
+mov  ['gc_heap_start], eax         ; initialise the collector's pointers
+```
+
+It is not an entry point. It is **runtime initialization, with the heap coming
+from `HeapAlloc`** — which is OS-development blocker 3
+([`20-os-development.md`](20-os-development.md) §7) hiding behind a numeral. A
+kernel has no `HeapAlloc`; it *is* the thing that provides memory.
+
+### Where it goes
+
+Under a C runtime these stop being numbers and become **ordinary linker symbols**:
+
+```c
+void  selene_runtime_init(const selene_region_source* heap);
+void *selene_alloc(size_t slots);
+void *selene_send(void *receiver, uint32_t message);
+```
+
+The payoff is not aesthetic. A named symbol that does not exist is a **link
+error**; a wrong number is a silent call to the wrong routine. That single
+property is worth more than the readability.
+
+`start = $package'elena'3` disappears entirely: under LLVM and a system linker,
+the C runtime's `main` (or `_start`, freestanding) initializes the runtime and
+calls the program's entry symbol. The template stops naming a runtime routine and
+names only the *program shape*, which is what a template should have described in
+the first place.
+
+### Sequencing
+
+This is not a separate task. It falls out of the migration order in §7: as each
+subsystem is ported to C, its callers move from `$package'elena'N` to the C
+symbol. The three surfaces converge because they all end up naming the same
+thing.
+
 ## 4. What the compiler must still emit as IR
 
 A short list — these are per-call-site or per-frame, so they cannot live in a library:

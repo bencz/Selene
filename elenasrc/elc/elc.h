@@ -79,7 +79,8 @@
 #define ELC_WARNING_COMPILATION     _T("Compiled with warnings\n")
 #define ELC_UNSUCCESSFUL            _T("Compiled with errors\n")
 #define ELC_SUCCESSFUL_LINKING      _T("Successfully linked\n")
-#define ELC_HELP_INFO               _T("elc {-key} {<input file>}\n\nkeys: -c<path>   - specifies the project file\n      -d<path>   - generates the debug info file\n      -e<symbol> - resolves the entry forward symbol\n      -g<name>   - specifies the package name\n      -lstd      - sets standard module flag\n      -m<path>   - generates the map file\n      -o<path>   - sets the output path\n      -p<path>   - inlcudes the path to the library\n      -t<path>   - sets the target executable file name\n      -wun       - sets on the unresolved warnings\n      -xguit     - sets GUI application type\n")
+#define ELC_ERR_INVALID_TARGET      _T("elc: error 406: Unknown target '%s'\n")
+#define ELC_HELP_INFO               _T("elc {-key} {<input file>}\n\nkeys: --target=<t> - selects the code generation target ('--target=?' lists them)\n      -c<path>   - specifies the project file\n      -d<path>   - generates the debug info file\n      -e<symbol> - resolves the entry forward symbol\n      -g<name>   - specifies the package name\n      -lstd      - sets standard module flag\n      -m<path>   - generates the map file\n      -o<path>   - sets the output path\n      -p<path>   - inlcudes the path to the library\n      -t<path>   - sets the target executable file name\n      -wun       - sets on the unresolved warnings\n      -xguit     - sets GUI application type\n")
 
 // --- ELC error messages ---
 #define ELC_ERR_INVALID_OPTION	   _T("elc: error 401: Invalid command line parameter '%c'\n")

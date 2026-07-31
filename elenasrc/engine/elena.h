@@ -102,11 +102,21 @@ struct ClassInfo
    FieldMap    fields;
    FieldMap    roles;
 
+   // Field by field, in canonical little endian.
+   //
+   // This used to blit sizeof(ClassHeader) straight out of memory and write the
+   // two sizes with writeDWord, so the record carried the host's byte order AND
+   // its struct padding: ClassHeader is 12 bytes under ILP32 and 24 under LP64,
+   // and nothing in the file said which. It was the last part of a module that
+   // was not portable.
    void save(StreamWriter* writer)
    {
-      writer->write((void*)this, sizeof(ClassHeader));
-      writer->writeDWord(classSize);
-      writer->writeDWord(size);
+      writer->writeU32LE((unsigned int)header.roleRef);
+      writer->writeU32LE((unsigned int)header.flags);
+      writer->writeU32LE((unsigned int)header.parentRef);
+      writer->writeU32LE((unsigned int)classSize);
+      writer->writeU32LE((unsigned int)size);
+
       methods.write(writer);
       fields.write(writer);
       roles.write(writer);
@@ -114,9 +124,12 @@ struct ClassInfo
 
    void load(StreamReader* reader, bool headerOnly)
    {
-      reader->read((void*)&header, sizeof(ClassHeader));
-      classSize = reader->getDWord();
-      size = reader->getDWord();
+      header.roleRef   = (ref_t)reader->getU32LE();
+      header.flags     = (size_t)reader->getU32LE();
+      header.parentRef = (ref_t)reader->getU32LE();
+      classSize        = (size_t)reader->getU32LE();
+      size             = (size_t)reader->getU32LE();
+
       methods.read(reader);
       fields.read(reader);
       roles.read(reader);

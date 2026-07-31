@@ -220,30 +220,27 @@ namespace _ELENA_
       mhfDebugInfo = 0x01                              // a matching .dnl exists
    };
 
-  // --- host properties, as recorded in a module this build writes ---
+  // --- properties recorded in a module ---
 
-   inline int getHostByteOrder()
+   // The payload is written in canonical little endian throughout -- maps,
+   // section contents, class records -- so this describes the FILE, not the
+   // machine that produced it. It stays in the header so a non-conforming
+   // writer is caught rather than silently misread.
+   inline int getModuleByteOrder()
    {
-      const unsigned int probe = 1;
-
-      return (*(const unsigned char*)&probe) ? mheOrderLittle : mheOrderBig;
+      return mheOrderLittle;
    }
 
-   inline int getHostEncoding()
+   // Derived from the character width rather than hard-coded, so it stays
+   // correct through the migration from wchar_t to UTF-8 char.
+   inline int getModuleEncoding()
    {
-      // Derived from the character width rather than hard-coded, so this stays
-      // correct through the migration from wchar_t to UTF-8 char.
       switch (sizeof(TCHAR)) {
          case 1:  return mheEncodingUtf8;
          case 2:  return mheEncodingUtf16;
          case 4:  return mheEncodingUtf32;
          default: return mheEncodingUnknown;
       }
-   }
-
-   inline int getHostWordBits()
-   {
-      return (int)(sizeof(void*) * 8);
    }
 
   // --- ELENA class prefixes / postfixes ---

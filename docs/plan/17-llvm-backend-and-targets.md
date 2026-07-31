@@ -80,6 +80,73 @@ R3 was already recommended for 64-bit reasons; ppc64 BE makes it non-negotiable.
 
 ---
 
+## 1.4 Target selection through the template system
+
+Targets should be selected by the **existing** configuration mechanism rather than
+a new one. `elc` already loads a chain of `.cfg` files — `elc.cfg` → template →
+project — and `loadConfig()` recurses through `template=`, so composition is
+already there. And the `[forwards]` table is already how the platform is chosen:
+`bin/templates/gui.cfg` maps 38 `'gui'styles'*` names onto `win32'api'styles'*`.
+
+### Compose axes, do not enumerate combinations
+
+3 operating systems × 6 architectures is 18 combinations. Writing one template
+per combination duplicates the long forwards lists, which is exactly the
+maintenance trap the current `gui.cfg` would become. Split the axes instead:
+
+```ini
+# targets/linux.cfg        -- OS axis: what the platform library binds to
+[forwards]
+'program'output = posix'io'stdoutput
+'program'input  = posix'io'stdinput
+'io'write       = posix'write
+
+# targets/s390x.cfg        -- architecture axis: what the backend emits
+[target]
+triple      = s390x-unknown-linux-gnu
+pointerbits = 64
+endian      = big
+objectalign = 16
+
+# templates/console.cfg    -- program shape, target-neutral
+[project]
+start = $package'elena'3
+[linker]
+type = 1
+[forwards]
+'entry = sys'templates'simple
+```
+
+A target is then `os + arch + shape`, and adding s390x means one small file, not
+touching eighteen.
+
+### The command line must win
+
+```
+elc --target=s390x-unknown-linux-gnu -cmyproject.prj
+```
+
+Cross-compilation cannot require editing a project file. The template supplies
+defaults; the flag overrides. This is also what makes a CI matrix over six
+targets possible from one checkout.
+
+### What the `[target]` section feeds
+
+Everything in `TargetInfo` (§2). The rule from §2 applies without exception: the
+compiler reads these values, never the host's `sizeof(void*)` or byte order. A
+build of `elc` running on x86-64 Linux must produce byte-identical output for
+`--target=s390x-...` as one running on the s390x itself.
+
+Codegen options (optimization level, PIC/PIE, CPU features, whether to emit
+DWARF) belong in the same section, since they are per-target and the LLVM
+`TargetMachine` consumes them together.
+
+### One thing not to put here
+
+Threading and atomics. C11 `<stdatomic.h>` and `_Thread_local` are portable and
+LLVM lowers them per target; expressing them as configuration would be inventing
+a problem. See [`19-runtime-in-c.md`](19-runtime-in-c.md) §3.
+
 ## 2. The cross-compilation principle
 
 The single most important structural rule, and the one currently violated everywhere:

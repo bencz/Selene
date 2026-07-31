@@ -46,7 +46,9 @@ void fixJumps(Section* code, int labelPosition, Stack<JumpInfo>& stack, int leve
       while (stack.peek().level >= level) {
          JumpInfo jump = stack.pop();
          if (jump.level == level) {
-            (*code)[jump.position] = labelPosition - jump.position - (jump.withExtraParam ? 8 : 4); // position starts after the offset (and an extra parameter if any)
+            // position starts after the offset (and an extra parameter if any)
+            code->patchU32LE(jump.position,
+               (unsigned int)(labelPosition - jump.position - (jump.withExtraParam ? 8 : 4)));
          }
       }
    }
@@ -623,7 +625,7 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
    if (debug)
       openProcedureDebugInfo(debug);
 
-   code->writeDWord(0);                                // write size place holder
+   code->writeU32LE(0);                                // write size place holder
    size_t procPosition = code->Position();   
 
    Stack<int>      stackLevels;                       // scope stack levels
@@ -695,10 +697,10 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
             }
             else stackLevel = (*it).argument;
 
-            code->writeDWord(stackLevel);
+            code->writeU32LE((unsigned int)stackLevel);
             break;
          case bcExtraParam:
-            code->writeDWord((*it).argument);
+            code->writeU32LE((unsigned int)(*it).argument);
             break;
          case bcRCall:
          case bcRCallExt:
@@ -716,13 +718,13 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
                jumpsToFail.push(JumpInfo(level, code->Position()));
             }
             // put jump offset place holder
-            code->writeDWord(0);
+            code->writeU32LE(0);
             break;
          case bcIJump:
             (*it).save(code, true);
             // write offset to the label if it is back jump 
             if ((*it).Hint() == bltLoop) {
-               code->writeDWord(jumpsToLoop.get(level) - code->Position() - 4);
+               code->writeU32LE((unsigned int)(jumpsToLoop.get(level) - code->Position() - 4));
             }
             // otherwise put place holder
             else {
@@ -733,14 +735,14 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
                   jumpsToProcFail.push(JumpInfo(1, code->Position()));
                }
                // put jump offset place holder
-               code->writeDWord(0);
+               code->writeU32LE(0);
             }
             break;
          case bcOMovePtr:
          case bcOCreate:
          case bcIOSet:
             (*it).save(code);
-            code->writeDWord((*it).Hint());
+            code->writeU32LE((unsigned int)(*it).Hint());
             break;
          default:
             (*it).save(code);
@@ -751,7 +753,8 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
       it++;
    }
    // save the real procedure size
-   (*code->getSection())[procPosition - 4] = code->Position() - procPosition;
+   code->getSection()->patchU32LE(procPosition - 4,
+      (unsigned int)(code->Position() - procPosition));
 
    // add debug end line info
    if (debug)
@@ -801,8 +804,8 @@ void ByteCodeCompiler :: saveVMT(size_t classPosition, SectionWriter* vmtWriter,
          case blBegin:
             // create VMT entry
             if ((*it).Hint() == bltMethod) {
-               vmtWriter->writeDWord((*it).argument);                    // Message ID
-               vmtWriter->writeDWord(codeWriter->Position());            // Method Address
+               vmtWriter->writeU32LE((unsigned int)(*it).argument);      // Message ID
+               vmtWriter->writeU32LE((unsigned int)codeWriter->Position()); // Method Address
 
                saveProcedure(++it, codeWriter, debug, debugStrings);
             }
@@ -811,7 +814,8 @@ void ByteCodeCompiler :: saveVMT(size_t classPosition, SectionWriter* vmtWriter,
       it++;
    }
    // save the real procedure size
-   (*vmtWriter->getSection())[classPosition - 4] = vmtWriter->Position() - classPosition;
+   vmtWriter->getSection()->patchU32LE(classPosition - 4,
+         (unsigned int)(vmtWriter->Position() - classPosition));
 }
 
 void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Module* module, _Module* debugModule)
@@ -822,7 +826,7 @@ void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Modul
    // initialize vmt section writers
    SectionWriter vmtWriter(module->mapSection(reference | mskVMTRef, false));
 
-   vmtWriter.writeDWord(0);                              // save size place holder
+   vmtWriter.writeU32LE(0);                              // save size place holder
    size_t classPosition = vmtWriter.Position();   
 
    // copy class meta data header + vmt size
@@ -831,7 +835,7 @@ void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Modul
    info.load(&reader, false);
 
    vmtWriter.write((void*)&info.header, sizeof(ClassHeader));
-   vmtWriter.writeDWord(info.classSize);
+   vmtWriter.writeU32LE((unsigned int)info.classSize);
 
    // create debug info if debugModule available
    if (debugModule) {

@@ -14,9 +14,13 @@ namespace _ELENA_
 
 // --- Section Fixup Hash function ---
 
-inline size_t indexReference(size_t reference) 
-{ 
-   return ((reference && ~mskAnyRef) >> 2); 
+inline size_t indexReference(size_t reference)
+{
+   // `&&` where `&` was meant: the expression evaluated to 0 or 1, and >> 2
+   // then made it 0 unconditionally, so every fixup landed in bucket 0 and the
+   // hash table degenerated into a linear list. Clang warns about this; MSVC
+   // never did.
+   return ((reference & ~mskAnyRef) >> 2);
 }
 
 // --- Section Fixup map ---
@@ -50,9 +54,11 @@ public:
    {
       while (counter > 0) {
          section = new Section();
-         reader->readDWord(key);
-         size_t length = 0;
-         reader->readDWord(length);
+         unsigned int rawKey = 0, rawLength = 0;
+         reader->readU32LE(rawKey);
+         reader->readU32LE(rawLength);
+         key = (ref_t)rawKey;
+         size_t length = (size_t)rawLength;
 
          DumpWriter writer(section);
          writer.read(reader, length);
@@ -65,8 +71,8 @@ public:
    
    friend void _writeIterator(StreamWriter* writer, int key, Section* section)
    {
-      writer->writeDWord(key);
-      writer->writeDWord(section->Length());
+      writer->writeU32LE((unsigned int)key);
+      writer->writeU32LE((unsigned int)section->Length());
 
       DumpReader reader(section);
       writer->read(&reader, section->Length());

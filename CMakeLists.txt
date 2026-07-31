@@ -29,6 +29,7 @@ option(ELENA_32BIT "Build 32-bit (required until module format v2)" ON)
 option(ELENA_BUILD_SG       "Build the syntax generator"      ON)
 option(ELENA_BUILD_ELC      "Build the compiler"              ON)
 option(ELENA_BUILD_API2HTML "Build the API doc generator"     OFF)
+option(ELENA_BUILD_SEMDUMP  "Build the module dumper / disassembler" ON)
 
 # asm2binx assembles src/asm/*.asm into the bin/*.bin runtime primitives.
 #
@@ -215,7 +216,9 @@ add_custom_target(runtime_data ALL
             ${CMAKE_SOURCE_DIR}/bin/elc.cfg ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/bin/templates ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/templates
-    COMMENT "Staging elc.cfg and project templates"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/bin/targets ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/targets
+    COMMENT "Staging elc.cfg, project templates and target bindings"
     VERBATIM
 )
 
@@ -263,6 +266,7 @@ if(ELENA_BUILD_ELC)
         ${SRC}/engine/bytecode.cpp
         ${SRC}/engine/module.cpp
         ${SRC}/engine/section.cpp
+        ${SRC}/engine/targetinfo.cpp
         ${COMMON_SRC}
     )
 
@@ -286,6 +290,26 @@ if(ELENA_BUILD_ELC)
     target_include_directories(elc PRIVATE
         ${SRC}/engine/win32
         ${SRC}/elc/${ELENA_PLATFORM_DIR}
+    )
+endif()
+
+#----------------------------------------------------------------------------
+# semdump -- module dumper / disassembler
+#
+# Prints a .sem module's header, symbol tables and disassembled byte code.
+# Also the front half of the future LLVM translator: decoding a section into
+# (opcode, arguments) is the same work whether it feeds a printer or an IR
+# builder.
+#----------------------------------------------------------------------------
+
+if(ELENA_BUILD_SEMDUMP)
+    add_executable(semdump
+        ${SRC}/semdump/semdump.cpp
+        ${SRC}/engine/bytecode.cpp
+        ${SRC}/engine/module.cpp
+        ${SRC}/engine/section.cpp
+        ${SRC}/engine/targetinfo.cpp
+        ${COMMON_SRC}
     )
 endif()
 

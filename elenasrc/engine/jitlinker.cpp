@@ -266,7 +266,7 @@ void* ReferenceLoader :: loadBytecodeVMTSection(const TCHAR*  reference, int mas
    // VMT just in time compilation
    DumpReader vmtReader(sectionInfo.vmtSection);
    // read tape record size
-   size_t size = vmtReader.getDWord();
+   size_t size = vmtReader.getU32LE();
 
    // read VMT header
    ClassHeader header;
@@ -275,7 +275,7 @@ void* ReferenceLoader :: loadBytecodeVMTSection(const TCHAR*  reference, int mas
    bool withAnyHandler = test(header.flags, elVMTAnyHandler);
 
    // read VMT size + tailing terminator entry
-   int vmtSize = vmtReader.getDWord() + sizeof(VMTEntry);
+   int vmtSize = vmtReader.getU32LE() + sizeof(VMTEntry);
    // make sure it is enough place to store Any Handler VMT as well
    if (withAnyHandler)
       vmtSize += elAnyHandlerSize;

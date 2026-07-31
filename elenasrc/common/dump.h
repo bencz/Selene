@@ -34,6 +34,23 @@ public:
       return *(int*)(_buffer + position);
    }
 
+   // Patch a 32-bit value already written at `position`, in canonical little
+   // endian.
+   //
+   // operator[] above returns an int& into the middle of a byte buffer, which
+   // is both host-endian and unaligned. Unaligned access is tolerated on x86
+   // but traps or is drastically slow on ppc32 and s390x, and it is undefined
+   // behaviour everywhere. Prefer this for anything that reaches a file.
+   void patchU32LE(size_t position, unsigned int value) const
+   {
+      unsigned char* p = (unsigned char*)(_buffer + position);
+
+      p[0] = (unsigned char)(value & 0xFF);
+      p[1] = (unsigned char)((value >> 8) & 0xFF);
+      p[2] = (unsigned char)((value >> 16) & 0xFF);
+      p[3] = (unsigned char)((value >> 24) & 0xFF);
+   }
+
    size_t Length() const { return _used; }
    size_t Size()   const { return _total; }
 
