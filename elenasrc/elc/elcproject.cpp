@@ -16,6 +16,7 @@
 #include "elc.h"
 #include "errors.h"
 #include "compiler.h"
+#include "targetinfo.h"
 
 using namespace _ELENA_;
 
@@ -252,4 +253,78 @@ _Module* _ELC_::Project :: loadModule(const TCHAR* path, bool silentMode)
    LocalPath fullPath(_settings.get(opLibPath, DEFAULT_STR), path);
 
    return _ELENA_::Project::loadModule(fullPath, silentMode);
+}
+
+// --- --target= handling ---
+//
+// Shared by both front ends. Intercepted before the ordinary option loop
+// because the leading "--" would otherwise be parsed as an empty option letter.
+//
+// Returns false when the caller should stop: either the target was invalid, or
+// "--target=?" was asked for and the listing has been printed.
+bool _ELC_::processTargetOptions(int argc, const TCHAR** args, bool* consumed, int& exitCode)
+{
+   for (int i = 1 ; i < argc ; i++) {
+      consumed[i] = false;
+
+      if (!compstr(args[i], _T("--target="), 9))
+         continue;
+
+      consumed[i] = true;
+
+      const TCHAR* name = args[i] + 9;
+
+      if (compstr(name, _T("?"))) {
+         size_t count = 0;
+         const TargetInfo* list = getTargetList(count);
+
+         _tprintf(_T("known targets:\n"));
+         for (size_t k = 0 ; k < count ; k++) {
+            printf("  %-11s %-34s %2d-bit %s%s\n",
+                   list[k].name, list[k].triple, list[k].pointerBits,
+                   list[k].isBigEndian() ? "big-endian" : "little-endian",
+                   list[k].functionDescriptors ? ", function descriptors" : "");
+         }
+         exitCode = 0;
+         return false;
+      }
+
+      char plain[0x40];
+      size_t length = 0;
+      for ( ; name[length] && length < sizeof(plain) - 1 ; length++)
+         plain[length] = (char)name[length];
+      plain[length] = 0;
+
+      const TargetInfo* selected = getTargetByName(plain);
+      if (!selected) {
+         _tprintf(ELC_ERR_INVALID_TARGET, name);
+         exitCode = -3;
+         return false;
+      }
+
+      setCurrentTarget(selected);
+   }
+
+   return true;
+}
+
+// --- platform bindings for the selected target ---
+//
+// Loaded after elc.cfg so it can rely on the library paths, and before the
+// project's own template so a project can still override an individual forward.
+void _ELC_::loadTargetConfig(_ELC_::Project& project)
+{
+   const char* osName = getCurrentTarget()->osConfigName();
+   if (!osName)
+      return;
+
+   LocalString<0x40> name;
+   size_t i = 0;
+   for ( ; osName[i] ; i++) name.append((TCHAR)osName[i]);
+
+   Path config(project.appPath, _T("targets"));
+   config.combine(name);
+   config.appendExtension(_T("cfg"));
+
+   project.loadConfig(config, false);
 }

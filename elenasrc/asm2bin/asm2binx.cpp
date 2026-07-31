@@ -52,7 +52,9 @@ int main(int argc, char* argv[])
 #ifdef _UNICODE
 	_ELENA_::TextFileReader reader(prm1, _ELENA_::feAutodetect);
 #else
-	_ELENA_::TextFileReader reader(argv[1]);
+	// The ANSI branch predates the encoding parameter and stopped compiling
+	// when it was added; it was never exercised because every build was Unicode.
+	_ELENA_::TextFileReader reader(argv[1], _ELENA_::feAutodetect);
 #endif
 	_ELENA_::x86Assembler	assembler;
 

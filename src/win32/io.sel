@@ -213,7 +213,7 @@
                 #var aTempLiteral := basic'LiteralType create:{ Length = aLiteral Length - aLength. }.
                 theBuffer $invoke:aTempLiteral.
 
-                #inline standard'5(aLiteral, aTempLiteral).
+                #inline standard'strconcat(aLiteral, aTempLiteral).
 
             ].
         ]

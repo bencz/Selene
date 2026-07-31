@@ -113,18 +113,18 @@
 
     #method $getInteger = $self.
 
-    #method $getLong = #inline standard'46(basic'LongNumber, $self).
+    #method $getLong = #inline standard'i64get(basic'LongNumber, $self).
 
-    #method $getReal = #inline standard'28 (basic'RealNumber, $self).
+    #method $getReal = #inline standard'r64get (basic'RealNumber, $self).
 
     #method $equal : aValue
     [
-        #inline standard'6($self, aValue $getInteger).
+        #inline standard'i32equal($self, aValue $getInteger).
     ]
 
     #method $less : aValue
     [
-        #inline standard'7($self, aValue $getInteger).
+        #inline standard'i32less($self, aValue $getInteger).
     ]
 
     // public
@@ -133,7 +133,7 @@
     [
         #if aValue ifNotNil
         [
-            #inline standard'3 ($self, aValue $getInteger).
+            #inline standard'loadint ($self, aValue $getInteger).
         ].
     ]
 
@@ -141,55 +141,55 @@
 
     #method + aValue
     [
-        ^ #inline standard'8($self clone, aValue $getInteger).
+        ^ #inline standard'i32add($self clone, aValue $getInteger).
     ]
 
     #method - aValue
     [
-        ^ #inline standard'9($self clone, aValue $getInteger).
+        ^ #inline standard'i32sub($self clone, aValue $getInteger).
     ]
 
     #method * aValue
     [
-        ^ #inline standard'10($self clone, aValue $getInteger).
+        ^ #inline standard'i32mul($self clone, aValue $getInteger).
     ]
 
     #method / aValue
     [
-        ^ #inline standard'11($self clone, aValue $getInteger).
+        ^ #inline standard'i32div($self clone, aValue $getInteger).
     ]
 
     #method anyMask : aValue
     [
-        #inline standard'16($self, aValue $getInteger).
+        #inline standard'i32anymask($self, aValue $getInteger).
     ]
 
     #method allMask : aValue
     [
-        #inline standard'17($self, aValue $getInteger).
+        #inline standard'i32allmask($self, aValue $getInteger).
     ]
 
     #method or : aValue
     [
-       ^ #inline standard'13($self clone, aValue $getInteger).
+       ^ #inline standard'i32or($self clone, aValue $getInteger).
     ]
 
     #method xor : aValue
     [
-       ^ #inline standard'14($self clone, aValue $getInteger).
+       ^ #inline standard'i32xor($self clone, aValue $getInteger).
     ]
 
     #method and : aValue
     [
-       ^ #inline standard'12($self clone, aValue $getInteger).
+       ^ #inline standard'i32and($self clone, aValue $getInteger).
     ]
 
     #method shift : aValue
     [
-       ^ #inline standard'15($self clone, aValue $getInteger).
+       ^ #inline standard'i32shift($self clone, aValue $getInteger).
     ]
 
-    #method not = #inline standard'18($self clone, $self).
+    #method not = #inline standard'i32not($self clone, $self).
 
     // extension
     #annex IntegerGroup.
@@ -223,23 +223,23 @@
         ].
     ]
 
-    #method $getReal = #inline standard'47 (basic'RealNumber, $self).
+    #method $getReal = #inline standard'i64toreal (basic'RealNumber, $self).
 
     #method $equal : aValue
     [
-        #inline standard'48($self, aValue $getLong).
+        #inline standard'i64equal($self, aValue $getLong).
     ]
 
     #method $less : aValue
     [
-        #inline standard'49($self, aValue $getLong).
+        #inline standard'i64less($self, aValue $getLong).
     ]
 
     #method new : aValue
     [
         #if aValue ifNotNil
         [
-            #inline standard'31($self, aValue $getLong).
+            #inline standard'r64load($self, aValue $getLong).
         ].
     ]
 
@@ -247,55 +247,55 @@
 
     #method + aValue
     [
-        ^ #inline standard'50($self clone, aValue $getLong).
+        ^ #inline standard'i64add($self clone, aValue $getLong).
     ]
 
     #method - aValue
     [
-        ^ #inline standard'51($self clone, aValue $getLong).
+        ^ #inline standard'i64sub($self clone, aValue $getLong).
     ]
 
     #method * aValue
     [
-        ^ #inline standard'52($self clone, aValue $getLong).
+        ^ #inline standard'i64mul($self clone, aValue $getLong).
     ]
 
     #method / aValue
     [
-        ^ #inline standard'53($self clone, aValue $getLong).
+        ^ #inline standard'i64div($self clone, aValue $getLong).
     ]
 
     #method anyMask : aValue
     [
-        #inline standard'54($self, aValue $getLong).
+        #inline standard'i64anymask($self, aValue $getLong).
     ]
 
     #method allMask : aValue
     [
-        #inline standard'55($self, aValue $getLong).
+        #inline standard'i64allmask($self, aValue $getLong).
     ]
 
     #method or : aValue
     [
-       ^ #inline standard'58($self clone, aValue $getLong).
+       ^ #inline standard'i64or($self clone, aValue $getLong).
     ]
 
     #method xor : aValue
     [
-       ^ #inline standard'59($self clone, aValue $getLong).
+       ^ #inline standard'i64xor($self clone, aValue $getLong).
     ]
 
     #method and : aValue
     [
-       ^ #inline standard'60($self clone, aValue $getLong).
+       ^ #inline standard'i64and($self clone, aValue $getLong).
     ]
 
     #method shift : aValue
     [
-       ^ #inline standard'56($self clone, aValue $getInteger).
+       ^ #inline standard'i64shift($self clone, aValue $getInteger).
     ]
 
-    #method not = #inline standard'57($self clone, $self).
+    #method not = #inline standard'i64not($self clone, $self).
 
     #method identify : aCaller
     [
@@ -325,12 +325,12 @@
 
     #method $equal : aValue
     [    
-        #inline standard'29($self, aValue $getReal).
+        #inline standard'r64equal($self, aValue $getReal).
     ]
 
     #method $less : aValue
     [
-        #inline standard'30($self, aValue $getReal).
+        #inline standard'r64less($self, aValue $getReal).
     ]
 
     // public methods
@@ -339,28 +339,28 @@
     [
         #if aValue ifNotNil
         [
-            #inline standard'31($self, aValue $getReal).
+            #inline standard'r64load($self, aValue $getReal).
         ].
     ]
 
     #method + aValue
     [
-        ^ #inline standard'32($self clone, aValue $getReal).
+        ^ #inline standard'r64add($self clone, aValue $getReal).
     ]
 
     #method - aValue
     [
-        ^ #inline standard'33($self clone, aValue $getReal).
+        ^ #inline standard'r64sub($self clone, aValue $getReal).
     ]
 
     #method * aValue
     [
-        ^ #inline standard'34($self clone, aValue $getReal).
+        ^ #inline standard'r64mul($self clone, aValue $getReal).
     ]
 
     #method / aValue
     [
-        ^ #inline standard'35($self clone, aValue $getReal).
+        ^ #inline standard'r64div($self clone, aValue $getReal).
     ]
 
     #method clone = RealNumber::self.
@@ -389,19 +389,19 @@
 
     #method $equal : anObject
     [
-        #inline standard'1($self, anObject $getLiteral).
+        #inline standard'strequal($self, anObject $getLiteral).
     ]
 
     #method $less : anObject
     [
-        #inline standard'2($self, anObject $getLiteral).
+        #inline standard'strless($self, anObject $getLiteral).
     ]
 
     // public
 
     #method new [ self fail. ]
 
-    #method Length = #inline standard'3(basic'IntNumber, $self).
+    #method Length = #inline standard'loadint(basic'IntNumber, $self).
 
     #method prop'$getIndexer = basic'LiteralIndexer::self.
 
@@ -409,7 +409,7 @@
     [
         #var aCopy := basic'LiteralType $create:(self Length).
 
-        #inline standard'4(aCopy, $self).
+        #inline standard'strcopy(aCopy, $self).
 
         ^ aCopy.
     ]
@@ -420,8 +420,8 @@
 
         #var aNewLiteral := basic'LiteralType create:{ Length = self Length + aLiteral Length. }.
 
-        #inline standard'4(aNewLiteral, $self).
-        #inline standard'5(aNewLiteral, aLiteral).
+        #inline standard'strcopy(aNewLiteral, $self).
+        #inline standard'strconcat(aNewLiteral, aLiteral).
 
         ^ aNewLiteral.
     ]
@@ -448,24 +448,24 @@
 
     #method $equal : aValue
     [
-        #inline standard'6($self, aValue $getChar).
+        #inline standard'i32equal($self, aValue $getChar).
     ]
 
     #method $less : aValue
     [
-        #inline standard'7($self, aValue $getChar | $getInteger).
+        #inline standard'i32less($self, aValue $getChar | $getInteger).
     ]
 
     #method $getLiteral
     [
         #var aLiteral := basic'LiteralType create:{ Length = 1. }.
 
-        #inline standard'23(aLiteral, $self).
+        #inline standard'strgetchar(aLiteral, $self).
 
         ^ aLiteral.
     ]
 
-    #method $getInteger = #inline standard'3(basic'IntNumber, $self).
+    #method $getInteger = #inline standard'loadint(basic'IntNumber, $self).
 
     // public
 
@@ -473,7 +473,7 @@
     [
         #if aChar ifNotNil
         [
-            #inline standard'3 ($self, basic'LoWord::(aChar $getInteger)).
+            #inline standard'loadint ($self, basic'LoWord::(aChar $getInteger)).
         ].
     ]
 
@@ -505,7 +505,7 @@
 
     // public
 
-    #method Length = #inline standard'43(basic'IntNumber, $self).
+    #method Length = #inline standard'arrlen(basic'IntNumber, $self).
 
     #method new [ self fail. ]
 
@@ -681,27 +681,27 @@
 
     #method << aValue
     [
-        #inline standard'3($self, aValue $getInteger).
+        #inline standard'loadint($self, aValue $getInteger).
     ]
 
     #method += aValue
     [
-        #inline standard'8($self, aValue $getInteger).
+        #inline standard'i32add($self, aValue $getInteger).
     ]
 
     #method -= aValue
     [
-        #inline standard'9($self, aValue $getInteger).
+        #inline standard'i32sub($self, aValue $getInteger).
     ]
 
     #method *= aValue
     [
-        #inline standard'10($self, aValue $getInteger).
+        #inline standard'i32mul($self, aValue $getInteger).
     ]
 
     #method /= aValue
     [
-        #inline standard'11($self, aValue $getInteger).
+        #inline standard'i32div($self, aValue $getInteger).
     ]
 
     #method next
@@ -727,27 +727,27 @@
 
     #method << aValue
     [
-        #inline standard'31($self, aValue $getLong).
+        #inline standard'r64load($self, aValue $getLong).
     ]
 
     #method += aValue
     [
-        #inline standard'50($self, aValue $getLong).
+        #inline standard'i64add($self, aValue $getLong).
     ]
 
     #method -= aValue
     [
-        #inline standard'51($self, aValue $getLong).
+        #inline standard'i64sub($self, aValue $getLong).
     ]
 
     #method *= aValue
     [
-        #inline standard'52($self, aValue $getLong).
+        #inline standard'i64mul($self, aValue $getLong).
     ]
 
     #method /= aValue
     [
-        #inline standard'53($self, aValue $getLong).
+        #inline standard'i64div($self, aValue $getLong).
     ]
 
     #method next
@@ -773,27 +773,27 @@
 
     #method << aValue
     [
-        #inline standard'31($self, aValue $getReal).
+        #inline standard'r64load($self, aValue $getReal).
     ]
 
     #method += aValue
     [
-        #inline standard'32($self, aValue $getReal).
+        #inline standard'r64add($self, aValue $getReal).
     ]
 
     #method -= aValue
     [
-        #inline standard'33($self, aValue $getReal).
+        #inline standard'r64sub($self, aValue $getReal).
     ]
 
     #method *= aValue
     [
-        #inline standard'34($self, aValue $getReal).
+        #inline standard'r64mul($self, aValue $getReal).
     ]
 
     #method /= aValue
     [
-        #inline standard'35($self, aValue $getReal).
+        #inline standard'r64div($self, aValue $getReal).
     ] 
 }
 
@@ -882,7 +882,7 @@
 
         theLiteral := basic'LiteralType create:aLiteral.
 
-        #inline standard'4(theLiteral, aLiteral).
+        #inline standard'strcopy(theLiteral, aLiteral).
     ]
 
     #method += aValue
@@ -904,7 +904,7 @@
 {
     #method << aValue
     [
-        #inline standard'3($self, basic'LoWord::(aValue $getInteger)).
+        #inline standard'loadint($self, basic'LoWord::(aValue $getInteger)).
     ]
 
     #method += aValue
@@ -1028,28 +1028,28 @@
         theArray := anOwner $getLiteral.
         theIndex := basic'Integer << 0.
 
-        theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+        theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
     ]
 
     #method prop'$goto : anIndex
     [
         super $invoke:anIndex.
 
-        theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+        theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
     ]
 
     #method prop'$next
     [
         super $invoke.
 
-        theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+        theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
     ]
 
     #method prop'$previous
     [
         super $invoke.
 
-        theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+        theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
     ]
 
     #method prop'$getContent = theChar.
@@ -1085,7 +1085,7 @@
 
             theArray := theString $getLiteral.
 
-            theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+            theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
         ]
 
         #method prop'$delete
@@ -1130,12 +1130,12 @@
     [
         #var aRetVal := IntNumber.
 
-        #inline standard'20(aRetVal, theArray, theIndex, aValue $getLiteral).
+        #inline standard'stridxseek(aRetVal, theArray, theIndex, aValue $getLiteral).
         
         #if(aRetVal!=-1)?
         [ 
             theIndex << aRetVal. 
-            theChar := #inline standard'19(basic'CharValue, theArray, theIndex).
+            theChar := #inline standard'stridxnew(basic'CharValue, theArray, theIndex).
         ]
         | [ self fail. ].
     ]
@@ -1145,7 +1145,7 @@
         #var aSubS := aValue $getLiteral.
         #var aNewS := basic'LiteralType create:{ Length = aSubS Length + theArray Length. }.
 
-        #inline standard'21(aNewS, theArray, theIndex, aSubS).
+        #inline standard'stridxinsert(aNewS, theArray, theIndex, aSubS).
         theIndex += aSubS Length.
 
         theArray := aNewS.
@@ -1158,7 +1158,7 @@
 
         #var aNewS := basic'LiteralType create:{ Length = theArray Length - aLength. }.
 
-        #inline standard'22(aNewS, theArray, theIndex, aLength).
+        #inline standard'stridxdelete(aNewS, theArray, theIndex, aLength).
 
         theArray := aNewS.
         theString new:theArray.
@@ -1176,28 +1176,28 @@
         theArray := anArray $getArray.
         theIndex := basic'Integer << 0.
 
-        theItem := #inline standard'41(theArray, theIndex).
+        theItem := #inline standard'arridxnew(theArray, theIndex).
     ]
 
     #method prop'$goto : anIndex
     [
         super $invoke:anIndex.
 
-        theItem := #inline standard'41(theArray, theIndex).
+        theItem := #inline standard'arridxnew(theArray, theIndex).
     ]
 
     #method prop'$next
     [
         super $invoke.
 
-        theItem := #inline standard'41(theArray, theIndex).
+        theItem := #inline standard'arridxnew(theArray, theIndex).
     ]
 
     #method prop'$previous
     [
         super $invoke.
 
-        theItem := #inline standard'41(theArray, theIndex).
+        theItem := #inline standard'arridxnew(theArray, theIndex).
     ]
 
     #method prop'$getContent = theItem.
@@ -1209,7 +1209,7 @@
 
     #method $set : anObject
     [
-        #external standard'42(theArray, theIndex, anObject).
+        #external standard'varset(theArray, theIndex, anObject).
 
         theItem := anObject.
     ]
@@ -1243,27 +1243,27 @@
 // --- HiWord ---
 
 #symbol HiWord :anInteger
-    = #inline standard'24(basic'IntNumber, anInteger $getInteger).
+    = #inline standard'strwrite(basic'IntNumber, anInteger $getInteger).
 
 // --- LoWord ---
 
 #symbol LoWord : anInteger
-    = #inline standard'25(basic'IntNumber, anInteger $getInteger).
+    = #inline standard'strwritechar(basic'IntNumber, anInteger $getInteger).
 
 // --- HiDWord ---
 
 #symbol HiDWord :anInteger
-    = #inline standard'61(basic'IntNumber, anInteger $getLong, 4).
+    = #inline standard'bufreadint(basic'IntNumber, anInteger $getLong, 4).
 
 // --- LoDWord ---
 
 #symbol LoDWord : anInteger
-    = #inline standard'3(basic'IntNumber, anInteger $getLong).
+    = #inline standard'loadint(basic'IntNumber, anInteger $getLong).
 
 // --- SubString ---
 
 #symbol SubString : aRange
-    = #inline standard'64(basic'LiteralType create:{ Length = aRange till - aRange from + 1. }, aRange for $getLiteral, aRange from $getInteger).
+    = #inline standard'strwritereal(basic'LiteralType create:{ Length = aRange till - aRange from + 1. }, aRange for $getLiteral, aRange from $getInteger).
 
 // === Basic Extensions ===
 
@@ -1292,7 +1292,7 @@
 
     $getLong = self $toInteger $getLong.
 
-    $toLiteral = #inline standard'27(basic'LiteralType create:{ Length = 11. }, self $getInteger).
+    $toLiteral = #inline standard'strwriteint(basic'LiteralType create:{ Length = 11. }, self $getInteger).
 
     $getReal = self $toInteger $getReal.
 
@@ -1333,7 +1333,7 @@
             | [ self fail. ].
     ]
 
-    #method $toLiteral = #inline standard'62(basic'LiteralType create:{ Length = 23. }, self $getLong).
+    #method $toLiteral = #inline standard'i64tostr(basic'LiteralType create:{ Length = 23. }, self $getLong).
 }
 
 // --- RealExtension ---
@@ -1342,7 +1342,7 @@
 {
     $getReal = self $toReal $getReal.
 
-    $toLiteral = #inline standard'36(basic'LiteralType create:{ Length = 24. }, self $getReal).
+    $toLiteral = #inline standard'r64tostr(basic'LiteralType create:{ Length = 24. }, self $getReal).
 
     prop'$readFrom : aReader
     [
@@ -1365,11 +1365,11 @@
 {
     $getLiteral = self $toLiteral $getLiteral.
 
-    $toInteger = #inline standard'26(basic'IntNumber, self $getLiteral).
+    $toInteger = #inline standard'strfromlong(basic'IntNumber, self $getLiteral).
 
-    $toLong = #inline standard'63(basic'LongNumber, self $getLiteral).
+    $toLong = #inline standard'i64tostrx(basic'LongNumber, self $getLiteral).
 
-    $toReal = #inline standard'37(basic'RealNumber, self $getLiteral).
+    $toReal = #inline standard'r64tostrx(basic'RealNumber, self $getLiteral).
 
     $toBool
     [
@@ -1556,7 +1556,7 @@
 
     create : aParameter
     [
-        ^ #inline standard'38 (#type basic'Literal, aParameter Length).
+        ^ #inline standard'arrenum (#type basic'Literal, aParameter Length).
     ]
 
     of : anObject = anObject $getLiteral.
@@ -1581,7 +1581,7 @@
 
     create : aParameter
     [
-        #var anArray := #inline standard'39 (#type basic'Array, nil, aParameter Length).
+        #var anArray := #inline standard'arrenumnew (#type basic'Array, nil, aParameter Length).
 
         prop'Enumerator::anArray run: anItem =>
         [

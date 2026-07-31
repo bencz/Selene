@@ -29,7 +29,11 @@ inline void _ELENA_::copySection(x86JITScope& scope, x86JITInlineCode& code, _Mo
          scope.code->seek(*it + position);
 
          // if argument1
-         switch (it.key()) {
+         //
+         // The keys are small negative sentinels (-1..-8) held in an unsigned
+         // map key type, so the comparison must be made in signed arithmetic.
+         // C++98 accepted the implicit conversion; C++11 onward rejects it.
+         switch ((int)it.key()) {
             case -1: // argument1 as a number
                scope.code->writeDWord(scope.argument1);
                break;
@@ -109,6 +113,9 @@ void compileJump(x86JITScope& scope, int label, bool forwardJump, bool shortJump
       else scope.lh.writeJmpForward(label);
    }
 }
+
+// Called from compileIOCallN below, which precedes its definition.
+namespace _ELENA_ { void compileOthers(int opcode, x86JITScope& scope); }
 
 void _ELENA_::compileNop(int opcode, x86JITScope& scope)
 {

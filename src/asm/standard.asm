@@ -2,7 +2,7 @@
 
 // --- WSTR_EQUAL (S1, S2) ---
 
-inline standard'1
+inline standard'strequal
 
    pop  eax
    mov  esi, eax              // s2
@@ -32,7 +32,7 @@ end
 
 // --- WSTR_LESS (S1, S2) ---
 
-inline standard'2
+inline standard'strless
 
    pop  eax
    mov  esi, eax                // s2
@@ -70,7 +70,7 @@ end
 
 // --- INT_COPY (DEST, SOUR) ---
 
-inline standard'3
+inline standard'loadint
 
   pop eax 
   mov edx, [eax] 
@@ -81,7 +81,7 @@ end
 
 // --- WSTR_CPY (DEST, SOUR) ---
 
-inline standard'4
+inline standard'strcopy
 
   pop  eax
   mov  esi, eax                 // sour 
@@ -105,7 +105,7 @@ end
 
 // --- WSTR_ADD (DEST, SOUR) ---
 
-inline standard'5
+inline standard'strconcat
 
   pop  eax
   mov  esi, eax                // sour 
@@ -134,7 +134,7 @@ end
 
 // --- INT_EQUAL (N1, N2) ---
 
-inline standard'6
+inline standard'i32equal
 
   pop eax
   mov edx, [eax]
@@ -148,7 +148,7 @@ end
 
 // --- INT_LESS (N1, N2) ---
 
-inline standard'7
+inline standard'i32less
 
    pop  eax
    mov  edx, [eax]
@@ -162,7 +162,7 @@ end
 
 // --- INT_ADD (DEST, SOUR) ---
 	
-inline standard'8
+inline standard'i32add
 
   pop eax
   mov ebx, [eax]
@@ -173,7 +173,7 @@ end
 
 // --- INT_SUB (DEST, SOUR) ---
 
-inline standard'9
+inline standard'i32sub
 
   pop eax
   mov ebx, [eax]
@@ -184,7 +184,7 @@ end
 
 // --- INT_MUL (DEST, SOUR) ---
 
-inline standard'10
+inline standard'i32mul
 
   pop eax
   mov edx, [eax]
@@ -199,7 +199,7 @@ end
 
 // --- INT_DIV (DEST, SOUR) ---
 
-inline standard'11
+inline standard'i32div
 
   pop  eax
   mov  ebx, [eax]
@@ -215,7 +215,7 @@ end
 
 // --- INT_BAND (DEST, SOUR) ---
 
-inline standard'12
+inline standard'i32and
 
   pop  eax
   mov ebx, [eax]
@@ -226,7 +226,7 @@ end
 
 // --- INT_BOR (DEST, SOUR) ---
 
-inline standard'13
+inline standard'i32or
 
   pop  eax
   mov ebx, [eax]
@@ -237,7 +237,7 @@ end
 
 // --- INT_BXOR (DEST, SOUR) ---
 
-inline standard'14
+inline standard'i32xor
 
   pop  eax
   mov ebx, [eax]
@@ -249,7 +249,7 @@ end
 
 // --- INT_SHIFT (DEST, OFFSET) ---
 
-inline standard'15
+inline standard'i32shift
 
   pop  eax
   mov ecx, [eax]
@@ -269,7 +269,7 @@ end
 
 // --- INT_TEST (N1, N2) ---
 
-inline standard'16
+inline standard'i32anymask
 
   pop  eax
   mov  edx, [eax]
@@ -283,7 +283,7 @@ end
 
 // --- INT_TEST2 (N1, N2) ---
 
-inline standard'17
+inline standard'i32allmask
 
   pop  eax
   mov  edx, [eax]      
@@ -299,7 +299,7 @@ end
 
 // --- INT_NOT ---
 
-procedure standard'18
+procedure standard'i32not
 
   pop eax
   mov edx, [eax]      
@@ -311,7 +311,7 @@ end
 
 // --- WCHAR_CPYPTR (CH, PTR, OFS) ---
 
-inline standard'19
+inline standard'stridxnew
 
   pop  eax
   pop  edx
@@ -341,7 +341,7 @@ end
 
 // --- WSTR_INDEXOF (RETVAL, S, OFS, SUBS) ---
 
-inline standard'20
+inline standard'stridxseek
 
   pop  eax 
   mov  edx, [esp+4]
@@ -402,7 +402,7 @@ end
 
 // --- WSTR_INSERT (RETVAL, S, INDEX, SUBS) ---
 
-inline standard'21
+inline standard'stridxinsert
 
   pop  eax
   pop  ecx
@@ -468,7 +468,7 @@ end
   
 // --- WSTR_ERASE (RETVAL, S, INDEX, LENGTH) ---
 
-inline standard'22
+inline standard'stridxdelete
 
   pop  eax              // length
   pop  ebx              // index
@@ -535,7 +535,7 @@ end
 
 // --- WSTR_CPYWCHR (S, CH) ---
 
-inline standard'23
+inline standard'strgetchar
 
   pop  eax
   xor  ebx, ebx
@@ -550,7 +550,7 @@ end
 
 // --- INT_COPYHWORD (DEST, SOUR) ---
 
-inline standard'24
+inline standard'strwrite
   
   pop  eax
   mov  edx, [eax]
@@ -563,7 +563,7 @@ end
 
 // --- INT_COPYLWORD (DEST, SOUR) ---
 
-inline standard'25
+inline standard'strwritechar
 
   pop  eax
   mov  edx, [eax]
@@ -575,7 +575,7 @@ end
 
 // --- INT_CPYSTR (N, S) ---
 
-inline standard'26
+inline standard'strfromlong
 
   pop  esi                          // get field
   lodsd
@@ -616,7 +616,7 @@ end
 
 // --- STR_COPYINT32 (S, N) ---
 
-procedure standard'27
+procedure standard'strwriteint
 
    pop  eax
    push ebp
@@ -669,7 +669,7 @@ end
 
 // --- FLOAT_COPYINT (DEST, SOUR) ---
 
-inline standard'28
+inline standard'r64get
 
   pop  eax
   fild dword ptr [eax]
@@ -681,7 +681,7 @@ end
 
 // --- FLOAT_EQUAL (F1, F2) ---
 
-inline standard'29
+inline standard'r64equal
 
   pop    eax 
   fld    qword ptr [eax]
@@ -701,7 +701,7 @@ end
 
 // --- FLOAT_LESS (F1, F2) ---
 
-inline standard'30
+inline standard'r64less
 
   pop    eax
   mov    ebx, eax
@@ -721,7 +721,7 @@ end
 
 // --- LONG_COPY (DEST, SOUR) ---
 
-inline standard'31
+inline standard'r64load
 
   pop eax 
   mov ecx, [eax]
@@ -734,7 +734,7 @@ end
 
 // --- FLOAT_ADD (DEST, SOUR) ---
 
-inline standard'32
+inline standard'r64add
 
   pop  eax
   fld  qword ptr [eax]
@@ -747,7 +747,7 @@ end
 
 // --- FLOAT_SUB (DEST, SOUR) ---
 
-inline standard'33
+inline standard'r64sub
 
   pop  ebx
   mov  eax, [esp]
@@ -760,7 +760,7 @@ end
 
 // --- FLOAT_MUL (DEST, SOUR) ---
 
-inline standard'34
+inline standard'r64mul
 
   pop  eax
   fld  qword ptr [eax]
@@ -773,7 +773,7 @@ end
 
 // --- FLOAT_DIV (DEST, SOUR) ---
 
-inline standard'35
+inline standard'r64div
 
   pop  ebx
   mov  eax, [esp]
@@ -786,7 +786,7 @@ end
 
 // --- STR_COPYFLOAT (S, F) ---
 
-inline standard'36
+inline standard'r64tostr
 
    pop   ecx
    mov   eax, [esp]   
@@ -1145,7 +1145,7 @@ end
 
 // --- FLOAT_CPYSTR (F, S) ---
 
-inline standard'37
+inline standard'r64tostrx
 
   pop   eax
   push  edi
@@ -1440,7 +1440,7 @@ end
 
 // --- WSTR_ALLOC (aType, aLen) ---
 
-inline standard'38
+inline standard'arrenum
 
   mov  eax, [esp]
   mov  ebx, [eax] 
@@ -1451,7 +1451,7 @@ inline standard'38
   and  ecx, 'gc_page_mask
   add  ebx, 3
   shr  ebx, 2
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  edx, [esp+4]
   mov  esi, [edx]
   or   [eax-8], 'gc_binary
@@ -1465,7 +1465,7 @@ end
 
 // OBJ_ALLOC (aType, aPattern, aLen)
 
-inline standard'39 
+inline standard'arrenumnew 
 
   mov  eax, [esp]
   mov  ebx, [eax]
@@ -1473,7 +1473,7 @@ inline standard'39
   shl  ecx, 2
   add  ecx, 'gc_empty_object_aligned
   and  ecx, 'gc_page_mask
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  edx, [esp+8]
   mov  esi, [edx]
   mov  [eax-4], esi
@@ -1492,7 +1492,7 @@ end
 
 // --- INT_LOADSTRADDR (INT, S) ---
 
-inline standard'40
+inline standard'arrfromstr
 
   pop  eax
   mov  ebx, [esp]
@@ -1504,7 +1504,7 @@ end
 
 // --- ARR_GET (PTR, OFFS) ---
 
-inline standard'41
+inline standard'arridxnew
 
   pop  eax
   mov  ebx, [eax]
@@ -1529,7 +1529,7 @@ end
 
 // --- ARR_SET (PTR, OFFS, OBJ) ---
 
-procedure standard'42 (PTR, OFFS, OBJ)
+procedure standard'varset (PTR, OFFS, OBJ)
 
   mov  edx, OBJ
   mov  ebx, OFFS
@@ -1552,7 +1552,7 @@ procedure standard'42 (PTR, OFFS, OBJ)
   mov  edi, eax
   mov  eax, edx
 
-  call @"$package'elena'31"     // assign eax to [esi]
+  call @"$package'elena'barrier"     // assign eax to [esi]
 
   pop  edi                      // restor edi
   mov  eax, PTR
@@ -1563,7 +1563,7 @@ end
 
 // --- ARRAY_LEN (RETVAL, OBJ) ---
 
-inline standard'43
+inline standard'arrlen
 
   pop  eax
   mov  edx, [eax-8]
@@ -1575,7 +1575,7 @@ end
 
 // --- GROUP_ADD (ARRAY, NIL, OBJ)---
 
-inline standard'44 
+inline standard'arrcopy 
 
   pop  eax
   pop  edx
@@ -1595,7 +1595,7 @@ lNext:
   jmp  short lEnd
 
 lInsert:  
-  call @"$package'elena'31"     // assign eax to [esi], edi
+  call @"$package'elena'barrier"     // assign eax to [esi], edi
   mov  eax, [esp+4]
 
 lEnd:
@@ -1606,7 +1606,7 @@ end
 
 // --- GROUP_CPY (DEST, SOUR) ---
 
-inline standard'45
+inline standard'arrfill
 
   pop  esi                      // sour 
   mov  eax, [esp]               
@@ -1627,7 +1627,7 @@ end
 
 // --- LONG_COPYINT (DEST, SOUR) ---
 
-inline standard'46
+inline standard'i64get
 
   pop eax
   mov eax, [eax]
@@ -1642,7 +1642,7 @@ end
 
 // --- FLOAT_COPYLONG (DEST, SOUR) ---
 
-inline standard'47
+inline standard'i64toreal
 
   pop  eax
   fild qword ptr [eax]
@@ -1653,7 +1653,7 @@ end
 
 // --- LONG_EQUAL (N1, N2) ---
 
-inline standard'48
+inline standard'i64equal
 
   pop  eax
   mov  edx, [eax]
@@ -1671,7 +1671,7 @@ end
 
 // --- LONG_LESS (N1, N2) ---
 
-inline standard'49
+inline standard'i64less
 
    pop  eax
    mov  ecx, [eax+4]
@@ -1691,7 +1691,7 @@ end
 
 // --- LONG_ADD (DEST, SOUR) ---
 	
-inline standard'50
+inline standard'i64add
 
   pop eax 
   mov esi, [esp]
@@ -1714,7 +1714,7 @@ end
 
 // --- LONG_SUB (DEST, SOUR) ---
 
-inline standard'51
+inline standard'i64sub
 
   pop eax
   mov esi, [esp]
@@ -1736,7 +1736,7 @@ end
 
 // --- LONG_MUL (DEST, SOUR) ---
 
-inline standard'52  // SLO * DLO + SLO * DHI + SLO * DHI
+inline standard'i64mul  // SLO * DLO + SLO * DHI + SLO * DHI
 
   pop  eax
   mov  edx, [esp]     // dest
@@ -1773,7 +1773,7 @@ end
 
 // --- LONG_DIV (DEST, SOUR) ---
 
-inline standard'53
+inline standard'i64div
 
   pop  eax
   push edi
@@ -1881,7 +1881,7 @@ end
 
 // --- LONG_TEST (N1, N2) ---
 
-inline standard'54
+inline standard'i64anymask
 
   pop  eax
   mov  edx, [esp]
@@ -1901,7 +1901,7 @@ end
 
 // --- LONG_TEST2 (N1, N2) ---
 
-inline standard'55
+inline standard'i64allmask
 
   pop  eax
   mov  edx, [esp]
@@ -1923,7 +1923,7 @@ end
 
 // --- LONG_SHIFT (DEST, OFFSET) ---
 
-inline standard'56
+inline standard'i64shift
 
   pop  eax
   mov  ecx, [eax]
@@ -1985,7 +1985,7 @@ end
 
 // --- LONG_NOT ---
 
-inline standard'57
+inline standard'i64not
 
   pop eax 
   mov edx, [eax]      // NLO
@@ -2003,7 +2003,7 @@ end
 
 // --- LONG_BOR (DEST, SOUR) ---
 
-inline standard'58
+inline standard'i64or
 
   pop eax 
   mov ebx, [eax]
@@ -2016,7 +2016,7 @@ end
 
 // --- LONG_BXOR (DEST, SOUR) ---
 
-inline standard'59
+inline standard'i64xor
 
   pop eax
   mov ebx, [eax]
@@ -2029,7 +2029,7 @@ end
 
 // --- LONG_BAND (DEST, SOUR) ---
 
-inline standard'60
+inline standard'i64and
 
   pop eax
   mov ebx, [eax]
@@ -2042,7 +2042,7 @@ end
 
 // --- INT_COPYPTR ( N, PTR, OFS) ---
 
-inline standard'61
+inline standard'bufreadint
   
   pop  eax
   mov  edx, [eax]
@@ -2064,7 +2064,7 @@ end
 
 // --- STR_COPYLONG (S, N) ---
 
-inline standard'62
+inline standard'i64tostr
 
    pop  eax
    push edi
@@ -2142,7 +2142,7 @@ end
 
 // --- LONG_CPYSTR (N, S) ---
 
-inline standard'63
+inline standard'i64tostrx
 
   pop  eax
   push edi
@@ -2218,7 +2218,7 @@ end
 
 // --- WSTR_SUBSTR (RETVAL, S, INDEX) ---
 
-inline standard'64
+inline standard'strwritereal
 
   pop  eax
   pop  edx
@@ -2247,7 +2247,7 @@ end
 
 // --- FLOAT_ABS (DEST, SOUR) ---
 
-inline standard'65
+inline standard'r64abs
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2259,7 +2259,7 @@ end
 
 // --- INT_ROUNDREAL (EAX - N, EBX - F) ---
 
-inline standard'66
+inline standard'r64conv66
 
   pop   eax
   fld   qword ptr [eax]
@@ -2295,7 +2295,7 @@ end
 
 // --- FLOAT_TRUNC (DEST, SOUR) ---
 
-inline standard'67
+inline standard'r64conv67
 
   pop   eax
   fld   qword ptr [eax]
@@ -2330,7 +2330,7 @@ end
 
 // --- FLOAT_ARCTAN (DEST, SOUR) ---
 
-inline standard'68
+inline standard'r64conv68
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2354,7 +2354,7 @@ end
 
 // --- FLOAT_COS (DEST, SOUR) ---
 
-inline standard'69
+inline standard'r64conv69
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2385,7 +2385,7 @@ end
 
 // --- FLOAT_EXP (DEST, SOUR) ---
 
-inline standard'70
+inline standard'r64conv70
 
   pop   eax
   fld   qword ptr [eax]   // Src
@@ -2430,7 +2430,7 @@ end
 
 // --- FLOAT_LN (DEST, SOUR) ---
 
-inline standard'71
+inline standard'r64conv71
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2456,7 +2456,7 @@ end
 
 // --- FLOAT_SIN (DEST, SOUR) ---
 
-inline standard'72
+inline standard'r64conv72
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2487,7 +2487,7 @@ end
 
 // --- FLOAT_SQRT (DEST, SOUR) ---
 
-inline standard'73
+inline standard'r64conv73
 
   pop   eax
   fld   qword ptr [eax]  
@@ -2500,7 +2500,7 @@ end
 
 // --- FLOAT_PI (DEST) ---
 
-inline standard'74
+inline standard'r64conv74
 
   pop   eax
   fldpi
@@ -2511,7 +2511,7 @@ end
 
 // --- DUMP_LEN (RETVAL, OBJ) ---
 
-inline standard'75
+inline standard'bytearrlen
 
   pop  eax
   mov  edx, [eax-8]
@@ -2523,7 +2523,7 @@ end
 
 // --- DUMP_CPY (DEST, SOUR)
 
-inline standard'76
+inline standard'bufappend
 
   pop  eax
   mov  esi, eax                 // sour 
@@ -2546,7 +2546,7 @@ end
 
 // --- WSTR_CPYPTR (STR, PTR, OFFS)
 
-inline standard'77
+inline standard'bufreadstr
 
   pop  eax
   pop  esi
@@ -2595,7 +2595,7 @@ end
 
 // --- DUMP_READ2BUF (BUF, DUMP, OFFS)
 
-inline standard'78
+inline standard'bufreadbuf
 
   pop  eax          
   pop  esi          // dump
@@ -2656,7 +2656,7 @@ end
 
 // --- PTR_ADDW (DEST, OFFS, SOUR) ---
 
-inline standard'79
+inline standard'bufwritestr
 
   pop  eax
   pop  edx                     // offs
@@ -2697,7 +2697,7 @@ end
 
 // --- PTR_COPYINT32 (PTR, OFS, N) ---
 
-inline standard'80
+inline standard'bufwriteint
 
   pop  eax
   pop  edx            // OFS
@@ -2720,7 +2720,7 @@ end
 
 // --- PTR_ADDBUF (BUF, DUMP, OFFS)
 
-inline standard'81
+inline standard'bufwritebuf
 
   pop  eax
   pop  esi          // dump
@@ -2782,7 +2782,7 @@ end
 
 // --- DUMP_ALLOC (aType, aLen) ---
 
-inline standard'82
+inline standard'bufwriteto
 
   mov  eax, [esp]
   mov  ebx, [eax] 
@@ -2791,7 +2791,7 @@ inline standard'82
   and  ecx, 'gc_page_mask
   add  ebx, 3
   shr  ebx, 2
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  edx, [esp+4]
   mov  esi, [edx]
   or   [eax-8], 'gc_binary

@@ -113,7 +113,10 @@ if(NOT ELENA_UTF8)
     add_compile_definitions(_UNICODE UNICODE)
 endif()
 
-if(ELENA_32BIT AND NOT MSVC)
+# -m32 is only for a 64-bit host toolchain that must be told to emit 32-bit
+# code. The i686 MinGW cross compiler is already 32-bit and rejects nothing, but
+# passing it is noise.
+if(ELENA_32BIT AND NOT MSVC AND NOT MINGW)
     add_compile_options(-m32)
     add_link_options(-m32)
 endif()
@@ -196,7 +199,7 @@ if(ELENA_BUILD_SG)
         OUTPUT ${SYNTAX_DAT}
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_SOURCE_DIR}/dat/sg/syntax.txt ${SYNTAX_SRC}
-        COMMAND $<TARGET_FILE:sg> ${SYNTAX_SRC}
+        COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:sg> ${SYNTAX_SRC}
         COMMAND ${CMAKE_COMMAND} -E copy ${SYNTAX_DAT}
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/syntax.dat
         DEPENDS sg ${CMAKE_SOURCE_DIR}/dat/sg/syntax.txt
@@ -239,6 +242,7 @@ if(ELENA_BUILD_ASM2BIN)
         ${SRC}/elc/source.cpp
         ${SRC}/engine/module.cpp
         ${SRC}/engine/section.cpp
+        ${SRC}/engine/targetinfo.cpp
         ${SRC}/engine/win32/x86helper.cpp
         ${COMMON_SRC}
     )
@@ -319,7 +323,11 @@ endif()
 
 message(STATUS "")
 message(STATUS "ELENA ${PROJECT_VERSION}")
+message(STATUS "  system         : ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "  platform layer : ${ELENA_PLATFORM_DIR}")
+if(CMAKE_CROSSCOMPILING)
+    message(STATUS "  cross          : yes, emulator = ${CMAKE_CROSSCOMPILING_EMULATOR}")
+endif()
 message(STATUS "  word size      : ${CMAKE_SIZEOF_VOID_P}*8 host / 32 target")
 message(STATUS "  compiler       : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  output         : ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")

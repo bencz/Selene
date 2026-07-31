@@ -88,49 +88,11 @@ int main(int argc, char* argv[])
       args[i] = argv[i];
 #endif
 
-   // --target= is handled before anything else: it selects the machine being
-   // generated FOR, and every layout decision downstream depends on it.
-   //
-   // It is intercepted here rather than in setOption() because the leading "--"
-   // would otherwise be parsed as an empty option letter.
-   bool targetHandled[64] = { false };
-   for (int i = 1 ; i < argc && i < 64 ; i++) {
-      if (strncmp(argv[i], "--target=", 9) != 0)
-         continue;
-
-      targetHandled[i] = true;
-
-      const char* name = argv[i] + 9;
-
-      if (strcmp(name, "?") == 0) {
-         size_t count = 0;
-         const TargetInfo* list = getTargetList(count);
-
-         printf("known targets:\n");
-         for (size_t k = 0 ; k < count ; k++) {
-            printf("  %-11s %-34s %2d-bit %s%s\n",
-                   list[k].name, list[k].triple, list[k].pointerBits,
-                   list[k].isBigEndian() ? "big-endian" : "little-endian",
-                   list[k].functionDescriptors ? ", function descriptors" : "");
-         }
-         delete[] args;
-         return 0;
-      }
-
-      const TargetInfo* selected = getTargetByName(name);
-      if (!selected) {
-         LocalString<0x40> reported;
-#ifdef _UNICODE
-         reported.convert(name);
-#else
-         reported.copy(name);
-#endif
-         _tprintf(ELC_ERR_INVALID_TARGET, (const TCHAR*)reported);
-         delete[] args;
-         return -3;
-      }
-
-      setCurrentTarget(selected);
+   bool* consumed = new bool[argc];
+   int targetExit = 0;
+   if (!_ELC_::processTargetOptions(argc, args, consumed, targetExit)) {
+      delete[] args; delete[] consumed;
+      return targetExit;
    }
 
    try {
@@ -141,38 +103,17 @@ int main(int argc, char* argv[])
          // show help if no parameters proveded
          _tprintf(ELC_HELP_INFO);
          delete[] args;
-#ifdef _UNICODE
-         delete[] wide;
-#endif
          return -3;
       }
 
       // Initializing..
       project.loadConfig(Path(project.appPath, DEFAULT_CONFIG), false);
 
-      // Platform bindings for the selected target.
-      //
-      // Loaded before the project's own template so a project can still
-      // override an individual forward, and after elc.cfg so it can rely on
-      // the library paths.
-      const char* osName = getCurrentTarget()->osConfigName();
-      if (osName) {
-         LocalString<0x40> osFile;
-#ifdef _UNICODE
-         osFile.convert(osName);
-#else
-         osFile.copy(osName);
-#endif
-         Path osConfig(project.appPath, _T("targets"));
-         osConfig.combine(osFile);
-         osConfig.appendExtension(_T("cfg"));
-
-         project.loadConfig(osConfig, false);
-      }
+      _ELC_::loadTargetConfig(project);
 
       // Initializing..
       for (int i = 1 ; i < argc ; i++) {
-         if (i < 64 && targetHandled[i])
+         if (consumed[i])
             continue;
 
          const TCHAR* arg = args[i];
@@ -228,6 +169,7 @@ int main(int argc, char* argv[])
    }
 
    delete[] args;
+   delete[] consumed;
 #ifdef _UNICODE
    delete[] wide;
 #endif

@@ -198,6 +198,13 @@ public:
    Project();
 };
 
+// Scans args for --target=, applies it and marks the entries it consumed.
+// Returns false when the caller should stop; exitCode says with what.
+bool processTargetOptions(int argc, const TCHAR** args, bool* consumed, int& exitCode);
+
+// Loads targets/<os>.cfg for the selected target.
+void loadTargetConfig(Project& project);
+
 } // _ELC_
 
 #endif // elcH

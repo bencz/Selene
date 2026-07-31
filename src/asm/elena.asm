@@ -8,7 +8,7 @@ define GC_FULL_COLLECT                  2
 
 // --- STD_ALLOC ---
 
-procedure elena'1 // eax - out, ebx - page size, ecx - total size
+procedure elena'alloc // eax - out, ebx - page size, ecx - total size
 
   // --- allocate ---
   
@@ -47,7 +47,7 @@ ygGC:
   mov  ebx, ['gc_mg_heap]
   mov  edx, ['gc_heap_end] 
 
-  call @"$package'elena'2"
+  call @"$package'elena'collect"
 
   mov  ['gc_mg_heap], edi
   mov  ['gc_yg_heap], edi
@@ -93,7 +93,7 @@ mgGC:
   mov  ['gc_mgptr2], eax
   mov  ['gc_mgptr2_end], eax
 
-  call @"$package'elena'2"
+  call @"$package'elena'collect"
 
   mov  ['gc_og_heap], edi
   mov  ['gc_mg_heap], edi
@@ -152,7 +152,7 @@ mgFull:
   mov  ['gc_mgptr2], eax
   mov  ['gc_mgptr2_end], eax
 
-  call @"$package'elena'2"
+  call @"$package'elena'collect"
 
   mov  ['gc_og_heap], edi
   mov  ['gc_mg_heap], edi
@@ -334,7 +334,7 @@ end
 
 // --- mark and sweep ---
 
-procedure elena'2 // (ebx - minimal, edx - maximal, ebp)
+procedure elena'collect // (ebx - minimal, edx - maximal, ebp)
 
 // ; --- collect pointers to yg(0) from mg(1)
 
@@ -487,7 +487,7 @@ end
 
 // STD_ENTRY
 
-procedure elena'3
+procedure elena'startup
 
   // initialize
   mov  ecx, ['gc_static_size]
@@ -550,7 +550,7 @@ clear:
 end
 
 // prep
-inline elena'4
+inline elena'prep
 
   push ebp
   mov  ebp, esp 
@@ -558,7 +558,7 @@ inline elena'4
 end
 
 // sprep
-inline elena'5
+inline elena'sprep
 
   push edi
   mov  edi, eax
@@ -568,7 +568,7 @@ inline elena'5
 end
 
 // return
-inline elena'6
+inline elena'return
   pop  eax
   mov  esp, ebp
   pop  ebp
@@ -577,7 +577,7 @@ inline elena'6
 end
 
 // iocall(index)  (__arg1 contains message ID, __arg2 contains message index)
-inline elena'7
+inline elena'iocalln
 
    pop  ebx
    mov  eax, [esp]             // ; get object ptr
@@ -607,7 +607,7 @@ inline elena'7
 end
 
 // sexit
-inline elena'8
+inline elena'sexit
 
   mov  esp, ebp
   pop  ebp
@@ -618,7 +618,7 @@ inline elena'8
 end
 
 // sreturn
-inline elena'9
+inline elena'sreturn
   pop  eax
   mov  esp, ebp
   pop  ebp
@@ -628,7 +628,7 @@ inline elena'9
 end
 
 // rreturnif (__arg1obj - constant)
-inline elena'10
+inline elena'rreturnif
   pop  eax
   cmp  eax, __arg1obj
   jz   short lbContinue
@@ -639,9 +639,9 @@ lbContinue:
 end
 
 // ocreate (ecx - totalsize, __arg1 - size, __arg2vmt - vmt)
-inline elena'11 
+inline elena'ocreate 
   mov  ebx, __arg1
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
 
   mov  [eax-4], __arg2vmt
   mov  esi, eax
@@ -655,9 +655,9 @@ labClear:
 end
 
 // ocreate2 (ecx - totalsize, __arg1 - size, __arg2vmt - vmt)
-inline elena'12
+inline elena'ocreate2
   mov  ebx, __arg1
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  [eax-4], __arg2vmt
   mov  [eax], 'nil
   mov  [eax+4], 'nil
@@ -666,9 +666,9 @@ inline elena'12
 end
 
 // ocreate4 (ecx - totalsize, __arg1 - size, __arg2vmt - vmt)
-inline elena'13
+inline elena'ocreate4
   mov  ebx, __arg1
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  [eax-4], __arg2vmt
   mov  [eax], 'nil
   mov  [eax+4], 'nil
@@ -679,9 +679,9 @@ inline elena'13
 end
 
 // ocreate6 (ecx - totalsize, __arg1 - size, __arg2vmt - vmt)
-inline elena'14
+inline elena'ocreate6
   mov  ebx, __arg1
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
   mov  [eax-4], __arg2vmt
   mov  [eax], 'nil
   mov  [eax+4], 'nil
@@ -694,9 +694,9 @@ inline elena'14
 end
 
 // ocreate0 (ecx - totalsize, __arg1 - size, __arg2vmt - vmt)
-inline elena'15
+inline elena'ocreate0
   mov  ebx, __arg1
-  call @"$package'elena'1"
+  call @"$package'elena'alloc"
 
   mov  [eax-4], __arg2vmt
   push eax
@@ -704,7 +704,7 @@ inline elena'15
 end
 
 // callext
-inline elena'16
+inline elena'callext
   push edi
   mov  eax, ['gs_current_frame]
   push eax                              // save previous pointer 
@@ -721,7 +721,7 @@ inline elena'16
 end
 
 // prepredir
-inline elena'17
+inline elena'prepredir
 
   push edx
   push edi
@@ -732,7 +732,7 @@ inline elena'17
 end
 
 // exitredir
-inline elena'18
+inline elena'exitredir
 
   mov  esp, ebp
   pop  ebp
@@ -744,7 +744,7 @@ inline elena'18
 end
 
 // redirect
-inline elena'19
+inline elena'redirect
 
    mov  edx, [ebp+8]           // ; get message id
    mov  eax, [esp]             // ; get object ptr
@@ -790,7 +790,7 @@ inline elena'19
 end
 
 // rredirect
-inline elena'20
+inline elena'rredirect
 
    mov  edx, [ebp+8]           // ; get message id
    mov  eax, __arg1vmt         // ; get parent vmt
@@ -836,7 +836,7 @@ inline elena'20
 end
 
 // group
-procedure elena'21
+procedure elena'group
 
    push edi
    push 0                     // index local 
@@ -910,7 +910,7 @@ end
 
 // IS_SAME
 
-inline elena'22    
+inline elena'identical    
 
   pop eax 
   mov ebx, [esp]
@@ -923,7 +923,7 @@ end
 
 // CLASS_REDIRECT
 
-inline elena'23
+inline elena'vmtof
 
    pop   ebx
    mov   eax, [esp]
@@ -954,7 +954,7 @@ end
 
 // IS_TYPESAME
 
-inline elena'24
+inline elena'sametype
 
   pop eax
   mov edx, [eax] 
@@ -969,7 +969,7 @@ end
 
 // ioswap
 
-inline elena'25
+inline elena'ioswap
 
   mov ebx, [esp]
   mov ecx, [esp-__arg1]
@@ -980,7 +980,7 @@ end
 
 // ioset
 
-inline elena'26
+inline elena'ioset
 
   mov ebx, [esp]
   mov ecx, __arg2vmt
@@ -990,7 +990,7 @@ end
 
 // shift
 
-inline elena'28
+inline elena'shift
 
   mov edx, [edi-4]
   test [edx-8], elRoleVMT  // ; skip if it is not a role
@@ -1006,7 +1006,7 @@ end
 
 // unshift
 
-inline elena'29 
+inline elena'unshift 
 
   mov edx, [edi-4]
   mov edx, [edx-4]
@@ -1015,7 +1015,7 @@ inline elena'29
 end
 
 // ircall(index)  (eax contains vmt, __arg1 contains message ID, __arg2 contains message index)
-inline elena'30
+inline elena'ircall
 
    pop  ebx
    mov  edx, __arg1
@@ -1047,7 +1047,7 @@ end
 
 // STD_ASSIGN
 
-procedure elena'31                  // eax - object, esi - destination, edi - destination object
+procedure elena'barrier                  // eax - object, esi - destination, edi - destination object
 
   mov  ecx, fs:[4]                  // stack top
   mov  edx, fs:[8]                  // stack low / current
@@ -1056,14 +1056,14 @@ procedure elena'31                  // eax - object, esi - destination, edi - de
   cmp  eax, edx
   jb   short labSkip 
   push esi
-  call @"$package'elena'32"        // alloctemp
+  call @"$package'elena'alloctemp"        // alloctemp
   pop  esi
 labSkip:
   mov  [esi], eax
   cmp  edi, ['gc_mg_heap]
   ja   short labSkip2
   nop
-  call @"$package'elena'33"
+  call @"$package'elena'remember"
 
 labSkip2:  
   ret
@@ -1071,7 +1071,7 @@ end
 
 // STD_ALLOCTEMP
 
-procedure elena'32 // eax - object
+procedure elena'alloctemp // eax - object
 
   push eax
   mov  ebx, [eax-'el_emptyobject]      // define size
@@ -1080,7 +1080,7 @@ procedure elena'32 // eax - object
   shl  edx, 2
   add  ecx, edx
   and  ecx, 'gc_page_mask
-  call @"$package'elena'1"             // allocate
+  call @"$package'elena'alloc"             // allocate
   pop  esi
   mov  ecx, [eax-'el_emptyobject]
   and  ecx, 7FFFFFFFh
@@ -1101,7 +1101,7 @@ end
 
 // STD_ADDYGPTR
 
-procedure elena'33 // edi, eax
+procedure elena'remember // edi, eax
 
   cmp  edi, eax                    // skip if the referring object older then self
   jae  short labEnd
@@ -1161,7 +1161,7 @@ end
 
 // eax - object, esi - destination, edi - destination object
 
-inline elena'34                  
+inline elena'assign                  
 
   mov  ecx, fs:[4]                  // stack top
   mov  edx, fs:[8]                  // stack low / current
@@ -1169,12 +1169,12 @@ inline elena'34
   ja   short labSkip
   cmp  eax, edx
   jb   short labSkip 
-  call @"$package'elena'32"        // alloctemp
+  call @"$package'elena'alloctemp"        // alloctemp
 labSkip:
   cmp  edi, ['gc_mg_heap]
   ja   short labSkip2
   nop
-  call @"$package'elena'33"
+  call @"$package'elena'remember"
 
 labSkip2:  
 
@@ -1182,7 +1182,7 @@ end
 
 // STD_WIN32ENTRY
 
-procedure elena'35
+procedure elena'startupgui
 
   // initialize
   mov  ecx, ['gc_static_size]
@@ -1273,7 +1273,7 @@ lab_end:
 end
 
 // cast
-procedure elena'36
+procedure elena'cast
 
    push edi
    push 0                     // index local 
@@ -1332,7 +1332,7 @@ end
 
 // STD_WINDRPOC
 
-procedure elena'37
+procedure elena'wndproc
 
   push ebp
   mov  ebp, esp
@@ -1373,7 +1373,7 @@ eventCheck:
   cmp  ecx, 400h
   jae  short lSend
 
-  mov esi, 'structure:"$package'elena'38"
+  mov esi, 'structure:"$package'elena'wmtable"
 lNext:
   cmp ecx, [esi]
   lea esi, [esi+8]
@@ -1450,7 +1450,7 @@ lab_end:
 
 end
 
-structure elena'38
+structure elena'wmtable
 
  dd 00002h
  dd #win32'api'$ondestroy

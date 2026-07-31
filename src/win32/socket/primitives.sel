@@ -81,7 +81,7 @@
     [
         #external winsock'11(theHandle, aLiteral, 4, aLiteral->basic'Length * 2).
 
-        #inline standard'70(theHandle, aLiteral).
+        #inline standard'r64conv70(theHandle, aLiteral).
     ]
 */
     #method basic'$readAsBuffer : aBuffer

@@ -8,7 +8,7 @@
 
     #method back : aParam = aParam.
 
-    #method ifSame : anObject = #inline elena'22 (self, anObject).
+    #method ifSame : anObject = #inline elena'identical (self, anObject).
 }
 
 // --- Nil ---
@@ -24,13 +24,13 @@
 {
     #field(4).
 
-    #method $getClassName : aParameter = #inline elena'23 (self, aParameter).
+    #method $getClassName : aParameter = #inline elena'vmtof (self, aParameter).
 
-    #method $typecast : aParameter = #inline elena'23 (self, aParameter).
+    #method $typecast : aParameter = #inline elena'vmtof (self, aParameter).
 
     #method $ifSameType : anObject
     [
-        #inline elena'24 (self, anObject).
+        #inline elena'sametype (self, anObject).
     ]
 }
 

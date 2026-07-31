@@ -29,7 +29,7 @@
 
     // public methods
 
-    #method Length = #inline standard'75(basic'IntNumber, $self).
+    #method Length = #inline standard'bytearrlen(basic'IntNumber, $self).
 
     #method new
     [
@@ -78,16 +78,16 @@
         self clear.
     ]
 
-    #method Length = #inline standard'3(basic'IntNumber, theDump).
+    #method Length = #inline standard'loadint(basic'IntNumber, theDump).
 
     #method << aDump
     [
-        #inline standard'76(theDump, aDump $getByteArray).
+        #inline standard'bufappend(theDump, aDump $getByteArray).
     ]
 
     #method clear
     [
-        #inline standard'3(theDump $getByteArray, 0).
+        #inline standard'loadint(theDump $getByteArray, 0).
     ]
 
     #annex BufferGroup.
@@ -119,7 +119,7 @@
 	[
 		#var aValue := basic'IntNumber.
 
-		#inline standard'61(aValue, theDump, theOffset).
+		#inline standard'bufreadint(aValue, theDump, theOffset).
 
 		theOffset += 4.
 
@@ -128,14 +128,14 @@
 
 	#method $readAsLiteral : aValue
 	[
-		#inline standard'77(aValue $getLiteral, theDump, theOffset).
+		#inline standard'bufreadstr(aValue $getLiteral, theDump, theOffset).
 		
 		theOffset += (aValue Length * 2).
 	]    
 
     #method $readAsBuffer : aBuffer
     [
-		#inline standard'78(aBuffer $getByteArray, theDump, theOffset).
+		#inline standard'bufreadbuf(aBuffer $getByteArray, theDump, theOffset).
 
 		theOffset += aBuffer Length.
     ]
@@ -165,21 +165,21 @@
 
     #method $writeAsLiteral : aValue
     [
-        #inline standard'79(theDump, theOffset, aValue $getLiteral).
+        #inline standard'bufwritestr(theDump, theOffset, aValue $getLiteral).
 
 		theOffset += (aValue Length * 2).
     ]
 
     #method basic'$writeAsInt32 : aValue
     [
-        #inline standard'80(theDump, theOffset, aValue $getInteger).
+        #inline standard'bufwriteint(theDump, theOffset, aValue $getInteger).
 
 		theOffset += 4.
     ]
 
     #method $writeAsBuffer : aBuffer
     [
-		#inline standard'81(aBuffer $getByteArray, theDump, theOffset).
+		#inline standard'bufwritebuf(aBuffer $getByteArray, theDump, theOffset).
 		
         theOffset += aBuffer Length.
     ]
@@ -229,7 +229,7 @@
 
         #if(aSize < aBuffer $getSize)?
         [
-            #inline standard'3(aBuffer $getByteArray, aSize).
+            #inline standard'loadint(aBuffer $getByteArray, aSize).
         ].
 
 		theReader $invoke:aBuffer.		
@@ -264,21 +264,21 @@
     [
         theWriter $invoke:aValue.
 
-        #inline standard'3(theBuffer $getByteArray, theWriter $getOffset - 4).
+        #inline standard'loadint(theBuffer $getByteArray, theWriter $getOffset - 4).
     ]
 
     #method $writeAsInt32 : aValue
     [
         theWriter $invoke:aValue.
 
-        #inline standard'3(theBuffer $getByteArray, theWriter $getOffset - 4).
+        #inline standard'loadint(theBuffer $getByteArray, theWriter $getOffset - 4).
     ]
 
     #method $writeAsBuffer : aBuffer
     [
         theWriter $invoke:aBuffer.
 
-        #inline standard'3(theBuffer $getByteArray, theWriter $getOffset - 4).
+        #inline standard'loadint(theBuffer $getByteArray, theWriter $getOffset - 4).
     ]    
 }
 
@@ -307,7 +307,7 @@
 
     create : aParameter
     [
-        ^ #inline standard'82 (#type mem'ByteArray, aParameter Length).
+        ^ #inline standard'bufwriteto (#type mem'ByteArray, aParameter Length).
     ]
 }.
 

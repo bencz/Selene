@@ -322,15 +322,15 @@
 {
     += anObject
     [
-        #var aGroup := self $getGroup | back:(#inline standard'39(#type group, nil, 2)).
+        #var aGroup := self $getGroup | back:(#inline standard'arrenumnew(#type group, nil, 2)).
 
-        #if Control ifNotNil:(#inline standard'44(aGroup, nil, anObject))
+        #if Control ifNotNil:(#inline standard'arrcopy(aGroup, nil, anObject))
         | [
-            #var aLength := #inline standard'43(basic'IntNumber, aGroup).
-            #var aNewGroup := #inline standard'39(#type group, nil, aLength + 4).
+            #var aLength := #inline standard'arrlen(basic'IntNumber, aGroup).
+            #var aNewGroup := #inline standard'arrenumnew(#type group, nil, aLength + 4).
 
-            #inline standard'45 (aNewGroup, aGroup).
-            #inline standard'44 (aNewGroup, nil, anObject).
+            #inline standard'arrfill (aNewGroup, aGroup).
+            #inline standard'arrcopy (aNewGroup, nil, anObject).
 
             self $setGroup:aNewGroup.
         ].
@@ -341,15 +341,15 @@
 {
     += anObject
     [
-        #var aGroup := self $getGroup | $setGroup:(#inline standard'39(#type cast, nil, 2)) $getGroup.
+        #var aGroup := self $getGroup | $setGroup:(#inline standard'arrenumnew(#type cast, nil, 2)) $getGroup.
 
-        #if Control ifNotNil:(#inline standard'44(aGroup, nil, anObject))
+        #if Control ifNotNil:(#inline standard'arrcopy(aGroup, nil, anObject))
         | [
-            #var aLength := #inline standard'43(basic'IntNumber, aGroup).
-            #var aNewGroup := #inline standard'39(#type cast, nil, aLength + 4).
+            #var aLength := #inline standard'arrlen(basic'IntNumber, aGroup).
+            #var aNewGroup := #inline standard'arrenumnew(#type cast, nil, aLength + 4).
 
-            #inline standard'45 (aNewGroup, aGroup).
-            #inline standard'44 (aNewGroup, nil, anObject).
+            #inline standard'arrfill (aNewGroup, aGroup).
+            #inline standard'arrcopy (aNewGroup, nil, anObject).
 
             self $setGroup:aNewGroup.
         ].

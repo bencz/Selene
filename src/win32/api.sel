@@ -28,7 +28,7 @@
             [ self fail. ].
     ]
 
-    #method basic'$toInteger = #inline standard'3(basic'IntNumber, $self).
+    #method basic'$toInteger = #inline standard'loadint(basic'IntNumber, $self).
 
     #annex DWORDGroup.
 }
@@ -39,7 +39,7 @@
 {
     #method new : aLiteral
     [
-        #inline standard'40($self, basic'LiteralType of:aLiteral).
+        #inline standard'arrfromstr($self, basic'LiteralType of:aLiteral).
     ]
 }
 
@@ -155,7 +155,7 @@
 
     #method $setHandle : aValue
     [
-        #inline standard'3($self, aValue).
+        #inline standard'loadint($self, aValue).
     ]
 }
 
@@ -238,17 +238,17 @@
     [
         #if aMessage ifNotNil
         [
-            #inline standard'80($self, 0, aMessage $getID).
-            #inline standard'80($self, 4, aMessage $getWParam | back:0).
-            #inline standard'80($self, 8, aMessage $getLParam | back:0).
+            #inline standard'bufwriteint($self, 0, aMessage $getID).
+            #inline standard'bufwriteint($self, 4, aMessage $getWParam | back:0).
+            #inline standard'bufwriteint($self, 8, aMessage $getLParam | back:0).
         ].
     ]
     
-    #method $getWParam = #inline standard'61(basic'IntNumber, $self, 4).
+    #method $getWParam = #inline standard'bufreadint(basic'IntNumber, $self, 4).
     
-    #method $getLParam = #inline standard'61(basic'IntNumber, $self, 8).
+    #method $getLParam = #inline standard'bufreadint(basic'IntNumber, $self, 8).
     
-    #method $getID = #inline standard'61(basic'IntNumber, $self, 0).
+    #method $getID = #inline standard'bufreadint(basic'IntNumber, $self, 0).
 
     #method $return : anHWND
     [
@@ -282,7 +282,7 @@
     [
         #if anHDC ifNotNil
         [
-            #inline standard'3($self, anHDC $getHDC).
+            #inline standard'loadint($self, anHDC $getHDC).
         ].
     ]
 
@@ -315,7 +315,7 @@
 
     #method $getHPEN = $self.
 
-    #method $getColor = #inline standard'61(basic'IntNumber, $self, 4).
+    #method $getColor = #inline standard'bufreadint(basic'IntNumber, $self, 4).
 
     #method close
     [
@@ -336,7 +336,7 @@
 
     #method $getHBRUSH = $self.
 
-    #method $getColor = #inline standard'61(basic'IntNumber, $self, 4).
+    #method $getColor = #inline standard'bufreadint(basic'IntNumber, $self, 4).
 
     #method close
     [
@@ -534,7 +534,7 @@
 
         #external win32'49(aPen, aStyle, aWidth, aColor).
 
-        #inline standard'80(aPen, 4, aColor).
+        #inline standard'bufwriteint(aPen, 4, aColor).
 
         ^ aPen.
     ]
@@ -551,7 +551,7 @@
 
         #external win32'50(aBrush, aColor).
 
-        #inline standard'80(aBrush, 4, aColor).
+        #inline standard'bufwriteint(aBrush, 4, aColor).
 
         ^ aBrush.
     ]

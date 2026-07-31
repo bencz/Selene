@@ -1212,7 +1212,7 @@ labCheck:
   cmp  [esi], 'nil
   jnz  short labNext
 
-  call @"$package'elena'31"     // assign eax to [esi]
+  call @"$package'elena'barrier"     // assign eax to [esi]
   jmp  short labEnd
 labNext:      
   add  [ebx], 4

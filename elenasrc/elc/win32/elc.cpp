@@ -17,6 +17,7 @@
 #include "compiler.h"
 #include "linker.h"
 #include "win32/x86jitcompiler.h"
+#include "targetinfo.h"
 
 #include <windows.h>
 #include <fcntl.h>
@@ -39,10 +40,35 @@ void getAppPath(Path& appPath)
 int main()
 {
    int argc;
-   TCHAR **argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+   // Win32 hands us UTF-16 regardless of the character model the compiler was
+   // built with, so convert once here when TCHAR is char.
+   wchar_t** wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+   const TCHAR** args = new const TCHAR*[argc];
+#ifdef _UNICODE
+   for (int i = 0 ; i < argc ; i++)
+      args[i] = wargv[i];
+#else
+   LocalString<0x200>* narrow = new LocalString<0x200>[argc];
+   for (int i = 0 ; i < argc ; i++) {
+      char buffer[0x200];
+      size_t length = _elena_win32_::wideToUtf8(wargv[i], buffer, sizeof(buffer));
+      buffer[length] = 0;
+
+      narrow[i].copy(buffer);
+      args[i] = narrow[i];
+   }
+#endif
+
+   bool* consumed = new bool[argc];
+   int targetExit = 0;
+   if (!_ELC_::processTargetOptions(argc, args, consumed, targetExit)) {
+      delete[] args; delete[] consumed;
+      return targetExit;
+   }
 
    // switch to unicode command line output if requiered
-   if (argc > 1 && compstr(argv[1] + 1, ELC_PRM_UNICODE))
+   if (argc > 1 && compstr(args[1] + 1, ELC_PRM_UNICODE))
       setmode(_fileno(stdout), _O_WTEXT);
 
    int    exitCode = 0;
@@ -50,6 +76,7 @@ int main()
 
    try {
       project.printInfo(ELC_GREETING, ELC_MAJOR_VERSION, ELC_MINOR_VERSION);
+      printf("target  : %s (%s)\n", getCurrentTarget()->name, getCurrentTarget()->triple);
 
       if (argc < 2) {
          // show help if no parameters proveded
@@ -60,12 +87,17 @@ int main()
       // Initializing..
       project.loadConfig(Path(project.appPath, DEFAULT_CONFIG), false);
 
+      _ELC_::loadTargetConfig(project);
+
       // Initializing..
       for (int i = 1 ; i < argc ; i++) {
-         if (argv[i][0]=='-') {
-            project.setOption(argv[i] + 1);
+         if (consumed[i])
+            continue;
+
+         if (args[i][0]=='-') {
+            project.setOption(args[i] + 1);
          }
-         else project.addSource(argv[i]);
+         else project.addSource(args[i]);
       }
 
       // load core module
