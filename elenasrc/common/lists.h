@@ -210,10 +210,22 @@ template <class Key, class T, bool KeyStored> struct _MemoryMapItem
    Key    key;       // for Key=TCHAR* if keyStored is true, key is an offset in the map buffer
    T      item;
 
+   // When KeyStored, `key` does not hold a pointer: it holds a BYTE OFFSET
+   // from this item into the map's buffer.
+   //
+   // The original expression was (TCHAR*)((int)this + (int)this->key), which
+   // truncates BOTH operands to 32 bits. That single idiom, repeated four
+   // times, was the only thing left preventing a 64-bit build of the compiler
+   // once the module format stopped being a raw memory image.
+   const TCHAR* storedKey() const
+   {
+      return (const TCHAR*)((const char*)this + (size_t)this->key);
+   }
+
    const TCHAR* loadKey(const TCHAR* key) const
    {
       if (KeyStored) {
-         return (TCHAR*)((int)this + (int)this->key);
+         return storedKey();
       }
       else return key;
    }
@@ -231,7 +243,7 @@ template <class Key, class T, bool KeyStored> struct _MemoryMapItem
    bool operator ==(const TCHAR* key) const
    {
       if (KeyStored) {
-         return compstr((TCHAR*)((int)this + (int)this->key), key);
+         return compstr(storedKey(), key);
       }
       else return compstr(this->key, key);
    }
@@ -263,7 +275,7 @@ template <class Key, class T, bool KeyStored> struct _MemoryMapItem
 
    bool operator <(const TCHAR* key) const
    {
-      return grtstr(key, (TCHAR*)((int)this + (int)this->key));
+      return grtstr(key, storedKey());
    }
 
    bool operator <(int key) const
@@ -278,7 +290,7 @@ template <class Key, class T, bool KeyStored> struct _MemoryMapItem
 
    bool operator <=(const TCHAR* key) const
    {
-      return !grtstr((TCHAR*)((int)this + (int)this->key), key);
+      return !grtstr(storedKey(), key);
    }
 
    bool operator <=(int key) const
@@ -392,7 +404,7 @@ protected:
 
    Item* getNext()
    {
-      return (Item*)((int)_map->_buffer.getArray() + _position);
+      return (Item*)((char*)_map->_buffer.getArray() + _position);
    }
 
    _MemoryIterator(const MemoryMap<Key, T, KeyStored>* map, size_t position, Item* current)
@@ -418,7 +430,7 @@ public:
          _position = _current->next;
 
          if (_position != 0) {
-            _current = (Item*)((int)_map->_buffer.getArray() + _position);
+            _current = (Item*)((char*)_map->_buffer.getArray() + _position);
          }
          else _current = NULL;
       }
@@ -1691,8 +1703,16 @@ public:
 
       if (KeyStored) {
          // save stored key
-         ref_t storedKey = (ref_t)storeKey(position, key);
-         _buffer.writeDWord(position + 4, storedKey);
+         // The key field lives at offsetof(Item, key), NOT at a fixed +4.
+         // Item is { size_t next; Key key; T item; }, so under ILP32 the key
+         // begins at 4 and under LP64 at 8 -- the hard-coded 4 wrote into the
+         // middle of `next` and produced a garbage key offset.
+         //
+         // Written through the item itself rather than as a raw dword so the
+         // width follows Key, which is what the reader (storedKey) assumes.
+         size_t storedKey = (size_t)storeKey(position, key);
+         Item* stored = (Item*)((char*)_buffer.getArray() + position);
+         stored->key = (Key)storedKey;
       }
 
       size_t beginning = (size_t)_buffer.getArray();
@@ -2463,7 +2483,10 @@ public:
       if (KeyStored) {
          // save stored key
          ref_t storedKey = (ref_t)storeKey(tale, key);
-         _buffer.writeDWord(tale + 4, storedKey);
+         // See the note in MemoryMap::add -- the key is at offsetof(Item, key),
+         // which is 4 under ILP32 and 8 under LP64.
+         Item* stored = (Item*)((char*)_buffer.getArray() + tale);
+         stored->key = (Key)storedKey;
       }
 
       size_t beginning = (size_t)_buffer.getArray();

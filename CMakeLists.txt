@@ -13,7 +13,10 @@ cmake_minimum_required(VERSION 3.16)
 project(elena
     VERSION 1.5.0.0
     DESCRIPTION "ELENA Language toolchain"
-    LANGUAGES CXX)
+    # C is needed for two reasons: LLVM's own CMake modules run
+    # check_include_file, which requires it, and the runtime being written to
+    # replace src/asm is C11.
+    LANGUAGES C CXX)
 
 #----------------------------------------------------------------------------
 # Options
@@ -30,6 +33,17 @@ option(ELENA_BUILD_SG       "Build the syntax generator"      ON)
 option(ELENA_BUILD_ELC      "Build the compiler"              ON)
 option(ELENA_BUILD_API2HTML "Build the API doc generator"     OFF)
 option(ELENA_BUILD_SEMDUMP  "Build the module dumper / disassembler" ON)
+
+# LLVM code generation backend.
+#
+# Linked INTO the compiler rather than driven as a subprocess: elc emits object
+# code directly from byte code, with no intermediate textual IR and no external
+# compiler invocation. That is what lets the PE linker and asm2binx be deleted
+# outright instead of replaced by a shell pipeline.
+#
+# Requires a 64-bit build -- libLLVM is 64-bit only, which is why the 64-bit
+# port had to come first.
+option(ELENA_LLVM "Build the LLVM code generation backend" ON)
 
 # asm2binx assembles src/asm/*.asm into the bin/*.bin runtime primitives.
 #
@@ -132,10 +146,46 @@ if(NOT MSVC)
         -Wno-unused-but-set-variable
         -Wno-sign-compare
         -Wno-parentheses
-        -Wno-reorder
-        -Wno-class-memaccess
+        # C++ only -- the runtime is C and would warn about the flags themselves
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-reorder>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wno-class-memaccess>
         -Wno-deprecated-declarations
     )
+endif()
+
+#----------------------------------------------------------------------------
+# LLVM
+#----------------------------------------------------------------------------
+
+if(ELENA_LLVM AND ELENA_32BIT)
+    message(STATUS "LLVM backend: disabled (libLLVM is 64-bit only; use -DELENA_32BIT=OFF)")
+    set(ELENA_LLVM OFF)
+endif()
+
+if(ELENA_LLVM AND CMAKE_CROSSCOMPILING)
+    message(STATUS "LLVM backend: disabled (cross build)")
+    set(ELENA_LLVM OFF)
+endif()
+
+if(ELENA_LLVM)
+    find_package(LLVM CONFIG)
+    if(NOT LLVM_FOUND)
+        message(STATUS "LLVM backend: disabled (llvm-devel not found)")
+        set(ELENA_LLVM OFF)
+    endif()
+endif()
+
+if(ELENA_LLVM)
+    # The targets Selene generates for. Deliberately explicit: adding one is a
+    # claim about an ABI that has to be verified, not a free switch.
+    set(ELENA_LLVM_TARGETS X86 AArch64 PowerPC SystemZ)
+
+    llvm_map_components_to_libnames(ELENA_LLVM_LIBS
+        core support target codegen mc mcparser analysis
+        ${ELENA_LLVM_TARGETS}
+    )
+
+    message(STATUS "LLVM backend: ${LLVM_PACKAGE_VERSION} (${ELENA_LLVM_TARGETS})")
 endif()
 
 #----------------------------------------------------------------------------
@@ -290,12 +340,46 @@ if(ELENA_BUILD_ELC)
         )
     endif()
 
+    if(ELENA_LLVM)
+        list(APPEND ELC_SRC ${SRC}/llvmgen/llvmgen.cpp)
+    endif()
+
     add_executable(elc ${ELC_SRC})
     target_include_directories(elc PRIVATE
         ${SRC}/engine/win32
         ${SRC}/elc/${ELENA_PLATFORM_DIR}
     )
+
+    if(ELENA_LLVM)
+        target_compile_definitions(elc PRIVATE ELENA_WITH_LLVM)
+        target_include_directories(elc PRIVATE ${SRC}/llvmgen)
+        target_include_directories(elc SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
+        # LLVM headers are not C++17-clean under -Wall; they are not ours to fix.
+        target_compile_options(elc PRIVATE -Wno-unused-parameter)
+        target_link_libraries(elc PRIVATE ${ELENA_LLVM_LIBS})
+    endif()
 endif()
+
+#----------------------------------------------------------------------------
+# libselene -- the runtime
+#
+# STATIC by design. It is what the .asm runtime already was -- inlined into
+# every produced image -- and it is what LTO needs in order to inline the
+# allocator and dispatcher into generated code. A shared runtime could not be
+# inlined and could not be linked into a kernel image.
+#   docs/plan/19-runtime-in-c.md
+#
+# C11, not C++: it has to build with -ffreestanding -nostdlib.
+#----------------------------------------------------------------------------
+
+add_library(selene STATIC
+    ${CMAKE_SOURCE_DIR}/runtime/dispatch.c
+    ${CMAKE_SOURCE_DIR}/runtime/gc.c
+    ${CMAKE_SOURCE_DIR}/runtime/hosted.c
+)
+set_target_properties(selene PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
+target_include_directories(selene PUBLIC ${CMAKE_SOURCE_DIR}/runtime)
+target_compile_options(selene PRIVATE -Wall -Wextra)
 
 #----------------------------------------------------------------------------
 # semdump -- module dumper / disassembler
@@ -331,4 +415,9 @@ endif()
 message(STATUS "  word size      : ${CMAKE_SIZEOF_VOID_P}*8 host / 32 target")
 message(STATUS "  compiler       : ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "  output         : ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+if(ELENA_LLVM)
+    message(STATUS "  LLVM           : ${LLVM_PACKAGE_VERSION}")
+else()
+    message(STATUS "  LLVM           : off")
+endif()
 message(STATUS "")
