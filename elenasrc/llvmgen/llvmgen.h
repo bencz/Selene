@@ -46,6 +46,18 @@ public:
    bool translateProcedure(const char* name, const unsigned char* code,
                            size_t length, const char** errorMessage);
 
+   // Emits a VMT as a global: the message dispatch table a class points at.
+   //
+   // Entries are {i32 message, ptr method}, sorted by SIGNED message id, ended
+   // by a terminator -- the layout the runtime's binary search expects.
+   bool emitVMT(unsigned int reference, const unsigned int* messages,
+                const char* const* methodNames, unsigned int count,
+                const char** errorMessage);
+
+   // Emits a raw data section (a constant, a literal, a static) as a global.
+   bool emitData(unsigned int reference, const unsigned char* bytes,
+                 size_t length, const char** errorMessage);
+
    // Runs LLVM's standard optimization pipeline. Level 0..3.
    //
    // This is where the per-slot allocas the translator emits become SSA

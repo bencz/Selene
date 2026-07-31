@@ -194,6 +194,14 @@ namespace _ELENA_
   //   See docs/plan/17-llvm-backend-and-targets.md section 3.
   //--------------------------------------------------------------------------
 
+  // On-disk size of a serialized ClassHeader: three 32-bit fields.
+  //
+  // NOT sizeof(ClassHeader) -- that is 12 bytes under ILP32 and 24 under LP64,
+  // and the file format must not follow the host. A VMT section is
+  //   [u32 size][roleRef][flags][parentRef][u32 classSize][{u32 msg, u32 offset}...]
+  // so entries begin CLASSHEADER_DISK_SIZE + 8 bytes into the section.
+   #define CLASSHEADER_DISK_SIZE    12
+
    #define MODULE_MAGIC             "SELENE20"         // 8 bytes, no terminator
    #define MODULE_MAGIC_SIZE        8
    #define MODULE_HEADER_SIZE       32

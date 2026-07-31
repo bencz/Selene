@@ -199,8 +199,18 @@ int main(int argc, char* argv[])
 
          if (classCode && vmt && vmt->Length() >= 8) {
             DumpReader vmtReader(vmt);
-            vmtReader.getU32LE();                       // vmt size
-            vmtReader.getU32LE();                       // class size
+
+            // [u32 size][roleRef][flags][parentRef][u32 classSize][entries...]
+            //
+            // Skipping only two words -- which is what this did before -- lands
+            // in the middle of the class header, so every message/offset pair
+            // read after it is garbage. That is what produced entries claiming
+            // message 0 with implausible method sizes.
+            vmtReader.getU32LE();                       // section size
+            vmtReader.getU32LE();                       // roleRef
+            vmtReader.getU32LE();                       // flags
+            vmtReader.getU32LE();                       // parentRef
+            vmtReader.getU32LE();                       // classSize
 
             // Collect (message, offset), then sort by offset so each method's
             // extent is the distance to the next one.
@@ -225,6 +235,14 @@ int main(int argc, char* argv[])
                   if (entries[b].offset < entries[a].offset) {
                      Entry tmp = entries[a]; entries[a] = entries[b]; entries[b] = tmp;
                   }
+
+            // The VMT is emitted alongside its methods, pointing at the very
+            // functions just translated. Without it every send site referenced
+            // a symbol nothing defined.
+            unsigned int vmtMessages[512];
+            const char*  vmtMethods[512];
+            char         vmtNames[512][320];
+            int          emitted = 0;
 
             for (int e = 0 ; e < count ; e++) {
                // The VMT offset points at the method's LENGTH word, not at its
@@ -268,6 +286,37 @@ int main(int argc, char* argv[])
             }
          }
       }
+
+      // --- constants ---
+      //
+      // Integer, real and literal constants are NOT sections: they live in the
+      // module's constant table, keyed by reference, with the value held as its
+      // spelling. The linker used to materialise them; here they become
+      // globals so the same references resolve.
+      int constants = 0;
+      for (ref_t c = 1 ; c < 0x1000 ; c++) {
+         const TCHAR* spelling = module.resolveConstant(c);
+         if (!spelling || !spelling[0])
+            continue;
+
+         char text[256];
+         size_t j = 0;
+         for ( ; spelling[j] && j < sizeof(text) - 1 ; j++)
+            text[j] = (char)spelling[j];
+         text[j] = 0;
+
+         // The same reference id is used with different masks depending on the
+         // constant's kind, and the byte code carries the mask, so emit under
+         // each of them rather than guessing which one this constant is.
+         static const ref_t kinds[] =
+            { mskConstantRef, mskLiteralRef, mskInt32Ref, mskRealRef };
+
+         for (size_t k = 0 ; k < sizeof(kinds)/sizeof(kinds[0]) ; k++) {
+            generator.emitData(c | kinds[k], (const unsigned char*)text, j + 1, &error);
+         }
+         constants++;
+      }
+      printf("constantes emitidas: %d\n", constants);
 
       printf("\ntraduzidas: %d, nao traduzidas: %d\n", translated, skipped);
 

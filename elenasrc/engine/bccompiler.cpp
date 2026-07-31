@@ -834,7 +834,16 @@ void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Modul
    ClassInfo info;
    info.load(&reader, false);
 
-   vmtWriter.write((void*)&info.header, sizeof(ClassHeader));
+   // Field by field, matching ClassInfo::save.
+   //
+   // This was a raw sizeof(ClassHeader) blit -- 12 bytes under ILP32 and 24
+   // under LP64, with the host's byte order. It is a SECOND copy of the class
+   // header, in the VMT section rather than the meta data section, and it was
+   // missed when ClassInfo was canonicalised. Anything parsing a VMT had to
+   // guess the header width to find the entries.
+   vmtWriter.writeU32LE((unsigned int)info.header.roleRef);
+   vmtWriter.writeU32LE((unsigned int)info.header.flags);
+   vmtWriter.writeU32LE((unsigned int)info.header.parentRef);
    vmtWriter.writeU32LE((unsigned int)info.classSize);
 
    // create debug info if debugModule available

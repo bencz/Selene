@@ -162,6 +162,78 @@ const char* LLVMGenerator :: targetName() const
    return impl->triple.c_str();
 }
 
+bool LLVMGenerator :: emitVMT(unsigned int reference, const unsigned int* messages,
+                              const char* const* methodNames, unsigned int count,
+                              const char** errorMessage)
+{
+   Impl* impl = (Impl*)_impl;
+
+   llvm::Type* i32   = llvm::Type::getInt32Ty(impl->context);
+   llvm::Type* ptr   = llvm::PointerType::get(impl->context, 0);
+   llvm::StructType* entry =
+      llvm::StructType::get(impl->context, { i32, ptr });
+
+   llvm::Type* method =
+      llvm::FunctionType::get(impl->resultType, { ptr, ptr }, false);
+
+   std::vector<llvm::Constant*> entries;
+   for (unsigned int i = 0 ; i < count ; i++) {
+      llvm::Constant* fn = llvm::cast<llvm::Constant>(
+         impl->module->getOrInsertFunction(
+            methodNames[i], (llvm::FunctionType*)method).getCallee());
+
+      entries.push_back(llvm::ConstantStruct::get(
+         entry, { llvm::ConstantInt::get(i32, messages[i]), fn }));
+   }
+
+   // Terminator. The table is ended rather than counted, which is what lets a
+   // VMT be walked without carrying its length.
+   entries.push_back(llvm::ConstantStruct::get(
+      entry, { llvm::ConstantInt::get(i32, 0x7FFFFFFFu),
+               llvm::ConstantPointerNull::get((llvm::PointerType*)ptr) }));
+
+   llvm::ArrayType* table = llvm::ArrayType::get(entry, entries.size());
+
+   char name[32];
+   snprintf(name, sizeof(name), "selene.ref.%08X", reference);
+
+   if (impl->module->getGlobalVariable(name))
+      return true;                                  // already emitted
+
+   new llvm::GlobalVariable(*impl->module, table, true,
+                            llvm::GlobalValue::ExternalLinkage,
+                            llvm::ConstantArray::get(table, entries), name);
+
+   (void)errorMessage;
+   return true;
+}
+
+bool LLVMGenerator :: emitData(unsigned int reference, const unsigned char* bytes,
+                               size_t length, const char** errorMessage)
+{
+   Impl* impl = (Impl*)_impl;
+
+   char name[32];
+   snprintf(name, sizeof(name), "selene.ref.%08X", reference);
+
+   if (impl->module->getGlobalVariable(name))
+      return true;
+
+   std::vector<llvm::Constant*> values;
+   llvm::Type* i8 = llvm::Type::getInt8Ty(impl->context);
+   for (size_t i = 0 ; i < length ; i++)
+      values.push_back(llvm::ConstantInt::get(i8, bytes[i]));
+
+   llvm::ArrayType* array = llvm::ArrayType::get(i8, length);
+
+   new llvm::GlobalVariable(*impl->module, array, true,
+                            llvm::GlobalValue::ExternalLinkage,
+                            llvm::ConstantArray::get(array, values), name);
+
+   (void)errorMessage;
+   return true;
+}
+
 bool LLVMGenerator :: optimize(int level, const char** errorMessage)
 {
    Impl* impl = (Impl*)_impl;
@@ -476,6 +548,12 @@ namespace
                targets.insert(t);
             }
             i += 1 + args * 4;
+
+            // ircall carries a third operand the generic argument count does
+            // not describe; skipping it here keeps this scan in step with the
+            // translation loop.
+            if (op == bcIRCall0 || op == bcIRCall1)
+               i += 4;
          }
          for (size_t t : targets) {
             if (t < length) {
@@ -830,8 +908,21 @@ namespace
             case bcIRCall0:
             case bcIRCall1:
             {
-               // Static dispatch: the receiver's class is known, so the message
-               // search starts from a named VMT rather than the object's own.
+               // Static dispatch takes THREE operands -- message, failure
+               // target and the VMT to search -- but the encoding carries only
+               // two. The x86 JIT reads the third straight off the tape
+               // (scope.tape->getU32LE()), so any decoder that stops at two
+               // arguments is four bytes out of step from here on.
+               //
+               // That is what made a VMT reference like 0x2100006D look like an
+               // opcode 6D: it is data, read as code.
+               unsigned int vmtRef = 0;
+               if (i + 4 <= length) {
+                  vmtRef = (unsigned int)code[i] | ((unsigned int)code[i+1] << 8)
+                         | ((unsigned int)code[i+2] << 16) | ((unsigned int)code[i+3] << 24);
+                  i += 4;
+               }
+
                llvm::Value* param    = pop();
                llvm::Value* receiver = pop();
                (void)param;
@@ -839,10 +930,10 @@ namespace
                llvm::Value* r = builder.CreateCall(
                   runtime("selene_send_static", impl.resultType,
                           { ptrTy(), i32Ty(), ptrTy() }),
-                  { receiver, llvm::ConstantInt::get(i32Ty(), a1), reference(a2) });
+                  { receiver, llvm::ConstantInt::get(i32Ty(), a1), reference(vmtRef) });
 
                push(builder.CreateExtractValue(r, 0));
-               emitFailureEdge(builder.CreateExtractValue(r, 1), 0);
+               emitFailureEdge(builder.CreateExtractValue(r, 1), a2);
                break;
             }
 
@@ -964,9 +1055,21 @@ namespace
                {
                   const char* n = getByteCodeName(op);
                   char msg[128];
+                  // Show the surrounding bytes: an unknown opcode is far more
+                  // often a decode that drifted than a genuinely new command,
+                  // and the context is what distinguishes the two.
+                  char context[220];
+                  size_t from = (here >= 40) ? here - 40 : 0;
+                  size_t p = 0;
+                  for (size_t b = from ; b < length && b < here + 12 && p < sizeof(context) - 8 ; b++) {
+                     p += snprintf(context + p, sizeof(context) - p,
+                                   (b == here) ? "[%02X]" : "%02X ", code[b]);
+                  }
+
                   snprintf(msg, sizeof(msg),
-                           "byte code '%s' (%02X: command %X, operand %X) is not translated yet",
-                           n ? n : "???", op, op >> 4, op & 0x0F);
+                           "'%s' (%02X: cmd %X, opr %X) at +%u/%u  ... %s",
+                           n ? n : "???", op, op >> 4, op & 0x0F,
+                           (unsigned int)here, (unsigned int)length, context);
                   error = msg;
 
                   return false;

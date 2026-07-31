@@ -270,7 +270,10 @@ void* ReferenceLoader :: loadBytecodeVMTSection(const TCHAR*  reference, int mas
 
    // read VMT header
    ClassHeader header;
-   vmtReader.read((void*)&header, sizeof(ClassHeader));
+   // Field by field: the writer emits three 32-bit words, not a struct image.
+   header.roleRef   = (ref_t)vmtReader.getU32LE();
+   header.flags     = (size_t)vmtReader.getU32LE();
+   header.parentRef = (ref_t)vmtReader.getU32LE();
 
    bool withAnyHandler = test(header.flags, elVMTAnyHandler);
 
@@ -310,7 +313,7 @@ void* ReferenceLoader :: loadBytecodeVMTSection(const TCHAR*  reference, int mas
 
    References      references(RefInfo(0, NULL));
    ReferenceHelper refHelper(this, sectionInfo.module, &references);
-   int             number = (size - sizeof(ClassHeader) - 4) >> 3;
+   int             number = (size - CLASSHEADER_DISK_SIZE - 4) >> 3;
    size_t          methodPosition;
    VMTEntry        entry;
    for (int i = 0 ; i < number ; i++) {
