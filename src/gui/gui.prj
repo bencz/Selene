@@ -6,9 +6,9 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
-graphics.l
-controls\properties.l
-controls.l
-forms.l
+graphics.sel
+controls\properties.sel
+controls.sel
+forms.sel
 
 

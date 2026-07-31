@@ -12,7 +12,7 @@ projecttype=2
 'mainwindow=calc'gui'calcwindow
 
 [files]
-math.l
-gui.l
-control.l
-parser.l
+math.sel
+gui.sel
+control.sel
+parser.sel

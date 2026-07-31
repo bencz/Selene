@@ -29,10 +29,11 @@ cmake_install.cmake
 /dat/sg/syntax.dat
 /syntax.dat
 
-# compiled ELENA modules and debug modules
+# compiled modules, debug modules and linked debug info
 /lib/
-*.nl
-*.dnl
+*.sem
+*.sdm
+*.sdi
 
 # assembled runtime primitives (output of asm2binx)
 /bin/*.bin

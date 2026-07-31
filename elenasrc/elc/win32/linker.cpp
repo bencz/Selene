@@ -629,7 +629,7 @@ void Linker :: run()
 
    if (_withDebugInfo) {
       LocalPath debugPath(path);
-      debugPath.changeExtension(_T("dn"));
+      debugPath.changeExtension(DEBUG_FILE_EXTENSION);
 
       if (!createDebugFile(debugPath))
          _project->raiseError(errCannotCreate, debugPath.asString());

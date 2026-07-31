@@ -9,17 +9,17 @@ debuginfo=-1
 warn:unresolved=0
 
 [files]
-configs.l
-game.l
-game\upndown.l
-engine.l
-engine\cards.l
-engine\net.l
-players.l
-players\net.l
-gui\forms.l
-net.l
-players\forms.l
+configs.sel
+game.sel
+game\upndown.sel
+engine.sel
+engine\cards.sel
+engine\net.sel
+players.sel
+players\net.sel
+gui\forms.sel
+net.sel
+players\forms.sel
 
 [forwards]
 'mainwindow=cardgame'gui'forms'playground

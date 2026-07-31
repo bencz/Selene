@@ -6,8 +6,8 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
-io.l
-text.l
-patterns.l
-utilities.l
+io.sel
+text.sel
+patterns.sel
+utilities.sel
 

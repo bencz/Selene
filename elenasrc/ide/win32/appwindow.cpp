@@ -137,7 +137,7 @@ _Module* AppDebugger :: loadDebugModule(const TCHAR* reference)
    LocalNamespace name((reference[0] == '$') ? reference + 1 : reference);
    LocalPath      path;
 
-   Settings::project.retrievePath(name, path, _T("dnl"));
+   Settings::project.retrievePath(name, path, DEBUG_MODULE_EXTENSION);
 
    Module* module = (Module*)_modules.get(name);
    if (module == NULL) {
@@ -1266,7 +1266,7 @@ bool AppWindow :: doSaveProject(bool saveAsMode)
 	  FileDialog dialog(this, FileDialog::ProjectFilter, _T("Save Project As"));
 	  Path       path;
 
-	  if (dialog.saveFile(_T("prj"), path)) {
+	  if (dialog.saveFile(PROJECT_EXTENSION, path)) {
          Settings::project.setName(path);
 
 		 setCaption(Settings::project.getName());
@@ -1413,7 +1413,7 @@ bool AppWindow :: doSave(int docIndex, bool saveAsMode)
       FileDialog dialog(this, FileDialog::SourceFilter, _T("Save File As"), Settings::project.getPath());
 
       Path newPath;
-	   if (dialog.saveFile(_T("l"), newPath)) {
+	   if (dialog.saveFile(SOURCE_EXTENSION, newPath)) {
          LocalReferenceName name;
          Settings::project.retrieveName(newPath, name);
 
@@ -1631,7 +1631,7 @@ void AppWindow :: doCompileProject(int postponedAction)
    doSaveAll(false);
    if (!Settings::project.isUnnamed()) {
 	  Path path(Settings::project.getPath(), Settings::project.getName());
-	  path.appendExtension(_T("prj"));
+	  path.appendExtension(PROJECT_EXTENSION);
 
       if (!compileProject(path, postponedAction))
          onCompilationEnd(_T("Could not start the compilation process"));
@@ -1662,9 +1662,9 @@ bool AppWindow :: loadModule(const TCHAR* name)
 	   Path path(Paths::packageRoot.asString());
 
       if (name[0]=='$') {
-         path.nameToPath(name + 1, _T("l"));
+         path.nameToPath(name + 1, SOURCE_EXTENSION);
       }
-      else path.nameToPath(name, _T("l"));
+      else path.nameToPath(name, SOURCE_EXTENSION);
 
       openFile(path, name);
    }
@@ -1726,7 +1726,7 @@ bool AppWindow :: isOutaged(bool noWarning)
       Path source(Settings::project.getPath(), it.key());
       Path module(Settings::project.getPath(), Settings::project.getOutputPath(), it.key());
 
-      module.changeExtension(_T("nl"));
+      module.changeExtension(MODULE_EXTENSION);
 
       DateTime sourceDT = DateTime::getFileTime(source);
       DateTime moduleDT = DateTime::getFileTime(module);
@@ -2038,7 +2038,7 @@ void AppWindow :: cleanUpProject()
       Path targetFile(Settings::project.getPath(), Settings::project.getTarget());
       removeFile(targetFile);
 
-      targetFile.changeExtension(_T("dn"));
+      targetFile.changeExtension(DEBUG_FILE_EXTENSION);
       removeFile(targetFile);
    }
    // clean module files
@@ -2057,12 +2057,12 @@ void AppWindow :: cleanUpProject()
       // remove module
       modulePath.copy(Settings::project.getPath());
       modulePath.combine(Settings::project.getOutputPath());
-      modulePath.nameToPath(name, _T("nl"));
+      modulePath.nameToPath(name, MODULE_EXTENSION);
 
       removeFile(modulePath);
 
       // remove debug info module
-      modulePath.changeExtension(_T("dnl"));
+      modulePath.changeExtension(DEBUG_MODULE_EXTENSION);
       removeFile(modulePath);
 
       it++;

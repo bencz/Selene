@@ -125,7 +125,7 @@ void Project :: saveModule(_Module* module)
    const TCHAR* outputPath = StrSetting(opOutputPath);
    LocalPath path(outputPath);
 
-   nameToPath(name, path, _T("nl"));
+   nameToPath(name, path, MODULE_EXTENSION);
 
    createPath(outputPath, path);
 
@@ -140,7 +140,7 @@ void Project :: saveDebugModule(_Module* module)
    const TCHAR* outputPath = StrSetting(opOutputPath);
    LocalPath path(outputPath);
 
-   nameToPath(name, path, _T("dnl"));
+   nameToPath(name, path, DEBUG_MODULE_EXTENSION);
 
    createPath(outputPath, path);
 
@@ -228,7 +228,7 @@ _Module* Project :: resolveModule(const TCHAR* referenceName, ref_t& reference, 
       _Module* module = _modules.get(name);
       if (!module) {
          LocalPath path;
-         path.nameToPath(name, _T("nl"));
+         path.nameToPath(name, MODULE_EXTENSION);
 
          module = loadModule(path, silentMode);
       }

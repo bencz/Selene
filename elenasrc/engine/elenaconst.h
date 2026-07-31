@@ -144,6 +144,20 @@ namespace _ELENA_
    #define THIS_VAR                _T("$self")         // the current class instance
    #define SUPER_VAR               _T("super")         // the predecessor class
 
+  //--------------------------------------------------------------------------
+  // File extensions
+  //
+  // Named here rather than spelled as literals at each use, so that renaming
+  // one is a single edit. The source extension in particular had to change:
+  // ".l" is the canonical extension for Lex/Flex, so editors, GitHub Linguist
+  // and build tools all misidentified Selene sources as lexer grammars.
+  //--------------------------------------------------------------------------
+   #define SOURCE_EXTENSION         _T("sel")          // Selene source
+   #define PROJECT_EXTENSION        _T("prj")          // project file
+   #define MODULE_EXTENSION         _T("sem")          // compiled module
+   #define DEBUG_MODULE_EXTENSION   _T("sdm")          // per-module debug info
+   #define DEBUG_FILE_EXTENSION     _T("sdi")          // linked debug info
+
   // --- ELENA Module structure constants ---
    #define ELENA_SIGNITURE          "ELENA.150"        // the language version
    #define MODULE_SIGNATURE         "EN!10"            // v1 magic (read-only, for diagnostics)
@@ -180,7 +194,7 @@ namespace _ELENA_
   //   See docs/plan/17-llvm-backend-and-targets.md section 3.
   //--------------------------------------------------------------------------
 
-   #define MODULE_MAGIC             "ELENA2NL"         // 8 bytes, no terminator
+   #define MODULE_MAGIC             "SELENE20"         // 8 bytes, no terminator
    #define MODULE_MAGIC_SIZE        8
    #define MODULE_HEADER_SIZE       32
    #define MODULE_FORMAT_VERSION    0x0200             // v2.0

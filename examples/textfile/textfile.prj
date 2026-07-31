@@ -11,5 +11,5 @@ warn:unresolved=0
 'program=viewer'program
 
 [files]
-viewer.l
+viewer.sel
 

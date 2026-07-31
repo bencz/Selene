@@ -16,7 +16,9 @@
 // --- ELC default file names ---
 #define DEFAULT_CONFIG              _T("elc.cfg")
 #define SYNTAX_FILE                 _T("syntax.dat")
-#define ELC_STANDARD_MODULE         _T("elena.nl")
+// Built from MODULE_EXTENSION rather than spelled out, so the extension is
+// defined in exactly one place (engine/elenaconst.h).
+#define ELC_STANDARD_MODULE         _T("elena.") MODULE_EXTENSION
 
 // --- ELC common constants ---
 #define ELC_MAJOR_VERSION            0x0002             // ELENA Enging version

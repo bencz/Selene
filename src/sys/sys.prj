@@ -6,6 +6,6 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
-templates.l
-events.l
+templates.sel
+events.sel
 

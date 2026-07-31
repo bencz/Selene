@@ -73,6 +73,27 @@ document is under `plan/`, which is explicitly forward-looking.
 - **`doc/tech/bytecode.txt` is wrong** — a pre-1.5 sketch omitting 12 of 40 opcodes and
   listing two that do not exist. Use `architecture/03` instead.
 
+## A note on file extensions
+
+Selene renamed the file extensions. `.l` had to go: it is the canonical
+extension for **Lex/Flex**, so editors, GitHub Linguist and build tools all
+classified the sources as lexer grammars.
+
+| Role | ELENA 1.5 | Selene |
+|---|---|---|
+| Source | `.l` | `.sel` |
+| Compiled module | `.nl` | `.sem` |
+| Per-module debug info | `.dnl` | `.sdm` |
+| Linked debug info | `.dn` | `.sdi` |
+| Project | `.prj` | `.prj` (unchanged) |
+| Module magic | `EN!10` | `SELENE20` |
+
+The **descriptive** documents below — everything under `architecture/`,
+`language/` and `porting/` — deliberately keep the original extensions, because
+they describe the 2009 system as it was and rewriting them would make the
+description inaccurate. Only `build/` and `plan/` use the new names, since those
+contain commands you actually run.
+
 ## Corrections to the original documentation
 
 | Original claim | Reality |

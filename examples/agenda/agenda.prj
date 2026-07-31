@@ -7,7 +7,7 @@ type=1
 warn:unresolved=0
 
 [files]
-gui.l
+gui.sel
 
 [forwards]
 'mainwindow=gui'window

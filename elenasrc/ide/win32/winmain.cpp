@@ -110,10 +110,10 @@ void saveSettings(AppWindow& appWindow)
 void setOption(const TCHAR* parameter)
 {
    if (parameter[0]!='-') {
-      if (Path::checkExtension(parameter, _T("l"))) {
+      if (Path::checkExtension(parameter, SOURCE_EXTENSION)) {
          Settings::defaultFiles.add(_ELENA_::strdup(parameter));
       }
-      else if (Path::checkExtension(parameter, _T("prj"))) {
+      else if (Path::checkExtension(parameter, PROJECT_EXTENSION)) {
          Settings::defaultProject.copy(parameter);
       }
    }

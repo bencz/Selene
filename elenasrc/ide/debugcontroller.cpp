@@ -381,7 +381,7 @@ bool DebugController :: start(const TCHAR* programPath, const TCHAR* arguments, 
 
    if (debugMode) {
       LocalPath debugDataPath(programPath);
-      debugDataPath.changeExtension(_T("dn"));
+      debugDataPath.changeExtension(DEBUG_FILE_EXTENSION);
 
       if (!loadDebugData(debugDataPath))
          return false;

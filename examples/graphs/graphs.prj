@@ -9,7 +9,7 @@ debuginfo=-1
 projecttype=2
 
 [files]
-graphs.l
+graphs.sel
 
 [forwards]
 'mainwindow=graphs'window

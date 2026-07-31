@@ -58,7 +58,7 @@ void _ELC_::Project :: cleanUp()
 
       name.pathToName(it.key());          // get a full name
 
-      nameToPath(name, path, _T("nl"));   // get a full path
+      nameToPath(name, path, MODULE_EXTENSION);   // get a full path
 
       removeFile(path);
    }

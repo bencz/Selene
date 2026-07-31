@@ -293,7 +293,7 @@ bool ProjectInfo :: open(const TCHAR* path)
 void ProjectInfo :: save()
 {
    Path cfgPath(_path, _name);
-   cfgPath.appendExtension(_T("prj"));
+   cfgPath.appendExtension(PROJECT_EXTENSION);
 
    _config.save(cfgPath, Settings::defaultEncoding);
 

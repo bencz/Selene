@@ -7,7 +7,7 @@ debuginfo=-1
 warn:unresolved=0
 
 [files]
-helloworld.l
+helloworld.sel
 
 [forwards]
 'program=helloworld'program

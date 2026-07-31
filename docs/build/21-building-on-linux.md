@@ -1,7 +1,7 @@
 # Building on Linux
 
 > **Status: working.** `sg` and `elc` build and run on Linux. The full standard
-> library (28 modules) and the examples compile to `.nl` bytecode.
+> library (28 modules) and the examples compile to `.sem` bytecode.
 >
 > **Linking is not available yet** — see §5.
 
@@ -17,7 +17,7 @@ cmake --build build -j
 cp dat/sg/syntax.dat bin/         # elc loads it from its own directory
 
 mkdir -p lib
-./bin/elc -lstd -olib src/elena.l                 # the root module
+./bin/elc -lstd -olib src/elena.sel                 # the root module
 ./bin/elc -csrc/std/std.prj
 ./bin/elc -csrc/sys/sys.prj
 ./bin/elc -csrc/ext/ext.prj
@@ -26,12 +26,12 @@ mkdir -p lib
 ./bin/elc -csrc/win32/socket/win32socket.prj
 ```
 
-Result: 28 `.nl` modules and 27 `.dnl` debug modules under `lib/`.
+Result: 28 `.sem` modules and 27 `.sdm` debug modules under `lib/`.
 
 Two things that are easy to get wrong:
 
 - **`-c` takes no space**: `-csrc/std/std.prj`, not `-c src/std/std.prj`.
-- **Do not pass `-g` when compiling `src/elena.l`.** The standard module must be
+- **Do not pass `-g` when compiling `src/elena.sel`.** The standard module must be
   built with no package option; passing one used to corrupt the output file name
   (see §4).
 
@@ -49,12 +49,12 @@ Two things that are easy to get wrong:
 
 ### The compat layer's one deliberate compromise
 
-`TCHAR` is `wchar_t`, which is **4 bytes on Linux and 2 on Windows**. So `.nl`
+`TCHAR` is `wchar_t`, which is **4 bytes on Linux and 2 on Windows**. So `.sem`
 modules produced on Linux are **not byte-compatible** with those produced on
 Windows — the string tables differ in character width, and the format records
 neither the width nor a version number, so a mismatch would go undetected.
 
-This is accepted for now because no prebuilt `.nl` exists anywhere, each
+This is accepted for now because no prebuilt `.sem` exists anywhere, each
 platform's toolchain is self-consistent, and the real fix is the planned UTF-8
 migration (P1) followed by module format v2 (P2).
 
@@ -78,10 +78,10 @@ Anyone porting this without checking would reasonably have concluded that
 - **`Link ... is unresolvable` warnings** during library compilation are normal.
   These are forward references resolved at link time.
 - **`win32.prj` must be compiled after `gui.prj`.** It depends on
-  `lib/gui/graphics.nl`. Compiling in the wrong order gives
+  `lib/gui/graphics.sem`. Compiling in the wrong order gives
   `error 201: Unknown module`.
 - **`.cfg` and `.prj` files keep Windows separators** (`libpath=..\lib`,
-  `basic\memory.l`). They are not rewritten, because those same strings are also
+  `basic\memory.sel`). They are not rewritten, because those same strings are also
   parsed by `pathToName()` to derive module names. Backslashes are normalised at
   the point a path becomes a syscall.
 
@@ -106,7 +106,7 @@ in the module* and are only resolved at link time.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `ELENA_32BIT` | `ON` | Required. The object model, bytecode operands and `.nl` format all assume 32-bit pointers; a 64-bit build produces 25 hard errors and silently different file formats |
+| `ELENA_32BIT` | `ON` | Required. The object model, bytecode operands and `.sem` format all assume 32-bit pointers; a 64-bit build produces 25 hard errors and silently different file formats |
 | `ELENA_BUILD_SG` | `ON` | Syntax generator |
 | `ELENA_BUILD_ELC` | `ON` | Compiler |
 | `ELENA_BUILD_ASM2BIN` | `${WIN32}` | Windows only, by design |
@@ -116,7 +116,7 @@ Requires 32-bit libstdc++ and glibc development packages.
 
 ## 7. Next
 
-1. **UTF-8 internally** (P1) — removes `TCHAR`, makes Linux and Windows `.nl`
+1. **UTF-8 internally** (P1) — removes `TCHAR`, makes Linux and Windows `.sem`
    identical, and eliminates byte-order concerns for the big-endian targets.
 2. **Module format v2** (P2) — explicit serialization, magic and version, slot
    indices instead of byte offsets. Blocks all codegen verification, so it is the
@@ -124,7 +124,7 @@ Requires 32-bit libstdc++ and glibc development packages.
 3. Only then the LLVM backend, which is what makes linking possible again — on
    every platform at once rather than one at a time.
 
-`syntax.dat` has the same defect class as `.nl`: no magic, no version, and it
+`syntax.dat` has the same defect class as `.sem`: no magic, no version, and it
 embeds `sizeof(size_t)` and `sizeof(TCHAR)` (`parsertable.cpp:208`). A 64-bit
 `sg` feeding a 32-bit `elc` loads garbage silently. Fixing that is ~10 lines and
 should happen before the 32→64-bit transition starts.

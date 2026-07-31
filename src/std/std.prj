@@ -6,11 +6,11 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
-properties.l
-basic.l
-basic\memory.l
-patterns.l
-collections.l
-basic\math.l
+properties.sel
+basic.sel
+basic\memory.sel
+patterns.sel
+collections.sel
+basic\math.sel
 
 

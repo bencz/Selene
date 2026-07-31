@@ -8,8 +8,8 @@ type=0
 warn:unresolved=0
 
 [files]
-main.l
-config.l
+main.sel
+config.sel
 
 [forwards]
 'entry=sys'starters'actionsequence

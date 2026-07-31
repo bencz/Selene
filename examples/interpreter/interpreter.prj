@@ -10,7 +10,7 @@ debuginfo=-1
 projecttype=1
 
 [files]
-interpreter.l
+interpreter.sel
 
 [forwards]
 'program=interpreter'program

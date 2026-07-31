@@ -6,13 +6,13 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
-api\constants.l
-api.l
-io.l
-system.l
-applications.l
-api\controls.l
-api\factories.l
-api\styles.l
-api\graphics.l
+api\constants.sel
+api.sel
+io.sel
+system.sel
+applications.sel
+api\controls.sel
+api\factories.sel
+api\styles.sel
+api\graphics.sel
 
