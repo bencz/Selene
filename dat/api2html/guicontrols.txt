@@ -1,0 +1,350 @@
+[#general#]
+#name=gui'controls
+#shortdescr=Provides basic GUI controls
+
+[#list#]
+button
+changeaction
+clickaction
+closeaction
+combobox
+commandaction
+container
+control
+edit
+groupbox
+keypressedaction
+imagebox
+indexer
+initaction
+innergroupbox
+innerradiobutton
+innerstaticframe
+innerstaticlabel
+lbuttonaction
+listbox
+panel
+paintaction
+paintbox
+radiobutton
+radiobuttongroup
+resizeaction
+staticframe
+staticlabel
+statusbar
+updown
+
+[container]
+#title=Class Container
+#shortdescr=A common control container
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#protocol=guiprotocol.html#gui_container:gui_container
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[control]
+#title=Class Control
+#shortdescr=A common control
+#parent=elena.html#object:Object
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[staticframe]
+#title=Class StaticFrame
+#shortdescr=A static frame
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[staticlabel]
+#title=Class StaticLabel
+#shortdescr=A static label
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[groupbox]
+#title=Class GroupBox
+#shortdescr=A group box
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[innerstaticframe]
+#title=Class InnerStaticFrame
+#shortdescr=An inner static frame
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#staticframe:gui'controls'StaticFrame
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[innerstaticlabel]
+#title=Class InnerStaticLabel
+#shortdescr=An inner static label
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#staticlabel:gui'controls'StaticLabel
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[innergroupbox]
+#title=Class InnerGroupBox
+#shortdescr=An inner group box
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#groupbox:gui'controls'GroupBox
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[edit]
+#title=Class Edit
+#shortdescr=An edit box
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#protocol=variable
+#protocol=std_literal
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=<<,std_literal;Sets the edit text
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[updown]
+#title=Class Updown
+#shortdescr=A Updown control
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[button]
+#title=Class Button
+#shortdescr=A button
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[radiobutton]
+#title=Class RadioButton
+#shortdescr=A  radio button
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#button:gui'controls'Button
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[innerradiobutton]
+#title=Class InnerRadioButton
+#shortdescr=An inner radio button
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#button:gui'controls'Button
+#parent=#radiobutton:gui'controls'RadioButton
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[combobox]
+#title=Class Combobox
+#shortdescr=A combobox
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[listbox]
+#title=Class Listbox
+#shortdescr=A listbox
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[statusbar]
+#title=Class StatusBar
+#shortdescr=A status bar
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[panel]
+#title=Class Panel
+#shortdescr=A panel
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#container:gui'controls'Container
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#protocol=guiprotocol.html#gui_container:gui_container
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[radiobuttongroup]
+#title=Class RadioButtonGroup
+#shortdescr=A radio button group
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#container:gui'controls'Container
+#protocol=variable
+#protocol=std_int
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#protocol=guiprotocol.html#gui_container:gui_container
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[paintbox]
+#title=Class Paintbox
+#shortdescr=A paint box
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[imagebox]
+#title=Class Imagebox
+#shortdescr=An image box
+#parent=elena.html#object:Object
+#parent=#control:gui'controls'Control
+#parent=#paintbox:gui'controls'PaintBox
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;The event controller
+#field=thehandle;The control handle
+#field=theparent;The parent container
+#method=new,guiprotocol.html#gui_container;Creates the control and adds it to the parent if presented
+
+[indexer]
+#title=A class Indexer
+#shortdescr=A base control indexer adapter
+#parent=elena.html#object:Object
+#protocol=std_indexer
+#field=theindex;The index
+
+[paintaction]
+#title=Class PaintAction
+#shortdescr=A paint action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[clickaction]
+#title=Class ClickAction
+#shortdescr=A click action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[changeaction]
+#title=Class ChangeAction
+#shortdescr=A change action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[commandaction]
+#title=Class CommandAction
+#shortdescr=A command action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[keypressedaction]
+#title=Class KeyPressedAction
+#shortdescr=A key pressed action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[lbuttonaction]
+#title=Class LButtonAction
+#shortdescr=A left mouse button clicked action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[closeaction]
+#title=Class CloseAction
+#shortdescr=A close action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[initaction]
+#title=Class InitAction
+#shortdescr=An init action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event
+
+[resizeaction]
+#title=Class ResizeAction
+#shortdescr=A resize action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Raises the control event

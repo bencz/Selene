@@ -1,0 +1,168 @@
+[#general#]
+#name=std'patterns
+#shortdescr=Provides classes that describe the basic patterns
+
+[#list#]
+agent
+break
+control
+countaction
+counter
+copyaction
+decrimentloop
+dynamicgroup
+dynamiccast
+eiteration
+getmaxaction
+keycomparator
+positiveresult
+searchaction
+searchagent
+validateaction
+validateagent
+variable
+
+[counter]
+#title=Symbol Counter
+#shortdescr=A counter property<br>Returns the number of collection items
+#method=new,std_enumerable,std_int;Calculates the number of collection items
+
+[countaction]
+#title=Class CountAction
+#shortdescr=A counting action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecounter;The counter
+#method=proceed,object;Increments the counter by one.<br>Should be used with one of loop patterns
+
+[break]
+#title=Symbol Break
+#shortdescr=A break symbol
+#protocol=value
+#method===,object,bool;Returns a true value if the object is a break symbol, false otherwise
+#method=!=,object,bool;Returns a true value if the object is not a break symbol, true otherwise
+
+[decrimentloop]
+#title=class DecrimentLoop
+#shortdescr=A decriment loop
+#parent=elena.html#object:Object
+#protocol=pattern
+#field=thecounter;The counter
+#method=new,std_int;Assign the repeation number
+#method=run,action;Repeats the action until the counter is bigger then zero
+
+[searchaction]
+#title=Class SearchAction
+#shortdescr=A Search action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thesearchingvalue;The searching value
+#field=thefoundvalue;The found value
+#method=new,value;Assigns the searching value
+#method=proceed,object;Compares the search value with collection item. If they are equal breaks the execution.<br>Should be used with one of loop patterns
+
+[searchagent]
+#title=Class SearchAgent
+#shortdescr=A Search agent
+#parent=elena.html#object:Object
+#protocol=action
+#protocol=value
+#field=thecollection;The searching collection
+#method===,value;Returns true if there is a collection item which equals to the operand otherwise false.
+#method=!=,value;Returns true if there is no collection item which equals to the operand otherwise false.
+#method=new,std_enumerable;Assigns the searching collection
+#method=proceed,value,object;Compares the search value with collection items. If one of them is equal to the operand breaks the execution and returns this item
+
+[positiveresult]
+#title=Symbol PositiveResult
+#shortdescr=A positive result symbol
+#protocol=value
+#method===,object;Returns true if the operand action was successful
+
+[control]
+#title=Symbol Control
+#shortdescr=A flow control symbol
+#method=run,action;Executes the action
+
+[eiteration]
+#title=Symbol EIteration
+#shortdescr=An iteration extension
+#protocol=pattern
+#protocol=std_iterator
+#method=run,action;Executes the action for every iteration step
+
+[dynamicgroup]
+#title=Symbol DynamicGroup
+#shortdescr=A dynamic group extension
+#protocol=collection
+#protocol=std_group
+#method=+=,object;Adds an object to the group
+
+[dynamiccast]
+#title=Symbol DynamicCast
+#shortdescr=A dynamic broadcasting group extension
+#protocol=collection
+#protocol=std_group
+#method=+=,object;Adds an object to the broadcasting group
+
+[validateaction]
+#title=Class ValidateAction
+#shortdescr=A validating action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thevalidator;The validator
+#method=new,value;Assigns the validator
+#method=proceed,object;Validates the collection item. If message validate fails breaks the execution.<br>Should be used with one of loop patterns
+
+[keycomparator]
+#title=Class KeyComparator
+#shortdescr=A key comparator action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecollection;The validating collection
+#method=std'patterns'$key,,value;Returns the searching key value.<br/><b>Should be overridden</b>
+#method=proceed,keyvalue;Compares the searching value with collection item. If the item key value is equal to the searching one breaks the execution.<br>Should be used with one of loop patterns
+
+[getmaxaction]
+#title=Class GetMaxAction
+#shortdescr=A finding maximum value action
+#parent=elena.html#object:Object
+#protocol=action
+#field=themaxvalue;The maximal value
+#method=new,object;Sets the initial maximal value
+#method=proceed,magnitude;Compares the searching value with the maximal one. If the value is bigger replaces it
+
+[copyaction]
+#title=Class CopyAction
+#shortdescr=A stream transfer action
+#parent=elena.html#object:Object
+#protocol=action
+#field=thebuffer;The transfer buffer
+#field=thewriter;The stream writer
+#method=new,std_stream;Initialized the stream writer
+#method=proceed,stream;Reads the data from provided stream and writes it into the destination writer
+
+[variable]
+#title=Class Variable
+#shortdescr=An object container
+#parent=elena.html#object:Object
+#field=thevalue;The content
+#method=new,object;Assigns the container
+
+[validateagent]
+#title=Class ValidateAgent
+#shortdescr=A validate agent
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecollection;The validating collection
+#method=new,std_enumerable;Assigns the validating collection
+#method=proceed,object,bool;Validates the collection items. If one of them invalid breaks the execution and returns true otherwise false
+
+[agent]
+#title=Class Agent
+#shortdescr=A pattern agent
+#parent=elena.html#object:Object
+#protocol=action
+#field=thecollection;The validating collection
+#method=new,std_enumerable;Assigns the validating collection
+#method=proceed,object,bool;Executes the action for every collection item and returns the result

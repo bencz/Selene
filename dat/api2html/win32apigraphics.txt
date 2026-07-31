@@ -1,0 +1,37 @@
+[#general#]
+#name=win32'api'graphivs
+#shortdescr=Provides the graphical wrappers
+
+[#list#]
+canvas
+bitmap
+brushtype
+imagetype
+pentype
+
+[canvas]
+#title=Class Canvas
+#shortdescr=A Canvas wrapper class
+#parent=elena.html#object:Object
+
+[imagetype]
+#title=Symbol ImageType
+#shortdescr=An image type
+#method=create,object,win32protocol.html#win32_handle;Creates an image
+
+[brushtype]
+#title=Symbol BrushType
+#shortdescr=A brush type
+#method=create,object,win32protocol.html#win32_handle;Creates a brush
+
+[pentype]
+#title=Symbol PenType
+#shortdescr=A pen type
+#method=create,object,win32protocol.html#win32_handle;Creates a pen
+
+[bitmap]
+#title=Class Bitmap
+#shortdescr=A bitmap wrapper class
+#parent=elena.html#object:Object
+#parent=win32api.html#hbitmap:win32'api'HBITMAP
+

@@ -1,0 +1,61 @@
+[#general#]
+#name=win32'socket'Controls
+#shortdescr=Provides classes that implements the socket input / output operations
+
+[#list#]
+customsocketstyles
+customsocket
+serversocket
+clientsocket
+remotesocket
+port
+ipaddress
+
+[customsocketstyles]
+#title=Symbol CustomSocketStyles
+#shortdescr=A socket style
+
+[customsocket]
+#title=Class CustomSocket
+#shortdescr=A base socket class
+#parent=elena.html#object:Object
+#protocol=std_stream
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#method=new,object;Initializes the object
+#method=close,,;Closes the socket
+
+[serversocket]
+#title=Class CustomSocket
+#shortdescr=A server socket class
+#parent=elena.html#object:Object
+#parent=customsocket:win32'socket'CustomSocket
+#protocol=std_stream
+#protocol=std_array
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#method=new,object;Initializes the object
+#method=close,,;Closes the socket
+
+[clientsocket]
+#title=Class ClientSocket
+#shortdescr=A client socket class
+#parent=elena.html#object:Object
+#parent=customsocket:win32'socket'CustomSocket
+#protocol=std_stream
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#method=new,object;Initializes the object
+#method=close,,;Closes the socket
+
+[remotesocket]
+#title=Class RemoteSocket
+#shortdescr=A remote socket class
+#parent=elena.html#object:Object
+#method=new,object;Initializes the object
+#method=close,,;Closes the socket
+
+[Port]
+#title=Symbol Port
+#shortdescr=A port property
+
+[IPAddress]
+#title=Symbol IPAddress
+#shortdescr=An IP address property

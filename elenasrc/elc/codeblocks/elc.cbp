@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="elc" />
+		<Option pch_mode="0" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="default">
+				<Option output="..\..\..\bin\elc.exe" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="..\..\..\bin" />
+				<Option object_output="..\temp" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-cD:\Alex\PROJECTS\elena.2\examples\sample1\sample.prj" />
+				<Option projectResourceIncludeDirsRelation="1" />
+				<Compiler>
+					<Add option="-march=pentium2" />
+					<Add option="-O3" />
+					<Add option="-W" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-Dmingw49" />
+					<Add directory=".." />
+					<Add directory="..\..\common" />
+					<Add directory="..\win32" />
+					<Add directory="..\..\engine" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="default;" />
+		</VirtualTargets>
+		<Linker>
+			<Add option="-s" />
+		</Linker>
+		<Unit filename="..\..\common\altstrings.cpp" />
+		<Unit filename="..\..\common\altstrings.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\common.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\config.cpp" />
+		<Unit filename="..\..\common\config.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\dump.cpp" />
+		<Unit filename="..\..\common\dump.h" />
+		<Unit filename="..\..\common\files.cpp" />
+		<Unit filename="..\..\common\files.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\lists.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\streams.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\tools.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\compiler.cpp" />
+		<Unit filename="..\compiler.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\derivation.cpp" />
+		<Unit filename="..\derivation.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\dfa.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\elc.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\errors.h" />
+		<Unit filename="..\parser.cpp" />
+		<Unit filename="..\parser.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\parsertable.cpp" />
+		<Unit filename="..\parsertable.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\project.cpp" />
+		<Unit filename="..\project.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\source.cpp" />
+		<Unit filename="..\source.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\syntax.h" />
+		<Unit filename="..\win32\elc.cpp" />
+		<Unit filename="..\win32\linker.cpp" />
+		<Unit filename="..\win32\linker.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\x86opcodes.h ">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\engine\bccompiler.cpp" />
+		<Unit filename="..\..\engine\bccompiler.h" />
+		<Unit filename="..\..\engine\bytecode.cpp" />
+		<Unit filename="..\..\engine\bytecode.h" />
+		<Unit filename="..\..\engine\elena.h" />
+		<Unit filename="..\..\engine\elenaconst.h" />
+		<Unit filename="..\..\engine\jitcompiler.cpp" />
+		<Unit filename="..\..\engine\jitcompiler.h" />
+		<Unit filename="..\..\engine\jitlinker.cpp" />
+		<Unit filename="..\..\engine\jitlinker.h" />
+		<Unit filename="..\..\engine\module.cpp" />
+		<Unit filename="..\..\engine\module.h" />
+		<Unit filename="..\..\engine\section.cpp" />
+		<Unit filename="..\..\engine\section.h" />
+		<Unit filename="..\..\engine\win32\x86helper.cpp" />
+		<Unit filename="..\..\engine\win32\x86helper.h" />
+		<Unit filename="..\..\engine\win32\x86jitcompiler.cpp" />
+		<Unit filename="..\..\engine\win32\x86jitcompiler.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

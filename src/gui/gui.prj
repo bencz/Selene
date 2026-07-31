@@ -1,0 +1,14 @@
+[project]
+output=..\..\lib\gui
+package=gui
+projecttype=0
+warn:unresolved=-1
+debuginfo=-1
+
+[files]
+graphics.l
+controls\properties.l
+controls.l
+forms.l
+
+

@@ -1,0 +1,13 @@
+[project]
+output=..\..\lib\ext
+package=ext
+projecttype=0
+warn:unresolved=-1
+debuginfo=-1
+
+[files]
+io.l
+text.l
+patterns.l
+utilities.l
+

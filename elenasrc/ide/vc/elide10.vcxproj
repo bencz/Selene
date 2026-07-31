@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>elide</ProjectName>
+    <ProjectGuid>{B0C65195-DB0F-4965-BDFF-B0CB5C19C72D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.21006.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\bin\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\temp\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\elc;..\..\common;..;..\win32;..\..\engine;..\..\idecommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>comctl32.lib shlwapi.lib %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>$(OutDir)elide.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)elide.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)elide.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\pluginmanager.cpp" />
+    <ClCompile Include="..\win32\accelerator.cpp" />
+    <ClCompile Include="..\..\common\altstrings.cpp" />
+    <ClCompile Include="..\win32\appwindow.cpp" />
+    <ClCompile Include="..\browser.cpp" />
+    <ClCompile Include="..\..\common\config.cpp" />
+    <ClCompile Include="..\debugcontroller.cpp" />
+    <ClCompile Include="..\win32\debugger.cpp" />
+    <ClCompile Include="..\win32\dialogs.cpp" />
+    <ClCompile Include="..\document.cpp" />
+    <ClCompile Include="..\..\common\dump.cpp" />
+    <ClCompile Include="..\win32\editframe.cpp" />
+    <ClCompile Include="..\..\common\files.cpp" />
+    <ClCompile Include="..\win32\idecommon.cpp" />
+    <ClCompile Include="..\ideproject.cpp" />
+    <ClCompile Include="..\idesettings.cpp" />
+    <ClCompile Include="..\layout.cpp" />
+    <ClCompile Include="..\win32\listview.cpp" />
+    <ClCompile Include="..\win32\menu.cpp" />
+    <ClCompile Include="..\messagelog.cpp" />
+    <ClCompile Include="..\..\engine\module.cpp" />
+    <ClCompile Include="..\win32\output.cpp" />
+    <ClCompile Include="..\..\engine\section.cpp" />
+    <ClCompile Include="..\sourcedoc.cpp" />
+    <ClCompile Include="..\win32\splitter.cpp" />
+    <ClCompile Include="..\win32\statusbar.cpp" />
+    <ClCompile Include="..\win32\tabbar.cpp" />
+    <ClCompile Include="..\text.cpp" />
+    <ClCompile Include="..\win32\toolbar.cpp" />
+    <ClCompile Include="..\win32\treeview.cpp" />
+    <ClCompile Include="..\win32\window.cpp" />
+    <ClCompile Include="..\win32\winmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\pluginmanager.h" />
+    <ClInclude Include="..\win32\accelerator.h" />
+    <ClInclude Include="..\..\common\altstrings.h" />
+    <ClInclude Include="..\win32\appwindow.h" />
+    <ClInclude Include="..\browser.h" />
+    <ClInclude Include="..\..\common\common.h" />
+    <ClInclude Include="..\..\common\config.h" />
+    <ClInclude Include="..\debugcontroller.h" />
+    <ClInclude Include="..\win32\debugger.h" />
+    <ClInclude Include="..\win32\dialogs.h" />
+    <ClInclude Include="..\document.h" />
+    <ClInclude Include="..\..\common\dump.h" />
+    <ClInclude Include="..\win32\editframe.h" />
+    <ClInclude Include="..\..\engine\elena.h" />
+    <ClInclude Include="..\..\engine\elenaconst.h" />
+    <ClInclude Include="..\..\common\files.h" />
+    <ClInclude Include="..\win32\idecommon.h" />
+    <ClInclude Include="..\ideconst.h" />
+    <ClInclude Include="..\ideproject.h" />
+    <ClInclude Include="..\idesettings.h" />
+    <ClInclude Include="..\layout.h" />
+    <ClInclude Include="..\..\common\lists.h" />
+    <ClInclude Include="..\win32\listview.h" />
+    <ClInclude Include="..\win32\menu.h" />
+    <ClInclude Include="..\messagelog.h" />
+    <ClInclude Include="..\..\engine\module.h" />
+    <ClInclude Include="..\win32\output.h" />
+    <ClInclude Include="..\..\engine\section.h" />
+    <ClInclude Include="..\sourcedoc.h" />
+    <ClInclude Include="..\win32\splitter.h" />
+    <ClInclude Include="..\win32\statusbar.h" />
+    <ClInclude Include="..\..\common\streams.h" />
+    <ClInclude Include="..\win32\tabbar.h" />
+    <ClInclude Include="..\text.h" />
+    <ClInclude Include="..\win32\toolbar.h" />
+    <ClInclude Include="..\..\common\tools.h" />
+    <ClInclude Include="..\win32\treeview.h" />
+    <ClInclude Include="..\win32\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\icons\closeAll.bmp" />
+    <None Include="..\icons\closeFile.bmp" />
+    <None Include="..\icons\copy.bmp" />
+    <None Include="..\icons\cut.bmp" />
+    <None Include="..\icons\elgui.ico" />
+    <None Include="..\icons\newFile.bmp" />
+    <None Include="..\icons\openFile.bmp" />
+    <None Include="..\icons\paste.bmp" />
+    <None Include="..\icons\redo.bmp" />
+    <None Include="..\icons\run.bmp" />
+    <None Include="..\icons\saveAll.bmp" />
+    <None Include="..\icons\saveFile.bmp" />
+    <None Include="..\icons\stop.bmp" />
+    <None Include="..\icons\undo.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\ide.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

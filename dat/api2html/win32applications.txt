@@ -1,0 +1,15 @@
+[#general#]
+#name=win32'application
+#shortdescr=Provides classes that control the flow of programs with GUI 
+
+[#list#]
+sdiapp
+
+[sdiapp]
+#title=Symbol SDIApp
+#shortdescr=A SDI application symbol.
+#protocol=action
+#field=themainwindow;The main window
+#method=continue,,;Process the current message and returns.
+#method=exit,std_int;Quits the application.
+#method=proceed,,;Starts the application.

@@ -1,0 +1,120 @@
+[#general#]
+#name=gui'forms
+#shortdescr=Provides basic GUI forms
+
+[#list#]
+brush
+drawing
+image
+imagelist
+pen
+plotter
+point
+pointtype
+pointvar
+rectangle
+size
+sizetype
+sizevar
+
+[point]
+#title=Class Point
+#shortdescr=A 2D coordinate
+#parent=elena.html#object:Object
+#protocol=guiprotocol.html#gui_point:gui_point
+#method=-,guiprotocol.html#gui_point,guiprotocol.html#gui_point;Returns the sum of two coordinates
+#method=+,guiprotocol.html#gui_point,guiprotocol.html#gui_point;Returns the difference of two coordinates
+#method=x,,std_int;Returns X coordinate.<br>Should be overridden
+#method=y,,std_int;Returns Y coordinate.<br>Should be overridden
+
+[size]
+#title=Class Size
+#shortdescr=A 2D size
+#parent=elena.html#object:Object
+#protocol=guiprotocol.html#gui_size:gui_size
+#method=height,,std_int;Returns a height.<br>Should be overridden
+#method=width,,std_int;Returns a width.<br>Should be overridden
+
+[pointvar]
+#title=Class PointVar
+#shortdescr=A 2D coordinate variable
+#parent=elena.html#object:Object
+#parent=#point:gui'graphics'Point
+#protocol=arithmetic_variable
+#protocol=guiprotocol.html#gui_point:gui_point
+#methpd=<<,guiprotocol.html#gui_point;Copies the coordinates
+#methpd=+=,guiprotocol.html#gui_point;Adds the coordinates
+#methpd=-=,guiprotocol.html#gui_point;Subtracts the coordinates
+#method=-,guiprotocol.html#gui_point,guiprotocol.html#gui_point;Returns the sum of two coordinates
+#method=+,guiprotocol.html#gui_point,guiprotocol.html#gui_point;Returns the difference of two coordinates
+#method=x,,std_int;Returns X coordinate.<br>Should be overridden
+#method=y,,std_int;Returns Y coordinate.<br>Should be overridden
+
+[rectangle]
+#title=Class Rectangle
+#shortdescr=A rectangle
+#parent=elena.html#object:Object
+#method=from,,point;Returns the top left coordinates
+#method=height,,std_int;Returns a height
+#method=isvalid,point;Checks if the point within the rectangle
+#method=till,,point;Returns the bottom right coordinates
+#method=width,,std_int;Returns a width
+#method=x,,std_int;Returns X coordinate
+#method=y,,std_int;Returns Y coordinate
+
+[size]
+#title=Class SizeVar
+#shortdescr=A 2D size variable
+#parent=elena.html#object:Object
+#protocol=variable
+#protocol=guiprotocol.html#gui_size:gui_size
+#method=<<,size;Copies the size
+#method=height,,std_int;Returns a height.<br>Should be overridden
+#method=width,,std_int;Returns a width.<br>Should be overridden
+
+[pointtype]
+#title=Symbol PointType
+#shortdescr=A point helper.
+#protocol=typecaster
+#method=of,object,object;Returns the point value
+
+[sizetype]
+#title=Symbol SizeType
+#shortdescr=A size helper.
+#protocol=typecaster
+#method=of,object,object;Returns the size value
+
+[image]
+#title=Class Image
+#shortdescr=An image
+#parent=elena.html#object:Object
+#method=new,object;Assigns the image
+
+[brush]
+#title=Class Brush
+#shortdescr=A brush
+#parent=elena.html#object:Object
+#method=new,object;Assigns the brush
+
+[pen]
+#title=Class Pen
+#shortdescr=A pen
+#parent=elena.html#object:Object
+#method=new,object;Assigns the pen
+
+[drawing]
+#title=Class Drawing
+#shortdescr=A drawing helper
+#parent=elena.html#object:Object
+#method=<<,point;Sets the caret
+#method=+=,point;Adds to the caret
+#method=-=,point;Subtracts from the caret
+#method=new,object;Assigns the canvas
+#method=proceed,object;Draws the figure
+
+[plotter]
+#title=Class Plotter
+#shortdescr=A plotter helper
+#parent=elena.html#object:Object
+#method=<<,point;Sets the caret
+#method=proceed,point;Draws the line from the caret position to the provided one and moves the caret to the new position

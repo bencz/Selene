@@ -1,0 +1,357 @@
+// --- namespace shortcuts ---
+#define basic'* = std'basic'*.
+#define prop'*  = std'properties'*.
+#define ctrl'*  = std'patterns'*.
+#define mem'*   = std'basic'memory'*.
+
+// === Pattern actions ===
+
+// --- CountAction ---
+
+#class CountAction 
+{
+    #field theCounter.
+
+    #method new
+    [
+        theCounter := basic'Integer << 0.
+    ]
+
+    #method proceed
+    [
+        theCounter += 1.
+    ]
+
+    #method $getResult = theCounter.
+}
+
+// --- SearchAction ---
+
+#class SearchAction
+{
+    #field theSearchingValue.
+    #field theFoundValue.
+
+    #role Found
+    {
+        #method $getResult = theFoundValue.
+
+        #method $ifPositive []
+    }
+
+    #method new : aValue
+    [
+        theSearchingValue := aValue.
+    ]
+
+    #method proceed : aValue
+    [
+        #if(theSearchingValue==aValue)?
+        [
+            theFoundValue := aValue.
+            #shift Found.
+
+            ^ ctrl'Break.
+        ].
+    ]
+}
+
+// --- ValidateAction ---
+
+#class ValidateAction
+{
+    #field theValidator.
+
+    #role Invalid
+    {
+        #method $ifPositive [ self fail. ]
+
+        #method proceed = ctrl'Break.
+
+        #method new : aValidator
+        [
+            #shift.
+
+            self new:aValidator.
+        ]
+    }
+
+    #method $ifPositive []
+
+    #method proceed : anObject
+    [
+        #if theValidator validate:anObject
+            | [ #shift Invalid. ].
+    ]
+
+    #method new : aValidator
+    [
+        theValidator := aValidator.
+    ]
+}
+
+// --- KeyComparator ---
+
+#class KeyComparator
+{
+    #field theKey.
+
+    #method new : aValue
+    [
+        theKey := prop'ContentKey::aValue.
+    ]
+
+    #method == aValue
+    [
+        ^ (theKey == prop'ContentKey::aValue).
+    ]
+}
+
+// --- GetMaxAction ---
+
+#class GetMaxAction
+{
+    #field theMaxValue.
+
+    #method new : aValue
+    [
+        theMaxValue := aValue.
+    ]
+
+    #method $getResult = theMaxValue.
+
+    #method proceed : aValue
+    [
+        #if(theMaxValue < aValue)?
+        [
+            theMaxValue << aValue.
+        ].
+    ]
+}
+
+// --- CopyAction ---
+
+#class CopyAction
+{
+    #field theWriter.
+    #field theBuffer.
+
+    #method $getBufferSize = 64.
+
+    #method new : aStream
+    [
+        theWriter := prop'Writer::aStream.
+        theBuffer := mem'Buffer::{ Length = self $getBufferSize. }.
+    ]
+
+    #method proceed : aStream
+    [
+        #var aReader := prop'Reader::aStream.
+
+        #loop aReader >> theBuffer
+        [
+            theWriter << theBuffer.
+        ].
+    ]
+}
+
+// === Pattern processes ===
+
+// --- Counter ---
+
+#symbol Counter : aCollection
+    = prop'Enumerator::aCollection run:CountAction $getResult.
+
+// --- DecrimentLoop ---
+
+#class DecrimentLoop
+{
+    #field theCounter.
+
+    #method new : aCounter
+    [
+        theCounter := basic'Integer::aCounter.
+    ]
+
+    #method run : anAction
+    [
+        #loop(theCounter > 0)?
+        [
+            anAction proceed:theCounter.
+
+            theCounter -= 1.
+        ].
+    ]
+}
+
+// --- SearchAgent ---
+
+#class SearchAgent
+{
+    #field theCollection.
+
+    #method new : aCollection
+    [
+        theCollection := aCollection.
+    ]
+
+    #method proceed : aValue
+    [
+        ^ prop'Enumerator::theCollection run:ctrl'SearchAction::aValue $getResult.
+    ]
+
+    #method == aValue
+    [
+        ^ (ctrl'PositiveResult == prop'Enumerator::theCollection run:ctrl'SearchAction::aValue).
+    ]
+
+    #method != aValue
+    [
+        (self == aValue) not.
+    ]
+}
+
+// --- ValidateAgent ---
+
+#class ValidateAgent
+{
+    #field theCollection.
+
+    #method new : aCollection
+    [
+        theCollection := aCollection.
+    ]
+
+    #method proceed : aValidator
+    [
+        ^ (ctrl'PositiveResult == prop'Enumerator::theCollection run:ctrl'ValidateAction::aValidator).
+    ]
+}
+
+// --- Agent ---
+
+#class Agent
+{
+    #field theCollection.
+
+    #method prop'$Owner = theCollection.
+
+    #method new : aCollection
+    [
+        theCollection := aCollection.
+    ]
+
+    #method proceed : anAction
+    [
+        ^  prop'Enumerator::theCollection run:anAction $getResult.
+    ]
+}
+
+// === Patterns symbols ===
+
+#symbol Break =
+{
+    $ifBreak []
+
+    == anObject 
+    [ 
+        ^ anObject $ifBreak back:basic'True | back:basic'False.
+    ]
+
+    != anObject 
+    [ 
+        ^ anObject $ifBreak back:basic'False | back:basic'True.
+    ]
+}.
+
+// --- PositiveResult ---
+
+#symbol PositiveResult 
+    = { == aResult [ ^ aResult $ifPositive back:basic'True | back:basic'False. ] }.
+
+// --- Control ---
+
+#symbol Control =
+{
+    run : anAction = anAction proceed.
+
+    if []
+}.
+
+// --- Variable ---
+
+#class Variable
+{
+    #field theValue.
+
+    #method new : aValue
+    [
+        #if aValue ifNotNil
+        [
+            theValue := aValue.
+        ].
+    ]
+
+    #annex theValue.
+}
+
+// === Pattern extensions ===
+
+// --- EIteration ---
+
+#symbol EIteration =
+{
+    run : anAction
+    [
+        #var anIterator := self $getIterator.
+
+        #if(ctrl'Break == anAction proceed:(self $getCurrent:anIterator))?
+            [ ^ anAction. ].
+
+        #loop self $step:anIterator
+        [
+            #if(ctrl'Break == anAction proceed:(self $getCurrent:anIterator))?
+                [ ^ anAction. ].
+        ].
+
+        ^ anAction.        
+    ]
+}.
+
+#symbol DynamicGroup =
+{
+    += anObject
+    [
+        #var aGroup := self $getGroup | back:(#inline standard'39(#type group, nil, 2)).
+
+        #if Control ifNotNil:(#inline standard'44(aGroup, nil, anObject))
+        | [
+            #var aLength := #inline standard'43(basic'IntNumber, aGroup).
+            #var aNewGroup := #inline standard'39(#type group, nil, aLength + 4).
+
+            #inline standard'45 (aNewGroup, aGroup).
+            #inline standard'44 (aNewGroup, nil, anObject).
+
+            self $setGroup:aNewGroup.
+        ].
+    ]
+}.
+
+#symbol DynamicCast =
+{
+    += anObject
+    [
+        #var aGroup := self $getGroup | $setGroup:(#inline standard'39(#type cast, nil, 2)) $getGroup.
+
+        #if Control ifNotNil:(#inline standard'44(aGroup, nil, anObject))
+        | [
+            #var aLength := #inline standard'43(basic'IntNumber, aGroup).
+            #var aNewGroup := #inline standard'39(#type cast, nil, aLength + 4).
+
+            #inline standard'45 (aNewGroup, aGroup).
+            #inline standard'44 (aNewGroup, nil, anObject).
+
+            self $setGroup:aNewGroup.
+        ].
+    ]
+}.

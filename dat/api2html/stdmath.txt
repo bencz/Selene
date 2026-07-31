@@ -1,0 +1,65 @@
+[#general#]
+#name=std'basic'math
+#shortdescr=Provides classes that describe the basic mathematic operations
+
+[#list#]
+abs
+arctan
+cos
+exp
+frac
+int
+ln
+rounded
+sin
+sqrt
+
+[abs]
+#title=Symbol Abs
+#shortdescr=A property that returns an absolute value.
+#protocol=arithmetic
+
+[arctan]
+#title=Symbol ArcTan
+#shortdescr=A property that returns an arctangens value.
+#protocol=arithmetic
+
+[cos]
+#title=Symbol Cos
+#shortdescr=A property that returns an cosinus value.
+#protocol=arithmetic
+
+[exp]
+#title=Symbol Exp
+#shortdescr=A property that returns an expanent value.
+#protocol=arithmetic
+
+[frac]
+#title=Symbol Frac
+#shortdescr=A property that returns the fractional part of the number.
+#protocol=arithmetic
+
+[int]
+#title=Symbol Int
+#shortdescr=A property that returns the integer part of the number.
+#protocol=arithmetic
+
+[ln]
+#title=Symbol Ln
+#shortdescr=A property that returns the lagorithm value.
+#protocol=arithmetic
+
+[rounded]
+#title=Symbol Rounded
+#shortdescr=A property that returns the rounded value.
+#protocol=arithmetic
+
+[sin]
+#title=Symbol Sin
+#shortdescr=A property that returns a sinus value.
+#protocol=arithmetic
+
+[sqrt]
+#title=Symbol Sqrt
+#shortdescr=A property that returns a square root of the number
+#protocol=arithmetic

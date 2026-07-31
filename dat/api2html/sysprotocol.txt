@@ -1,0 +1,10 @@
+[#general#]
+#name=Standard Protocols
+#shortdescr=Standart protocols.
+
+[#list#]
+eventcontainer
+
+[eventcontainer]
+#shortdescr=A event container protocol
+#method=sys'events'$getcontroller,,object;Returns the event controller

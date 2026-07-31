@@ -1,0 +1,45 @@
+[#general#]
+#name=ext'io
+#shortdescr=Provides the i/o helper classes
+
+[#list#]
+console
+listprinter
+listprintaction
+textfile
+textfileenumerator
+
+[listprinter]
+#title=Symbol ListPrinter
+#shortdescr=A collection printing adapter
+#protocol=std_printable
+#method=new,std_enumerable;Assigns the collection to be printed
+
+[listprintaction]
+#title=Class ListPrintAction
+#shortdescr=A list printing action
+#parent=elena.html#object:Object
+#protocol=action
+#method=proceed,std_printable,;Prints the operand, adding the comma for every next call
+
+[console]
+#title=symbol Console
+#shortdescr=A console helper
+#method=<<,std_printable;Prints the object text value
+#method=>>,std_readable,object;Reads a line from the console, copies it to the operand and returns it
+
+[textfile]
+#title=symbol TextFile
+#shortdescr=A text file enumerator property
+#method=new,std_literal,enumerator;Return text file content enumerator
+
+[textfileenumerator]
+#title=Symbol TextFileEnumerator
+#shortdescr=A text file content enumerator property
+#protocol=enumerator
+#field=thereader;The text file reader
+#field=theline;The current line
+#method=get,,std_literal;Returns the current text line
+#method=next,,;Goes to the next file line
+#method=new,std_stream;Assigns the text file reader
+#method=start,,;Starts the enumeration

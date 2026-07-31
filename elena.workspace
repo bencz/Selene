@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="Workspace">
+		<Project filename="elenasrc\sg\codeblocks\sg.cbp" />
+		<Project filename="elenasrc\asm2bin\codeblocks\asm2bin.cbp" />
+		<Project filename="elenasrc\elc\codeblocks\elc.cbp" />
+		<Project filename="elenasrc\ide\codeblocks\elide_win32.cbp" active="1" />
+		<Project filename="elenasrc\api2html\codeblocks\api2html.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>

@@ -1,0 +1,20 @@
+[#general#]
+#name=sys'templates
+#shortdescr=Provides the basic system process patterns.
+
+[#list#]
+commandcycle
+simple
+system
+
+[simple]
+#title=Symbol Simple
+#shortdescr=A symple program pattern which executes the <b>'program</b> action
+
+[commandcycle]
+#title=Symbol CommandCycle
+#shortdescr=A command cycling process pattern which reads the data from <b>'program'input</b> and writes the result to <b>'program'output</b> until the operand is true
+
+[system]
+#title=Class System
+#shortdescr=A system program pattern which passes <b>'program</b> action to <b>'system</b> pattern

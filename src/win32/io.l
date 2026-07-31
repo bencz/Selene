@@ -1,0 +1,338 @@
+// --- namespace shortcuts ---
+#define basic'*  = std'basic'*.
+#define prop'*   = std'properties'*.
+#define memory'* = std'basic'memory'*.
+#define api'*    = win32'api'*.
+#define consts'* = win32'api'constants'*.
+
+// --- compiler hints ---
+#define[const] LiteralExtension = basic'LiteralExtension.
+
+// === I/O console classes ===
+
+// --- ConsoleWriter ---
+
+#class ConsoleWriter
+{
+    #field theHandle.
+
+    #method basic'$writeAsLiteral : aLiteral
+    [
+        #external win32'2(theHandle, aLiteral).
+    ]
+
+    #method new : aHandle
+    [
+        theHandle := api'HandleType of:aHandle.
+    ]
+}
+
+// --- ConsoleReader ---
+
+#class ConsoleReader
+{
+    #field theHandle.
+
+    #method basic'$readAsLiteral : aLiteral
+    [
+        #external win32'3(theHandle, aLiteral).
+    ]
+
+    #method new : aHandle
+    [
+        theHandle := api'HandleType of:aHandle.
+    ]
+
+    #method get
+    [
+        #var aChar := basic'Char.
+
+        #external win32'5(theHandle, aChar).
+
+        ^ aChar.
+    ]    
+
+    #method clear
+    [
+        #external win32'53(theHandle).
+    ]
+
+}
+
+// --- Console ---
+
+#class Console
+{
+    #method prop'$getTextWriter = ConsoleWriter::api'StdOutput.
+
+    #method prop'$getTextReader = ConsoleReader::api'StdInput.
+}
+
+// === I/O file classes ===
+
+// --- FileWriter ---
+
+#class FileWriter
+{
+    #field theHandle.
+
+    #method new : aHandle
+    [
+        theHandle := api'HandleType of:aHandle.
+    ]
+
+    #method basic'$writeAsLiteral : aLiteral
+    [
+        theHandle $invoke:aLiteral.
+    ]
+}
+
+// --- TextFileWriter ---
+
+#class TextFileWriter (FileWriter)
+{
+    #field theBuffer.
+
+    #method new : aHandle
+    [
+        theBuffer := memory'ByteArrayType create:{ Length = 100. }.
+
+        super new:aHandle.
+    ]
+
+    #method $write : aLiteral
+    [
+        #external win32'54 (theBuffer, aLiteral, aLiteral Length).
+
+        #external win32'11(theHandle, theBuffer, aLiteral Length).
+    ]
+
+    #method basic'$writeAsLiteral : aLiteral
+    [
+        #if (aLiteral Length > 200)?
+        [
+            #var anIndex := basic'Integer << 0.
+            #loop(anIndex < aLiteral Length)?
+            [
+                #var aLen := aLiteral Length - anIndex.
+                #if (aLen > 200)?
+                    [ aLen := 200. ].
+
+                #var aSubS := basic'SubString::{ for = aLiteral. from = anIndex. till = anIndex + aLen. }.
+
+                self $write:aSubS.
+
+                anIndex += aLen.
+            ].
+        ]
+        | [ self $write:aLiteral. ].
+    ]
+}
+
+// --- FileReader ---
+
+#class FileReader
+{
+    #field theHandle.
+
+    #role EOF
+    {
+        #method basic'$readAsLiteral [ self fail. ]
+    }
+
+    #method new : aHandle
+    [
+        theHandle := api'HandleType of:aHandle.
+    ]
+
+    #method basic'$readAsLiteral : aLiteral
+    [
+        #if theHandle $invoke:aLiteral []
+            | [ #shift EOF. self fail. ].
+    ]
+}
+
+// --- TextFileReader ---
+
+#class TextFileBuffer
+{
+    #field theBuffer.
+    #field theIndex.
+
+    #method new
+    [
+        theBuffer := basic'LiteralType create:{ Length = 256. }.
+        theIndex := basic'Integer << 0.
+    ]
+
+    #method basic'$readAsLiteral : aLine
+    [
+        #var aLength := basic'IntNumber.
+
+        #inline win32'6(aLength, theBuffer, theIndex).    // find out the line length        
+
+        #inline win32'7(aLine, aLength, theBuffer, theIndex).      // copy the line
+    ]
+
+    #method $ifNotEOL
+    [
+        #inline win32'8(theBuffer, theIndex).
+    ]
+
+    #method clear
+    [
+        theIndex << 0.
+    ]
+
+    #method basic'$toLiteral = theBuffer.
+
+    #annex LiteralExtension.
+}
+
+#class TextFileReader (FileReader)
+{
+    #field theBuffer.
+
+    #role Buffered
+    {
+        #method basic'$readAsLiteral : aLiteral
+        [
+            #var aLength := aLiteral Length.
+
+            theBuffer $invoke:aLiteral.
+            #loop theBuffer $ifNotEOL
+            [
+                #if(aLength == aLiteral Length)?
+                    [ ^ self. ].
+                
+                theBuffer clear.
+
+                #if theHandle $invoke:(basic'LiteralType of:theBuffer) []
+                    | [  ^ self $setEOF. ].
+
+                #var aTempLiteral := basic'LiteralType create:{ Length = aLiteral Length - aLength. }.
+                theBuffer $invoke:aTempLiteral.
+
+                #inline standard'5(aLiteral, aTempLiteral).
+
+            ].
+        ]
+    }
+
+    #role EOF
+    {
+        #method $setEOF [ ]
+    }
+
+    #method $setEOF [ #shift EOF. ]
+
+    #method new : aHandle
+    [
+        theBuffer := TextFileBuffer.
+
+        super new:aHandle.
+    ]
+
+    #method basic'$readAsLiteral : aLiteral
+    [
+        theBuffer clear.
+
+        #if super $invoke:(basic'LiteralType of:theBuffer)
+            [ #shift Buffered. ]
+            | [ self fail. ].
+
+        self $invoke:aLiteral.
+    ]
+}
+
+// --- I/O symbols ---
+
+// --- StdConsole ---
+
+#static StdConsole = Console.
+
+// --- StdOutput ---
+
+#static StdOutput = prop'TextWriter::StdConsole.
+
+// --- StdInput ---
+
+#static StdInput = prop'TextReader::StdConsole.
+
+// --- TextFileRO ---
+
+#class TextFileRO
+{
+    #field theHandle.
+
+    #method new : aFileName
+    [
+        theHandle := api'FileHandleType create:
+        {
+            api'$FileName              = aFileName.
+            api'$dwDesiredAccess       = consts'FILE_GENERIC_READ.
+            api'$dwCreationDisposition = consts'OPEN_EXISTING.
+            api'$dwShareMode           = consts'FILE_SHARE_READ.
+            api'$dwFlagsAndAttributes  = 0.
+        }.
+    ]
+
+    #method prop'$getTextReader = TextFileReader::theHandle.
+
+    #method close
+    [
+        theHandle close.
+    ]
+}
+
+// --- TextFileNew ---
+
+#class TextFileNew
+{
+    #field theHandle.
+
+    #method new : aFileName
+    [
+        theHandle := api'FileHandleType create:
+        {
+            api'$FileName              = aFileName.
+            api'$dwDesiredAccess       = consts'FILE_GENERIC_WRITE.
+            api'$dwCreationDisposition = consts'CREATE_ALWAYS .
+            api'$dwShareMode           = 0.
+            api'$dwFlagsAndAttributes  = 0.
+        }.
+    ]
+
+    #method prop'$getTextWriter = TextFileWriter::theHandle.
+
+    #method close
+    [
+        theHandle close.
+    ]
+}
+
+// --- TextFileAppend ---
+
+#class TextFileAppend
+{
+    #field theHandle.
+
+    #method new : aFileName
+    [
+        theHandle := api'FileHandleType create:
+        {
+            api'$FileName              = aFileName.
+            api'$dwDesiredAccess       = consts'FILE_APPEND_DATA.
+            api'$dwCreationDisposition = consts'OPEN_ALWAYS.
+            api'$dwShareMode           = consts'FILE_SHARE_READ.
+            api'$dwFlagsAndAttributes  = 0.
+        }.
+    ]
+
+    #method prop'$getTextWriter = TextFileWriter::theHandle/* seek:api'EOF*/.
+
+    #method close
+    [
+        theHandle close.
+    ]
+}

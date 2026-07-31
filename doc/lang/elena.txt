@@ -1,0 +1,30 @@
+ELENA Paradigm:
+---------------
+1)ELENA deals with so called "grouped objects", consisting of "tiny" objects
+  actively interacts with each other with private messages and with the external
+  ones with public messages. Often one of the objects is used as an environment
+  which is extended with all other objects
+
+2) Interaction between "object groups" often goes through adapters, usually
+   two ones, where the first one is a public adapter and another one is a part
+   of the object group implementing public adapter private messages. 
+
+ELENA Library:
+--------------
+
+STD - basic set of the classes:
+
+1) Basic types:numbers, strings, characters, booleans, arrays, lists
+
+2) Basic operations with basic types:arithmetic, comparing, string 
+   manipulation, basic loops, searching
+
+3) Converting between basic types
+
+4) Saving / Loading / Creating basic types
+
+5) Extention - could we implement the mechanism which will help to integrate
+               classes described in other packages 
+
+6) Type support
+

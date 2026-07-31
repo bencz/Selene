@@ -1,0 +1,24 @@
+[#general#]
+#name=sys'events
+#shortdescr=Provides the basic event handle routines.
+
+[#list#]
+controller
+groupadapter
+handlers
+
+[controller]
+#title=Class Controller
+#shortdescr=A event controller
+#parent=elena.html#object:Object
+#field=theevents;Colection of event handlers
+
+[handlers]
+#title=Symbol Handlers
+#shortdescr=An object event collection property
+#method=new,sysprotocol.html#eventcontainer,collection
+
+[groupadapter]
+#title=Symbol GroupAdapter
+#shortdescr=A dynamic group adapter
+#protocol=std_group

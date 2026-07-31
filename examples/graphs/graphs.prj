@@ -1,0 +1,16 @@
+[project]
+executable=graphs.exe
+debug=graphs.dm
+entry='entry
+template=gui
+type=1
+warn:unresolved=0
+debuginfo=-1
+projecttype=2
+
+[files]
+graphs.l
+
+[forwards]
+'mainwindow=graphs'window
+

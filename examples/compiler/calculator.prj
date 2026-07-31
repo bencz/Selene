@@ -1,0 +1,17 @@
+[project]
+executable=compiler.exe
+debug=compiler.dm
+entry='entry
+package=compiler
+template=console
+type=0
+warn:unresolved=0
+
+[files]
+main.l
+config.l
+
+[forwards]
+'entry=sys'starters'actionsequence
+'program'modules=compiler'config'classes
+

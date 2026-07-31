@@ -1,0 +1,14 @@
+[#general#]
+#name=win32'system
+#shortdescr=Provides classes that implement OS-depended routines
+
+[#list#]
+gui
+
+[gui]
+#title=Symbol GUI
+#shortdescr=A GUI system
+#protocol=pattern
+#protocol=sysprotocol.html#eventcontainer:eventcontainer
+#field=theevents;the system event controller
+#method=run,operation;Runs the application.Is a starting point of GUI applications

@@ -1,0 +1,39 @@
+[#general#]
+#name=win32'api'factories
+#shortdescr=Provides the factory classes
+
+[#list#]
+classtype
+handletype
+nonvisiblewindowclass
+paintboxclass
+panelclass
+sdiwindowclass
+
+[classtype]
+#title=Symbol ClassType
+#shortdescr=A class type factory helper
+#protocol=factory
+#method=create,object;Creates class
+
+[handletype]
+#title=Symbol ClassType
+#shortdescr=A handle factory helper
+#protocol=factory
+#method=create,object;Creates handle
+
+[nonvisiblewindowclass]
+#title=Symbol NonvisibleWindowClass
+#shortdescr=A non visible window class
+
+[paintboxclass]
+#title=Symbol PaintboxClass
+#shortdescr=A paintbox control class
+
+[panelclass]
+#title=Symbol PanelClass
+#shortdescr=A panel control class
+
+[sdiwindowclass]
+#title=Symbol SDIWindowClass
+#shortdescr=A SDI window class

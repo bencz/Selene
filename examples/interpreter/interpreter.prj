@@ -1,0 +1,17 @@
+[project]
+executable=interpreter.exe
+debug=interpreter.dm
+arguments=sample1.txt
+entry='entry
+template=console
+type=0
+warn:unresolved=0
+debuginfo=-1
+projecttype=1
+
+[files]
+interpreter.l
+
+[forwards]
+'program=interpreter'program
+

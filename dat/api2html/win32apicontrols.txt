@@ -1,0 +1,135 @@
+[#general#]
+#name=win32'api'controls
+#shortdescr=Provides the control wrappers
+
+[#list#]
+button
+control
+combobox
+customcontrol
+imagebox
+listbox
+paintbox
+statusbar
+updown
+window
+
+[control]
+#title=Class Control
+#shortdescr=A control wrapper class
+#parent=elena.html#object:Object
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[window]
+#title=Class Window
+#shortdescr=A window wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the handle
+#method=close,,;Hides the window
+#method=free,,;Destroys the window
+#method=open,,;Shows the window
+#method=refresh,,;Makes the window to be repainted
+
+[updown]
+#title=Class Updown
+#shortdescr=A updown control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[button]
+#title=Class Button
+#shortdescr=A button control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[combobox]
+#title=Class Combobox
+#shortdescr=A combobox control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[listbox]
+#title=Class Listbox
+#shortdescr=A listbox control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[statusbar]
+#title=Class Statusbar
+#shortdescr=A status bar control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[paintbox]
+#title=Class Paintbox
+#shortdescr=A paint box control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[imagebox]
+#title=Class Imagebox
+#shortdescr=An image box control wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#parent=paintbox:win32'api'controls'PaintBox
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted
+
+[customcontrol]
+#title=Class CustomControl
+#shortdescr=A custom control base wrapper class
+#parent=elena.html#object:Object
+#parent=control:win32'api'controls'Control
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#method=new,win32protocol.html#win32_hwnd;Assigns the control
+#method=close,,;Hides the control
+#method=free,,;Destroys the control
+#method=open,,;Shows the control
+#method=refresh,,;Makes the control to be repainted

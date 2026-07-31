@@ -1,0 +1,14 @@
+[project]
+executable=agenda.exe
+debug=gui.dm
+entry='entry
+template=gui
+type=1
+warn:unresolved=0
+
+[files]
+gui.l
+
+[forwards]
+'mainwindow=gui'window
+

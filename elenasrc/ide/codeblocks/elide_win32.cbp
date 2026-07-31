@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="elide" />
+		<Option pch_mode="0" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="default">
+				<Option output="..\..\..\bin\elide.exe" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="..\..\..\bin" />
+				<Option object_output="..\temp" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectResourceIncludeDirsRelation="0" />
+				<Compiler>
+					<Add option="-march=pentium2" />
+					<Add option="-O3" />
+					<Add option="-O" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+					<Add option="-Dmingw49" />
+					<Add directory=".." />
+					<Add directory="..\win32" />
+					<Add directory="..\..\common" />
+					<Add directory="..\..\elc" />
+					<Add directory="..\..\engine" />
+					<Add directory="..\..\idecommon" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory=".." />
+					<Add directory="." />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="C:\MinGW\lib\libshlwapi.a" />
+					<Add library="C:\MinGW\lib\libcomctl32.a" />
+				</Linker>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All" targets="default;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-march=pentium2" />
+			<Add option="-O3" />
+			<Add option="-W" />
+		</Compiler>
+		<Linker>
+			<Add option="-s" />
+			<Add library="gdi32" />
+			<Add library="user32" />
+			<Add library="kernel32" />
+		</Linker>
+		<Unit filename="..\..\common\altstrings.cpp" />
+		<Unit filename="..\..\common\altstrings.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\common.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\config.cpp" />
+		<Unit filename="..\..\common\config.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\dump.cpp" />
+		<Unit filename="..\..\common\dump.h" />
+		<Unit filename="..\..\common\files.cpp" />
+		<Unit filename="..\..\common\files.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\lists.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\streams.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\common\tools.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\..\elc\errors.h" />
+		<Unit filename="..\..\engine\elena.h" />
+		<Unit filename="..\..\engine\elenaconst.h" />
+		<Unit filename="..\..\engine\module.cpp" />
+		<Unit filename="..\..\engine\module.h" />
+		<Unit filename="..\..\engine\section.cpp" />
+		<Unit filename="..\..\engine\section.h" />
+		<Unit filename="..\browser.cpp" />
+		<Unit filename="..\browser.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\debugcontroller.cpp" />
+		<Unit filename="..\debugcontroller.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\document.cpp" />
+		<Unit filename="..\document.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\ide.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="..\ideconst.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\ideproject.cpp" />
+		<Unit filename="..\ideproject.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\idesettings.cpp" />
+		<Unit filename="..\idesettings.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\layout.cpp" />
+		<Unit filename="..\layout.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\messagelog.cpp" />
+		<Unit filename="..\messagelog.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\pluginmanager.cpp" />
+		<Unit filename="..\pluginmanager.h" />
+		<Unit filename="..\sourcedoc.cpp" />
+		<Unit filename="..\sourcedoc.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\text.cpp" />
+		<Unit filename="..\text.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\accelerator.cpp" />
+		<Unit filename="..\win32\accelerator.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\appwindow.cpp" />
+		<Unit filename="..\win32\appwindow.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\debugger.cpp" />
+		<Unit filename="..\win32\debugger.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\dialogs.cpp" />
+		<Unit filename="..\win32\dialogs.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\editframe.cpp" />
+		<Unit filename="..\win32\editframe.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\idecommon.cpp" />
+		<Unit filename="..\win32\idecommon.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\listview.cpp" />
+		<Unit filename="..\win32\listview.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\menu.cpp" />
+		<Unit filename="..\win32\menu.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\output.cpp" />
+		<Unit filename="..\win32\output.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\splitter.cpp" />
+		<Unit filename="..\win32\splitter.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\statusbar.cpp" />
+		<Unit filename="..\win32\statusbar.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\tabbar.cpp" />
+		<Unit filename="..\win32\tabbar.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\toolbar.cpp" />
+		<Unit filename="..\win32\toolbar.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\treeview.cpp" />
+		<Unit filename="..\win32\treeview.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\window.cpp" />
+		<Unit filename="..\win32\window.h">
+			<Option compile="1" />
+			<Option link="1" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="..\win32\winmain.cpp" />
+		<Unit filename="..\..\idecommon\plugins.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

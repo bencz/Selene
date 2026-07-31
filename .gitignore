@@ -1,0 +1,45 @@
+# Patterns are anchored with a leading slash where they name a top-level
+# directory. Without it, `build/` would also match `docs/build/`.
+
+# --- build trees ---
+/build/
+/build-*/
+/cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+/Makefile
+*.ninja
+.ninja_*
+
+# --- toolchain binaries (built from source; see docs/build/21-building-on-linux.md) ---
+/bin/elc
+/bin/sg
+/bin/asm2binx
+/bin/api2html
+/bin/elide
+/bin/*.exe
+
+# --- generated artifacts ---
+#
+# The parser table is produced by sg from dat/sg/syntax.txt as a build step.
+# It is a raw memory image that embeds sizeof(size_t) and sizeof(TCHAR), so a
+# checked-in copy would be wrong for any configuration but the one that made it.
+/bin/syntax.dat
+/dat/sg/syntax.dat
+/syntax.dat
+
+# compiled ELENA modules and debug modules
+/lib/
+*.nl
+*.dnl
+
+# assembled runtime primitives (output of asm2binx)
+/bin/*.bin
+
+# --- editor / OS ---
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store

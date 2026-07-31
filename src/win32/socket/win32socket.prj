@@ -1,0 +1,12 @@
+[project]
+output=..\..\..\lib\win32\socket
+package=win32'socket
+type=0
+warn:unresolved=-1
+debuginfo=-1
+projecttype=1
+
+[files]
+primitives.l
+controls.l
+

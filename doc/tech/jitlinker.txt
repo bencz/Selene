@@ -1,0 +1,5 @@
+References:
+
+in general reference could pointing only to the unique section / message / 
+external function with exception of symbol one (it could points to code, vmt
+and static sections)

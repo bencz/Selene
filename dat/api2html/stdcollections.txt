@@ -1,0 +1,105 @@
+[#general#]
+#name=std'collections
+#shortdescr=Provides classes that describe the basic operations with the collections.
+
+[#list#]
+circle
+circleenumerator
+enumerator
+item
+list
+listextension
+readonly
+readonlyenumerator
+
+[list]
+#title=class List
+#shortdescr=A list of objects. 
+#parent=elena.html#object:Object
+#field=thetale;the tale list item
+#field=thetop;the top list item
+#protocol=collection
+#protocol=std_printable
+#protocol=std_enumerable
+#protocol=std_array
+#method=+=,object;Adds an item to the collection
+#method=@,std_int,object;Returns the list item at a specified position.
+#method=count,,std_int;Returns a number of items in the collection
+
+[item]
+#title=Class Item
+#shortdescr=A list item
+#parent=elena.html#object:Object
+#field=theobject;The item object
+#field=thenext;The next list item
+#protocol=std_item
+#method=new,object;Assigns the item object
+
+[listextension]
+#title=Symbol ListExtension
+#shortdescr=A list extension.<br>Could be used for horizontal inheritance of a common list functionality
+#protocol=std_array
+#protocol=std_printable
+#method=count,,std_int;Returns the number of list items
+
+[enumerator]
+#title=Class Enumerator
+#shortdescr=A list enumerator
+#parent=elena.html#object:Object
+#protocol=enumerator
+#field=thelist;The assigned list.
+#field=thecurrent;The current list item.
+#method=clone,,enumerator;Returns the enumerator copy
+#method=delete,std_int;Removes the specified number of items starting from the current one
+#method=end,,;Goes to the last collection item
+#method=get,,object;Returns the current list item.
+#method=insert,object;Insert the new item at the current position
+#method=next,,;Goes to the next list item.
+#method=new,object;Assigns the list
+#method=set,object;Sets the current list item.
+#method=start,,;Goes to the top list item
+
+[readonly]
+#title=Symbol ReadOnly
+#shortdescr=A list read only wrapper
+#method=new,collection,collection;Returns a read-only collection
+
+[readonlyenumerator]
+#title=Symbol ReadOnlyEnumerator
+#shortdescr=A list read only enumerator wrapper
+#method=new,enumerator,enumerator;Returns a read-only enumerator
+
+[circle]
+#title=class Circle
+#shortdescr=A circled list of objects. 
+#parent=elena.html#object:Object
+#parent=list:std'collections'List
+#field=thetale;the tale list item
+#field=thetop;the top list item
+#protocol=collection
+#protocol=std_printable
+#protocol=std_enumerable
+#protocol=std_array
+#method=+=,object;Adds an item to the collection
+#method=@,std_int,object;Returns the list item at a specified position.
+#method=count,,std_int;Returns a number of items in the collection
+#method=shift,value;Set the next list item as a top item if the value is 1 or previous if -1
+
+[circleenumerator]
+#title=Class CircleEnumerator
+#shortdescr=A circle enumerator
+#parent=elena.html#object:Object
+#parent=enumerator:std'collections'Enumerator
+#protocol=enumerator
+#field=thelist;The assigned list.
+#field=thecurrent;The current list item.
+#method=clone,,enumerator;Returns the enumerator copy
+#method=delete,std_int;Removes the specified number of items starting from the current one
+#method=end,,;Goes to the last collection item
+#method=get,,object;Returns the current list item.
+#method=insert,object;Insert the new item at the current position
+#method=next,,;Goes to the next list item.
+#method=new,object;Assigns the list
+#method=set,object;Sets the current list item.
+#method=start,,;Goes to the top list item
+

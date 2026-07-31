@@ -1,0 +1,99 @@
+[#general#]
+#name=gui'controls'properties
+#shortdescr=Provides basic GUI control properties
+
+[#list#]
+caption
+checked
+controls
+dialogresult
+enabled
+location
+selectedindex
+selecteditem
+size
+tag
+visible
+
+[visible]
+#title=Symbol Visible
+#shortdescr=A control visible property.
+#protocol=bool
+#protocol=storage
+#method=?,,;Succeeds if the control is visible
+#method=!,,;Succeeds if the control is not visible
+#method=<<,bool;Shows the control if the operand is true or hide it otherwise
+#method=new,object,value;Returns Visible operand property
+
+[enabled]
+#title=Symbol Enabled
+#shortdescr=A control enabled property.
+#protocol=storage
+#method=<<,bool;Enables the control if the operand is true or disables it otherwise
+#method=new,object,value;Returns Enabled operand property
+
+[caption]
+#title=Symbol Caption
+#shortdescr=A control caption property.
+#protocol=storage
+#protocol=value
+#property=stdbasic.html#literalvalue:std'basic'LiteralValue;The caption literal value
+#method=<<,value;Sets the caption value
+#method=new,object,value;Returns Caption operand property
+
+[size]
+#title=Symbol Size
+#shortdescr=A control size property.
+#protocol=storage
+#protocol=guiprotocol.html#point:point
+#method=<<,guiprotocol.html#point,;Sets the control size, an x coordinate coresponds to the width and y one to height
+#method=new,object,value;Returns Size operand property
+
+[location]
+#title=Symbol Location
+#shortdescr=A control location property.
+#protocol=storage
+#protocol=guiprotocol.html#point:point
+#method=<<,guiprotocol.html#point,;Sets the control location
+#method=new,object,value;Returns Location operand property
+
+[checked]
+#title=Symbol Checked
+#shortdescr=A control checked property.
+#protocol=bool
+#protocol=storage
+#method=?,,;Succeeds if the control is checked
+#method=<<,bool;Marks the control as checked if the operand is true or unchecked otherwise
+#method=new,object,value;Returns Checked operand property
+
+[dialogresult]
+#title=Symbol DialogResult
+#shortdescr=A Dialog result form property.
+#protocol=storage
+#method=new,object;Returns the DialogResult form property
+#method=<<,object;Sets the modal form dialog result and closes it
+
+[controls]
+#title=Symbol Controls
+#shortdescr=A Controls property.
+#protocol=collection
+#method=new,guiprotocol.html#container,collection;Returns the control collection
+
+[tag]
+#title=Symbol Object
+#shortdescr=An Object control property.
+#protocol=std_item
+#method=new,object,container;Returns the control object container
+
+[selecteditem]
+#title=Symbol SelectedObject
+#shortdescr=A selected object control property.
+#protocol=container
+#method=new,object,container;Returns the control selected object property
+
+[selectedindex]
+#title=Symbol SelectedIndex
+#shortdescr=A selected index control property.
+#protocol=storage
+#protocol=value
+#method=new,object,storage;Returns the control selected index property

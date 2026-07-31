@@ -1,0 +1,197 @@
+[#general#]
+#name=std'properties
+#shortdescr=Provides basic properties.
+
+[#list#]
+arraybiterator
+arrayiterator
+content
+contentkey
+contentproxy
+contentvalue
+econtent
+eenumerator
+enumerator
+enumindexerproxy
+index
+indexer
+indexerextension
+keyvalue
+positioncriteria
+reader
+textreader
+textwriter
+valuecriteria
+writer
+
+[enumerator]
+#title=Class Enumerator
+#shortdescr=An enumerator property.
+#parent=elena.html#object:Object
+#field=theproxy;The enumerator proxy
+#protocol=enumerator
+#protocol=pattern
+#method=get,,;Returns the current item
+#method=new,std_enumerable;Assigns the enumerator
+#method=next,,;Goes to the next collection item or fails.<br>Fails if the enumerator is in the last position
+#method=run,action;Executes the action for every collection item from the beginning
+#method=start,,;Goes to the first enumerating item
+
+[textwriter]
+#title=Class TextWriter
+#shortdescr=A text writer property.
+#parent=elena.html#object:Object
+#protocol=writer
+#protocol=std_textwriter
+#field=theadapter;The text writer adapter
+#method=<<,std_printable;Writes the object text representation to the stream
+#method=new,std_stream;Assigns the writer adapter
+
+[textreader]
+#title=Class TextReader
+#shortdescr=A text reader property.
+#parent=elena.html#object:Object
+#protocol=reader
+#protocol=std_textreader
+#field=theadapter;The text reader adapter
+#method=new,std_stream;Assigns the writer adapter
+#method=>>,std_readable;Reads the value from the console and returns it
+
+[reader]
+#title=Class Reader
+#shortdescr=A reader property.
+#parent=elena.html#object:Object
+#protocol=reader
+#protocol=std_reader
+#field=theadapter;The text reader adapter
+#method=new,std_stream;Assigns the writer adapter
+#method=>>,std_readable;Reads the value from the console and returns it
+
+[writer]
+#title=Class Writer
+#shortdescr=A writer property.
+#parent=elena.html#object:Object
+#protocol=writer
+#protocol=std_writer
+#field=theadapter;The text writer adapter
+#method=<<,std_writable;Writes the object text representation to the stream
+#method=new,std_stream;Assigns the writer adapter
+
+[indexer]
+#title=Class Indexer
+#shortdescr=An indexer property.
+#parent=elena.html#object:Object
+#field=theproxy;The indexer adapter
+#protocol=indexer
+#protocol=enumerator
+#method=delete,counter;Deletes the specified number of items at the current indexer position
+#method=get,,object;Returns the current item
+#method=insert,object;Inserts the parameter into the current indexer position
+#method=new,std_array;Assigns the indexer proxy
+#method=next,,;Goes to the next collection item
+#method=position,,object;Returns the current indexer position
+#method=previous,,;Goes to the previous collection item
+#method=seek,std_seekcriteria;Goes to the specified in the parameter position
+#method=set,object;Sets the current item
+#method=start,,;Goes to the first collection item
+
+[positioncriteria]
+#title=Class PositionCriteria
+#shortdescr=An indexer seek criteria. Specifies the indexer position
+#parent=elena.html#object:Object
+#field=theproxy;The indexer adapter
+#protocol=std_seekcriteria
+#method=position,,object;Returns the specified position.<br><b>Should be overridden</b>
+
+[valuecriteria]
+#title=Class ValueCriteria
+#shortdescr=An indexer seek criteria. Specifies the searching value
+#parent=elena.html#object:Object
+#field=theproxy;The indexer adapter
+#protocol=std_seekcriteria
+#method=value,,object;Returns the searching value.<br><b>Should be overridden</b>
+
+[indexerextension]
+#title=Symbol IndexerExtnesion
+#shortdescr=An array extension
+#method=@,object,std_indexer;Returns the array item at specified position
+
+[enumindexerproxy]
+#title=Class EnumIndexerProxy
+#shortdescr=A collection indexer helper.
+#parent=elena.html#object:Object
+#field=thecollection;The enumerable collection
+#field=theenumerator;The enumerator
+#field=theindex;The current index
+#protocol=std_item
+#protocol=std_indexer
+#method=new,std_enumerable
+
+[arrayiterator]
+#title=Symbol ArrayIteration
+#shortdescr=An array iterator
+#protocol=std_iterator
+
+[arraybiterator]
+#title=Symbol ArrayBIteration
+#shortdescr=An array backward iterator
+#protocol=std_iterator
+
+[content]
+#title=Class Content
+#shortdescr=A content property.
+#parent=elena.html#object:Object
+#protocol=container
+#field=thecontainer;The container
+#method=exchange,std_item;Exchanges the content
+#method=get,,object;Returns the object content
+#method=new,std_item;Assigns the container
+#method=set,object;Sets the object content
+
+[index]
+#title=Symbol Index
+#shortdescr=An index property.
+#method=new,std_indexer,object;Returns the current index
+
+[eenumerator]
+#title=Symbol EEnumerator
+#shortdescr=An enumerator extension. Should extend enumerable object
+#protocol=std_iterator
+#protocol=std_enumerable
+
+[econtent]
+#title=Symbol EContent
+#shortdescr=A content extension. Should extend std_item object
+#protocol=container
+#protocol=std_item
+#method=exchange,std_item;Exchanges the content
+#method=get,,object;Returns the object content
+#method=set,object;Sets the object content
+
+[contentkey]
+#title=Symbol ContentKey
+#shortdescr=A content key property.
+#method=new,std_keyvalue;Returns the content key
+
+[contentvalue]
+#title=Symbol ContentValue
+#shortdescr=A content value property.
+#method=new,std_item;Returns the content value
+
+[keyvalue]
+#title=Class KeyValue
+#shortdescr=A KeyValue class.
+#parent=elena.html#object:Object
+#protocol=std_keyvalue
+#protocol=std_item
+#field=thekey;The key
+#field=thevalue;The value
+#method=new,std_keyvalue;Initializes the object
+
+[contentproxy]
+#title=Class ContentProxy
+#shortdescr=A content proxy.
+#parent=elena.html#object:Object
+#protocol=std_item
+#field=thecontainer;The container
+#method=new,container;Assigns the container

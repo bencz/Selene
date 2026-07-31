@@ -1,0 +1,150 @@
+[#general#]
+#name=win32'api'styles
+#shortdescr=Provides the handle styles
+
+[#list#]
+button3d
+color
+combobox3d
+destination
+dialog
+edit3d
+filename
+groupbox3d
+imagebox
+imagecopy
+listbox3d
+nonvisiblewindowclass
+owner
+paintboxclass
+Panel3d
+paintbox
+panelclass
+parent
+radiobutton3d
+sdidialog
+sdiwindow
+sdiwindowclass
+source
+staticframe
+staticlabel
+statusbar3d
+text
+updown3d
+width
+
+[sdiwindowclass]
+#title=Symbol SDIWindowClass
+#shortdescr=A class style
+
+[panelclass]
+#title=Symbol PanelClass
+#shortdescr=A class style
+
+[paintboxclass]
+#title=Symbol PaintboxClass
+#shortdescr=A class style
+
+[nonvisiblewindowclass]
+#title=Symbol NonvisibleWindowClass
+#shortdescr=A control style
+
+[sdiwindow]
+#title=Symbol SDIWindow
+#shortdescr=A window style
+
+[dialog]
+#title=Symbol Dialog
+#shortdescr=A window style
+
+[SDIDialog]
+#title=Symbol SDIDialog
+#shortdescr=A window style
+
+[staticframe]
+#title=Symbol StaticFrame
+#shortdescr=A control style
+
+[staticlabel]
+#title=Symbol StaticLabel
+#shortdescr=A control style
+
+[groupbox3d]
+#title=Symbol GroupBox3D
+#shortdescr=A control style
+
+[edit3d]
+#title=Symbol Edit3D
+#shortdescr=A control style
+
+[updown3d]
+#title=Symbol UpDown3D
+#shortdescr=A control style
+
+[button3d]
+#title=Symbol Button3D
+#shortdescr=A control style
+
+[radiobutton3d]
+#title=Symbol RadioButton3D
+#shortdescr=A control style
+
+[combobox3d]
+#title=Symbol Combobox3D
+#shortdescr=A control style
+
+[listbox3d]
+#title=Symbol Listbox3D
+#shortdescr=A control style
+
+[statusbar3d]
+#title=Symbol StatusBar3D
+#shortdescr=A control style
+
+[panel3d]
+#title=Symbol Panel3D
+#shortdescr=A control style
+
+[paintbox]
+#title=Symbol Paintbox
+#shortdescr=A control style
+
+[imagebox]
+#title=Symbol Imagebox
+#shortdescr=A control style
+
+[parent]
+#title=Symbol Parent
+#shortdescr=A control style
+
+[owner]
+#title=Symbol Owner
+#shortdescr=A control style
+
+[width]
+#title=Symbol Width
+#shortdescr=A drawing style
+
+[color]
+#title=Symbol Color
+#shortdescr=A drawing style
+
+[destination]
+#title=Symbol Destination
+#shortdescr=A drawing style
+
+[source]
+#title=Symbol Source
+#shortdescr=A drawing style
+
+[text]
+#title=Symbol Text
+#shortdescr=A text style
+
+[filename]
+#title=Symbol FileName
+#shortdescr=A file style
+
+[imagecopy]
+#title=Symbol ImageCopy
+#shortdescr=An image drawing style

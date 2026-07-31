@@ -1,0 +1,110 @@
+[#general#]
+#name=win32'io
+#shortdescr=Provides classes that implements the input / output operations
+
+[#list#]
+console
+consolereader
+consolewriter
+filereader
+filewriter
+stdconsole
+stdinput
+stdoutput
+textfileappend
+textfilenew
+textfilereader
+textfilero
+textfilewriter
+
+[stdoutput]
+#shortdescr=A standard console output writer
+#protocol=std_textwriter
+#method=<<,std_printable;Writes the object text representation to the stream
+
+[console]
+#title=Class Console
+#shortdescr=A console class
+#parent=elena.html#object:Object
+#protocol=std_stream
+#property=textwriter:std'properties'TextWriter;The console output writer
+#property=textreader:std'properties'TextReader;The console input reader
+
+[stdconsole]
+#shortdescr=A standard console
+#property=textwriter:std'properties'TextWriter;The console output writer
+#property=textreader:std'properties'TextReader;The console input reader
+
+[consolewriter]
+#title=Class ConsoleWriter
+#shortdescr=A console writer class
+#parent=elena.html#object:Object
+#protocol=std_writer
+#method=new,win32protocol.html#win32_handle;Assigns console output handle
+
+[consolereader]
+#title=Class ConsoleReader
+#shortdescr=A console reader class
+#parent=elena.html#object:Object
+#protocol=std_reader
+#method=clear,,;Clears the input buffer
+#method=get,,std_char;Reads the next symbol from console input buffer.If there is no records it waits for the next one
+#method=new,win32protocol.html#win32_handle;Assigns console output handle
+
+[stdinput]
+#shortdescr=A standard console input reader
+#protocol=std_textreader
+method=>>,std_readable,object;Reads the value from the console and returns it
+
+[textfilero]
+#title=Class TextFileRO
+#shortdescr=A read only text file
+#parent=elena.html#object:Object
+#protocol=std_stream
+#field=thehandle;the file handle
+#method=new,std_literal;Assigns the handle to the specified file path
+
+[filereader]
+#title=Class FileReader
+#shortdescr=A file reader class
+#parent=elena.html#object:Object
+#protocol=std_reader
+#method=new,win32protocol.html#win32_handle;Assigns the file handle
+
+[textfilereader]
+#title=Class TextFileReader
+#shortdescr=A text file reader class
+#parent=elena.html#object:Object
+#parent=filereader:win32'io'FileReader
+#protocol=std_reader
+#method=new,win32protocol.html#win32_handle;Assigns the file handle
+
+[filewriter]
+#title=Class FileWriter
+#shortdescr=A file writer class
+#parent=elena.html#object:Object
+#protocol=std_writer
+#method=new,win32protocol.html#win32_handle;Assigns the file handle
+
+[textfilewriter]
+#title=Class TextFileWriter
+#shortdescr=A text file writer class
+#parent=elena.html#object:Object
+#protocol=std_writer
+#method=new,win32protocol.html#win32_handle;Assigns the file handle
+
+[textfilenew]
+#title=Class TextFileNew
+#shortdescr=A new text file
+#parent=elena.html#object:Object
+#protocol=std_stream
+#field=thehandle;the file handle
+#method=new,std_literal;Assigns the handle to the specified file path
+
+[textfileappend]
+#title=Class TextFileAppend
+#shortdescr=A existing text file in append mode
+#parent=elena.html#object:Object
+#protocol=std_stream
+#field=thehandle;the file handle
+#method=new,std_literal;Assigns the handle to the specified file path

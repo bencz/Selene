@@ -1,0 +1,88 @@
+[#general#]
+#name=win32'socket'Primitives
+#shortdescr=Provides socket api wrappers
+
+[#list#]
+clientsockettype
+listenersocket
+listenersockettype
+remotesockettype
+socket
+socketinfo
+socketreader
+socketwriter
+sockettype
+
+[socketinfo]
+#title=Symbol SocketInfo
+#shortdescr=A socket routine initializer
+
+[socket]
+#title=Class SOCKET
+#shortdescr=A socket primitive type
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=win32api.html#dword:win32'api'DWORD
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#protocol=std_stream
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Closes the socket
+
+[listenersocket]
+#title=Class ListenerSOCKET
+#shortdescr=A listening socket primitive type
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=win32api.html#dword:win32'api'DWORD
+#parent=socket:win32'socket'primitives'SOCKET
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#protocol=std_stream
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Closes the socket
+#method=open,,;Starts to listen
+
+[socketreader]
+#title=Class SOCKETReader
+#shortdescr=A socket reader class
+#parent=elena.html#object:Object
+#protocol=std_reader
+#method=new,object;Initializes the reader
+
+[socketwriter]
+#title=Class SOCKETWriter
+#shortdescr=A socket writer class
+#parent=elena.html#object:Object
+#protocol=std_writer
+#method=new,object;Initializes the writer
+
+[listenersockettype]
+#title=Symbol ListenerSocketType
+#shortdescr=A listener socket factory
+#protocol=factory
+#method=create,std_int;Creates the socket
+
+[remotesockettype]
+#title=Symbol RemoteSocketType
+#shortdescr=A remote socket factory
+#protocol=factory
+#method=create,object;Creates the socket
+
+[clientsockettype]
+#title=Symbol ClientSocketType
+#shortdescr=A client socket helper
+#protocol=factory
+#protocol=typecaster
+#method=create,object;Creates the socket
+#method=of,object;Returns the socket wrapper
+
+[sockettype]
+#title=Symbol SocketType
+#shortdescr=A socket helper
+#protocol=typecaster
+#method=of,object;Returns the socket wrapper

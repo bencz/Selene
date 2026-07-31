@@ -1,0 +1,95 @@
+[#general#]
+#name=std'basic'memory
+#shortdescr=Provides classes that describe the basic operations with the program heap.
+
+[#list#]
+bytearray
+bytearrayreader
+bytearraytype
+bytearraywriter
+buffer
+bufferreader
+buffertype
+bufferwriter
+
+[bytearray]
+#title=Symbol ByteArray
+#shortdescr=A ByteArray property.<br>Is used to return the dump object.
+#protocol=std_bytearray
+#protocol=std_stream
+#method=length,,std_int;Returns the byte array length
+
+[buffer]
+#title=Class Buffer
+#shortdescr=A dump buffer.
+#parent=elena.html#object:Object
+#field=thedump;The dump
+#protocol=std_bytearray
+#protocol=std_buffer
+#protocol=std_stream
+#property=reader:std'properties'Reader;The buffer reader
+#property=writer:std'properties'Writer;The buffer writer
+#property=stdbasic.html#length:std'basic'Length;The buffer actual length
+#property=#bytearray:std'memory'ByteArray;An array of bytes
+#method=<<,std_bytearray;Copies the byte array
+#method=clear,,;Resets the buffer by setting its length to zero
+#method=new,std_int;Allocates the specified memory dump
+#method=length,,std_int;Returns the dump length
+
+[bytearrayreader]
+#title=Class ByteArrayReader
+#shortdescr=A byte array reader.
+#parent=elena.html#object:Object
+#protocol=std_reader
+#field=thedump;The dump.
+#field=theoffset;The current offset.
+#method=new,std_bytearray;Assigns the reader
+#method=seek,object;Sets the reader position
+#method=position,,std_int;Returns the reader position
+
+[bytearraywriter]
+#title=Class ByteArrayWriter
+#shortdescr=A byte array writer.
+#parent=elena.html#object:Object
+#protocol=std_writer
+#field=thedump;The dump.
+#field=theoffset;The current offset.
+#method=new,std_bytearray;Assigns the writer
+#method=seek,object;Sets the writer position
+#method=position,,std_int;Returns the writer position
+
+[bufferreader]
+#title=Class BufferReader
+#shortdescr=A buffer reader.
+#parent=elena.html#object:Object
+#protocol=std_reader
+#field=thebuffer;The buffer.
+#field=thereader;The reader.
+#method=new,std_buffer;Assigns the reader
+#method=seek,object;Sets the reader position
+#method=position,,std_int;Returns the reader position
+
+[bufferwriter]
+#title=A class BufferWriter
+#shortdescr=A buffer writer.
+#parent=elena.html#object:Object
+#protocol=std_writer
+#field=thebuffer;The buffer.
+#field=thewriter;The writer
+#method=new,std_buffer;Assigns the writer
+#method=seek,object;Sets the writer position
+#method=position,,std_int;Returns the writer position
+
+[bytearraytype]
+#title=Symbol ByteArrayType
+#shortdescr=A byte array helper.
+#protocol=typecaster
+#protocol=factory
+#method=create,arraylength,std_bytearray;Creates the byte array with the provided length
+#method=of,std_bytearray,object;Tries to return the character value
+
+[buffertype]
+#title=Symbol BufferType
+#shortdescr=A buffer helper.
+#protocol=typecaster
+#method=of,std_buffer,object;Tries to return the character value

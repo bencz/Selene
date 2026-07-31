@@ -1,0 +1,295 @@
+[#general#]
+#name=win32'api
+#shortdescr=Provides classes that implement the primitive data operations for win32 package
+
+[#list#]
+bitmaptype
+classtype
+comandline
+cursor
+dialogloopaction
+dword
+filehandle
+filehandletype
+handle
+handletype
+hbitmap
+hbrush
+hdc
+hinstance
+hpen
+hwnd
+hwndtype
+id
+instance
+lparam
+lpstr
+lpvoid
+message
+msg
+paintstruct
+penfactory
+sdiloopaction
+stdoutput
+systemcolor
+systemcolorbrush
+wparam
+
+[handle]
+#title=Class Handle
+#shortdescr=A handle primitive type
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+
+[dword]
+#title=Class DWORD
+#shortdescr=A DWORD wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#protocol=value
+#protocol=std_int
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+
+[stdoutput]
+#title=Symbol StdOutput handle
+#shortdescr=A console standard output handle
+#protocol=win32protocol.html#win32_handle
+
+[handletype]
+#title=Symbol HandleType
+#shortdescr=A handle adapter
+#protocol=typecaster
+#method=of,object,win32protocol.html#win32_handle;Tries to convert the parameter to a win32 handle
+
+[filehandletype]
+#title=Symbol FileHandleType
+#shortdescr=A file handle adapter
+#protocol=typecaster
+#method=of,object,win32protocol.html#win32_handle;Tries to convert the parameter to a win32 handle
+#method=create,win32protocol.html#win32_fileattributes,win32protocol.html#win32_handle;Creates the file handle with specified atributes
+
+[filehandle]
+#title=Class FileHandle
+#shortdescr=A FileHandle wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#parent=handle:win32'api'Handle
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#protocol=std_reader
+#protocol=std_writer
+#method===,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Closes the file and releases the handle
+
+[lpstr]
+#title=Class LPSTR
+#shortdescr=An LPSTR primitive type
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#protocol=value
+#protocol=std_literal
+#protocol=std_printable
+#method===,std_int,bool;Compares the object value with the operand one.
+#method!==,std_int,bool;Compares the object value with the operand one.
+#method=new,std_literal;Assigns the pointer to the specifed string
+
+[comandline]
+#title=Symbol ComandLine
+#shortdescr=An application command line
+
+[instance]
+#title=Symbol Instance
+#shortdescr=An current HINSTANCE
+
+[hinstance]
+#title=Class HINSTANCE
+#shortdescr=A HINSTANCE wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#protocol=value
+#protocol=std_int
+#protocol=win32protocol.html#hinstance:hinstance
+#method===,std_int,bool;Compares the object value with the operand one.
+#method!==,std_int,bool;Compares the object value with the operand one.
+
+[hwnd]
+#title=Class FileHandle
+#shortdescr=A FileHandle wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#parent=handle:win32'api'Handle
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=win32protocol.html#win32_hwnd:win32_hwnd
+#protocol=value
+#protocol=std_int
+#method===,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=free,,;Releases the window handle
+#method=refresh,,;Forces the window to be repaint
+
+[hwndtype]
+#title=Symbol FileHandleType
+#shortdescr=A file handle adapter
+#protocol=typecaster
+#method=of,object,win32protocol.html#win32_hwnd;Tries to convert the parameter to HWND
+#method=create,win32protocol.html#win32_fileattributes,win32protocol.html#win32_hwnd;Creates the file handle with specified atributes
+
+[lpvoid]
+#title=Class LPVOID
+#shortdescr=An LPVOID primitive type
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#protocol=value
+#method===,std_int,bool;Compares the object value with the operand one.
+#method!==,std_int,bool;Compares the object value with the operand one.
+#method=new,object;Assigns the pointer to the specifed object
+
+[cursor]
+#title=Class Cursor
+#shortdescr=A cursor wrapper
+#parent=elena.html#object:Object
+#method=new,std_int;Sets the cursor
+
+[msg]
+#title=class MSG
+#shortdescr=A MSG structure primitive type
+#parent=elena.html#object:Object
+
+[message]
+#title=class Message
+#shortdescr=A Message class
+#parent=elena.html#object:Object
+#protocol=win32protocol.html#win32_message:win32_message
+#method=new,win32protocol.html#win32_message;Initialized the message
+
+[hdc]
+#title=Class HDC
+#shortdescr=An HDC wrapper class
+#parent=elena.html#object:Object
+#protcol=win32protocol.html#hdc:hdc
+#method=close,,;Releases resources assigned for HDC.
+#method=new,win32protocol.html#hdc;Copies the HDC handle if provided
+
+[hpen]
+#title=Class HPEN
+#shortdescr=An HPEN wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#parent=handle:win32'api'Handle
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#method===,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Releases the handle
+
+[hbrush]
+#title=Class HBRUSH
+#shortdescr=An HBRUSH wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#parent=handle:win32'api'Handle
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#method===,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Releases the handle
+
+[paintstruct]
+#title=Class PAINTSTRUCT
+#shortdescr=A PAINTSTRUCT wrapper class
+#parent=elena.html#object:Object
+#protcol=win32protocol.html#hdc:hdc
+#method=close,win32protocol.html#win32_hwnd;Open the structure for drawing
+#method=open,win32protocol.html#win32_hwnd;Close the structure after the drawing
+
+[hbitmap]
+#title=Class HBITMAP
+#shortdescr=An HBITMAP wrapper class
+#parent=elena.html#object:Object
+#parent=stdbasic.html#magnitude:std'basic'Magnitude
+#parent=dword:win32'api'DWORD
+#parent=handle:win32'api'Handle
+#protocol=win32protocol.html#win32_handle:win32_handle
+#protocol=value
+#protocol=std_int
+#method===,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,win32protocol.html#win32_handle,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=close,,;Releases the handle
+
+[wparam]
+#title=Symbol WParam
+#shortdescr=A message WParam property
+
+[lparam]
+#title=Symbol LParam
+#shortdescr=A message LParam property
+
+[id]
+#title=Symbol ID
+#shortdescr=A message ID property
+
+[systemcolor]
+#title=Symbol SystemColor
+#shortdescr=A system color helper
+#method=new,std_int,object;Returns the appropriate system color
+
+[systemcolorbrush]
+#title=Symbol SystemColorBrush
+#shortdescr=A system color brush helper
+#method=new,std_int,object;Returns the appropriate system color brush
+
+[classtype]
+#title=Symbol ClassType
+#shortdescr=A class handle adapter
+#protocol=factory
+#method=create,win32protocol.html#win32_class,object;Creates the class handle with specified atributes
+
+[bitmaptype]
+#title=Symbol BitmapType
+#shortdescr=A bitmap handle adapter
+#protocol=factory
+#method=create,win32protocol.html#win32_bitmapattr,win32protocol.html#win32_handle;Creates the class handle with specified atributes
+
+[penfactory]
+#title=Symbol PenFactory
+#shortdescr=A pen handle adapter
+#protocol=factory
+#method=create,win32protocol.html#win32_penattr,win32protocol.html#win32_handle;Creates the pen handle with specified atributes
+
+[brushfactory]
+#title=Symbol BrushFactory
+#shortdescr=A brush handle adapter
+#protocol=factory
+#method=create,win32protocol.html#win32_brushattr,win32protocol.html#win32_handle;Creates the brush handle with specified atributes
+
+[sdiloopaction]
+#title=Class SDILoopAction
+#shortdescr=A SDI loop action
+#parent=elena.html#object:Object
+#protocol=action
+#method=proceed,win32protocol.html#win32_hwnd;Broadcast the window message
+
+[dialogloopaction]
+#title=Class DialogLoopAction
+#shortdescr=A dialog loop action
+#parent=elena.html#object:Object
+#protocol=action
+#method=proceed,win32protocol.html#win32_hwnd;Executes the loop until the window is not closed

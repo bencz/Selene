@@ -1,0 +1,41 @@
+[#general#]
+#name=ext'utilities
+#shortdescr=Provides utility classes
+
+[#list#]
+date
+datetype
+now
+timespan
+randomgenerator
+randomvalue
+
+[randomgenerator]
+#title=Symbol RandomGenerator
+#shortdescr=A pseudo-random generator
+
+[randomvalue]
+#title=Symbol RandomValue
+#shortdescr=A pseudo-random value
+#protocol=std_int
+#method=new,std_int,std_int;Generates the random number within a specified range (from 0 till the operand value)
+
+[date]
+#title=Class Date
+#shortdescr=A date time value
+#parent=elena.html#object:Object
+
+[datetype]
+#title=Symbol RandomValue
+#shortdescr=A pseudo-random value
+#protocol=typecaster
+#method=of,object,object;Tries to return the date time value
+
+[now]
+#title=Symbol Now
+#shortdescr=A current date
+
+[timespan]
+#title=Class TimeSpan
+#shortdescr=A time span
+#parent=elena.html#object:Object

@@ -1,0 +1,638 @@
+[#general#]
+#name=std'basic                                              
+#shortdescr=Provides classes that describe the basic data types.
+
+[#list#]
+array
+arrayextension
+arrayindexer
+arraytype
+basicextension
+boolean
+booleantype
+char
+chartype
+charvalue
+false
+hidword
+hiword
+indexer
+integer
+integerextension
+integertype
+intnumber
+literal
+literalindexer
+literaltype
+literalextension
+lodword
+longtype
+longnumber
+loword
+magnitude
+nilvalue
+real
+realextension
+realnumber
+realtype
+string
+stringindexer
+stringextension
+stringtype
+stringwriter
+substring
+true
+variantvalue
+
+[literal]
+#title=Class Literal
+#shortdescr=A Unicode literal constant.
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#protocol=magnitude
+#protocol=value
+#protocol=std_enumerable
+#protocol=std_array
+#protocol=std_literal
+#protocol=std_compatible
+#protocol=std_printable
+#protocol=std_writable
+#method=+,std_literal,std_literal;Returns the concatenated string.
+#method===,std_literal,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_literal,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_literal,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_literal,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_literal,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_literal,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=@,std_int,std_char;Returns the character at a specified position.
+#method=clone,,std_literal;Returns the literal string copy
+#method=length,,std_int;Returns the array length
+
+[literaltype]
+#title=Symbol LiteralType
+#shortdescr=A literal value helper.
+#protocol=typecaster
+#protocol=factory
+#protocol=std_readable
+#method=create,arraylength,std_literal;Creates the literal with the provided length
+#method=of,std_literal,object;Tries to return the object literal value
+
+[magnitude]
+#title=Class Magnitude
+#shortdescr=An abstract class Magnitude
+#parent=elena.html#object:object
+#protocol=value
+#protocol=magnitude
+#method===,value,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,value,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,magnitude,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,magnitude,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,magnitude,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,magnitude,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=std'basic'$equal,object;Fails if the object is not equal to the opernand.<br/><b>Should be overridden.</b>
+#method=std'basic'$less,object;Fails if the object bigger or equal to the opernand.<br/><b>Should be overridden.</b>
+
+[intnumber]
+#title=Class IntNumber
+#shortdescr=A 32bit Integer value
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#protocol=arithmetic
+#protocol=value
+#protocol=magnitude
+#protocol=std_compatible
+#protocol=std_int
+#protocol=std_printable
+#protocol=std_real
+#protocol=std_writable
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_int,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_int,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_int,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_int,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=+,std_int,value;Returns the sum of two integer numbers.
+#method=-,std_int,value;Returns the difference of two integer numbers.
+#method=*,std_int,value;Returns the product of two integer numbers.
+#method=/,std_int,value;Returns the fraction of two integer numbers.
+#method=allmask,std_int;Succeeds if all operand bits are set.
+#method=and,std_int,value;Returns the result of bitwise AND operation.
+#method=anymask,std_int;Succeeds if any operand bit is set.
+#method=clone,,std_int;Returns the number copy
+#method=new,std_int;Assigns the initial value or zero if not provided
+#method=not,,std_int;Returns the inverted number
+#method=or,std_int,std_int;Returns the result of Bitwise OR operation.
+#method=shift,std_int,std_int;Returns the result of bitwise shift
+#method=xor,std_int,std_int;Returns the result of Bitwise XOR operation.
+
+[true]
+#title=Symbol True
+#shortdescr=A true boolean value
+#protocol=bool
+#protocol=value
+#protocol=std_bool
+#protocol=std_printable
+#method=?,,;Always succeeds
+#method===,std_bool,std_bool;Returns <b>true</b> if the parameter is <b>true</b> otherwise <b>false</b>
+#method=!=,std_bool,std_bool;Returns <b>true</b> if the parameter is <b>false</b> otherwise <b>false</b>
+#method=and,std_bool,std_bool;Returns the result of the logical AND operation.
+#method=if,bool;Succeeds if the parameter is true
+#method=not,,std_bool;Always returns <b>false</b>.
+#method=or,std_bool,std_bool;Always returns <b>true</b>.
+#method=xor,std_bool,std_bool;Returns the result of the logical XOR operation.
+
+[false]
+#title=Symbol False
+#shortdescr=A false boolean value
+#protocol=bool
+#protocol=value
+#protocol=std_bool
+#protocol=std_printable
+#method=!,,;Always succeeds.
+#method===,std_bool,std_bool;Returns <b>true</b> if the parameter is <b>false</b> otherwise <b>false</b>
+#method=!=,std_bool,std_bool;Returns <b>true</b> if the parameter is <b>true</b> otherwise <b>false</b>
+#method=and,std_bool,std_bool;Always returns <b>false</b>.
+#method=if,bool;Succeeds if the parameter is false
+#method=not,,std_bool;Always returns <b>true</b>.
+#method=or,std_bool,std_bool;Returns the result of the logical OR operation.
+#method=xor,std_bool,std_bool;Returns the result of the logical XOR operation.
+
+[literalextension]
+#title=Symbol LiteralExtension
+#shortdescr=A literal extension.<br>Could be used for horizontal inheritance of basic literal functionality
+#protocol=std_compatible
+#protocol=std_enumerable
+#protocol=std_literal
+#protocol=std_printable
+#protocol=std_writable
+
+[arraytype]
+#title=Symbol ArrayType
+#shortdescr=An array helper.
+#protocol=typecaster
+#protocol=factory
+#method=create,object,std_array;Creates the array with the provided length
+#method=of,std_array,object;Tries to return the array
+
+[integer]
+#title=Class Integer
+#shortdescr=An 32bit Integer variable
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#parent=intnumber:std'basic'IntNumber
+#protocol=arithmetic
+#protocol=arithmetic_variable
+#protocol=value
+#protocol=magnitude
+#protocol=std_int
+#protocol=std_compatible
+#protocol=std_printable
+#protocol=std_readable
+#protocol=std_real
+#protocol=std_writable
+#method===,std_int,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_int,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_int,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_int,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_int,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_int,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=+,std_int,std_int;Returns the sum of two integer numbers.
+#method=-,std_int,std_int;Returns the difference of two integer numbers.
+#method=*,std_int,std_int;Returns the product of two integer numbers.
+#method=/,std_int,std_int;Returns the fraction of two integer numbers.
+#method=<<,std_int;Copies an integer value
+#method=+=,std_int;Adds an operand to the integer.
+#method=-=,std_int;Subtracts an operand from the integer
+#method=*=,std_int;Multiplies the integer by an operand.
+#method=/=,std_int;Divides the integer into an operand.
+#method=allmask,std_int;Succeeds if all operand bits are set.
+#method=and,std_int,value;Returns the result of bitwise AND operation.
+#method=anymask,std_int;Succeeds if any operand bit is set.
+#method=clone,,std_int;Returns the number copy
+#method=new,std_int;Assigns the initial value or zero if not provided
+#method=next,,;Increments the value
+#method=not,,std_int;Returns the inverted number
+#method=or,std_int,std_int;Returns the result of Bitwise OR operation.
+#method=previous,,;Decrements the value
+#method=shift,std_int,std_int;Returns the result of bitwise shift
+#method=xor,std_int,std_int;Returns the result of Bitwise XOR operation.
+
+[basicextension]
+#title=Symbol BasicExtension
+#shortdescr=A basic type extension.<br>Could be used for horizontal inheritance of basic functionality
+#protocol=std_readable
+#protocol=std_printable
+
+[integertype]
+#title=Symbol IntegerType
+#shortdescr=An integer number helper.
+#protocol=typecaster
+#protocol=factory
+#method=of,std_int,object;Tries to return the object integer value
+
+[string]
+#title=Class String
+#shortdescr=A class storing a literal value
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#field=theliteral;A literal value.
+#protocol=magnitude
+#protocol=value
+#protocol=variable
+#protocol=std_compatible
+#protocol=std_enumerable
+#protocol=std_array
+#protocol=std_literal
+#protocol=std_printable
+#protocol=std_readable
+#protocol=std_string
+#protocol=std_writable
+#method===,std_literal,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_literal,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_literal,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_literal,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_literal,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_literal,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=<<,std_literal;Copies the parameter literal value
+#method=+,std_literal,std_literal;Returns the concatenated string.
+#method=+=,std_literal;Appends a literal to the string.
+#method=@,std_int,std_char;Returns the character at a specified position.
+#method=clear,,;Clears the string
+#method=clone,,object;Returns the string variable copy
+#method=length,,std_int;Returns the array length
+#method=new,std_literal;Assigns the literal value
+
+[stringextension]
+#title=Symbol StringExtension
+#shortdescr=A string type extension.<br>Could be used for horizontal inheritance of basic string functionality
+#protocol=std_readable
+
+[stringtype]
+#title=Symbol StringType
+#shortdescr=A string helper.
+#protocol=factory
+
+[variantvalue]
+#title=Class VariantValue
+#protocol=std_literal
+#protocol=std_int
+#shortdescr=A variant value.<br>Is used for explicit converting to basic data types
+#parent=elena.html#object:Object
+#field=thevalue;A value.
+#method=new,std_compatible;Assigns the basic data type compatible object
+
+[integerextension]
+#title=Symbol IntegerExtension
+#shortdescr=An integer type extension.<br>Could be used for horizontal inheritance of basic integer functionality
+#protocol=std_compatible
+#protocol=std_writable
+
+[indexer]
+#title=A class Indexer
+#shortdescr=A base array indexer adapter
+#parent=elena.html#object:Object
+#protocol=std_indexer
+#field=thearray;The indexing object
+#field=theindex;The index
+
+[literalindexer]
+#title=Class LiteralIndexer
+#shortdescr=A literal indexer
+#parent=elena.html#object:Object
+#parent=indexer:std'basic'Indexer
+#protocol=std_indexer
+#field=thearray;The indexing object
+#field=theindex;The index
+#field=thechar;The current char
+#method=new,std_literal;Assigns the literal indexer
+
+[stringindexer]
+#title=Class StringIndexer
+#shortdescr=A string indexer
+#parent=elena.html#object:Object
+#parent=indexer:std'basic'Indexer
+#parent=literalindexer:std'basic'LiteralIndexer
+#protocol=std_indexer
+#field=thearray;The indexing object
+#field=theindex;The index
+#field=thechar;The current char
+#method=new,std_string;Assigns the string indexer
+
+[charvalue]
+#title=Class CharValue
+#shortdescr=A literal character value.
+#parent=elena.html#object:Object
+#parent=magnitude:std'prototypes'Magnitude
+#protocol=magnitude
+#protocol=value
+#protocol=std_int
+#protocol=std_char
+#protocol=std_compatible
+#protocol=std_literal
+#protocol=std_printable
+#protocol=std_writable
+#method===,std_char,bool;Returns <b>true</b> if the object is equal to the operand otherwise <b>false</b>.
+#method=!=,std_char,bool;Returns <b>true</b> if the object is not equal to the operand otherwise <b>false</b>.
+#method=>,std_char,bool;Returns <b>true</b> if the object is greater than the operand otherwise <b>false</b>.
+#method=<,std_char,bool;Returns <b>true</b> if the object is less than the operand otherwise <b>false</b>.
+#method=>=,std_char,bool;Returns <b>true</b> if the object is greater or equal to the operand otherwise <b>false</b>.
+#method=<=,std_char,bool;Returns <b>true</b> if the object is less or equal to the operand otherwise <b>false</b>.
+#method=clone,,std_char;Returns the character copy
+#method=new,std_int;Assigns the initial value or zero if not provided
+
+[char]
+#title=Class Char
+#shortdescr=A literal character.
+#parent=elena.html#object:Object
+#parent=magnitude:std'prototypes'Magnitude
+#parent=charvalue:std'prototypes'CharValue
+#protocol=magnitude
+#protocol=value
+#protocol=arithmetic_variable
+#protocol=std_int
+#protocol=std_char
+#protocol=std_compatible
+#protocol=std_literal
+#protocol=std_printable
+#protocol=std_writable
+#method===,std_char,bool;Returns <b>true</b> if the object is equal to the operand otherwise <b>false</b>.
+#method=!=,std_char,bool;Returns <b>true</b> if the object is not equal to the operand otherwise <b>false</b>.
+#method=>,std_char,bool;Returns <b>true</b> if the object is greater than the operand otherwise <b>false</b>.
+#method=<,std_char,bool;Returns <b>true</b> if the object is less than the operand otherwise <b>false</b>.
+#method=>=,std_char,bool;Returns <b>true</b> if the object is greater or equal to the operand otherwise <b>false</b>.
+#method=<=,std_char,bool;Returns <b>true</b> if the object is less or equal to the operand otherwise <b>false</b>.
+#method=<<,std_int;Copies a low integer word
+#method=+=,std_int;Adds an integer value to the object and store the low part.
+#method=-=,std_int;Subtracts the integer value from the integer and store the low part
+#method=*=,std_int;Multiplies the object by an integer value and store the low part.
+#method=/=,std_int;Divides the object into an integer value and store the low part.
+#method=clone,,std_char;Returns the character copy
+#method=new,std_int;Assigns the initial value or zero if not provided
+
+[hiword]
+#title=Symbol HiWord
+#shortdescr=A HiWord property.<br>Is used to return the integer high word.
+#method=new,std_int;Returns the integer high word.
+
+[loword]
+#title=Symbol LoWord
+#shortdescr=A LoWord property.<br>Is used to return the integer low word.
+#method=new,std_int;Returns the integer low word.
+
+[realnumber]
+#title=Class RealNumber
+#shortdescr=A 64bit Floating-point value
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#protocol=arithmetic
+#protocol=value
+#protocol=magnitude
+#protocol=std_compatible
+#protocol=std_real
+#protocol=std_printable
+#protocol=std_writable
+#method===,std_real,bool;Returns <b>true</b> if the object is equal to the operand otherwise <b>false</b>.
+#method=!=,std_real,bool;Returns <b>true</b> if the object is not equal to the operand otherwise <b>false</b>.
+#method=<,std_real,bool;Returns <b>true</b> if the object is less than the operand otherwise <b>false</b>.
+#method=>,std_real,bool;Returns <b>true</b> if the object is greater than the operand otherwise <b>false</b>.
+#method=>=,std_real,bool;Returns <b>true</b> if the object is greater or equal to the operand otherwise <b>false</b>.
+#method=<=,std_real,bool;Returns <b>true</b> if the object is less or equal to the operand otherwise <b>false</b>.
+#method=+,std_real,std_real;Returns the sum of two real numbers.
+#method=-,std_real,std_real;Returns the difference of two real numbers.
+#method=*,std_real,std_real;Returns the product of two real numbers.
+#method=/,std_real,std_real;Returns the fraction of two real numbers.
+#method=clone,,std_real;Returns the number copy
+#method=new,std_real;Assigns the initial value or zero if not provided
+
+[real]
+#title=Class Real
+#shortdescr=A 64bit Floating-point variable
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#parent=realnumber:std'basic'RealNumber
+#protocol=arithmetic
+#protocol=arithmetic_variable
+#protocol=magnitude
+#protocol=value
+#protocol=std_compatible
+#protocol=std_readable
+#protocol=std_real
+#protocol=std_printable
+#protocol=std_writable
+#method===,std_real,bool;Returns <b>true</b> if the object is equal to the operand otherwise <b>false</b>.
+#method=!=,std_real,bool;Returns <b>true</b> if the object is not equal to the operand otherwise <b>false</b>.
+#method=<,std_real,bool;Returns <b>true</b> if the object is less than the operand otherwise <b>false</b>.
+#method=>,std_real,bool;Returns <b>true</b> if the object is greater than the operand otherwise <b>false</b>.
+#method=>=,std_real,bool;Returns <b>true</b> if the object is greater or equal to the operand otherwise <b>false</b>.
+#method=<=,std_real,bool;Returns <b>true</b> if the object is less or equal to the operand otherwise <b>false</b>.
+#method=+,std_real,std_real;Returns the sum of two real numbers.
+#method=-,std_real,std_real;Returns the difference of two real numbers.
+#method=*,std_real,std_real;Returns the product of two real numbers.
+#method=/,std_real,std_real;Returns the fraction of two real numbers.
+#method=<<,std_real;Copies a 64bit real value
+#method=+=,std_real;Adds an operand value to the real number.
+#method=-=,std_real;Subtracts an operand from the real number.
+#method=*=,std_real;Multiplies the real number by an operand. 
+#method=/=,std_real;Divides the real number into an operand. 
+#method=clone,,std_real;Returns the number copy
+#method=new,std_real;Assigns the initial value or zero if not provided
+
+[realextension]
+#title=Symbol RealExtension
+#shortdescr=A real number type extension.<br>Could be used for horizontal inheritance of basic real number functionality
+#protocol=std_compatible
+#protocol=std_writable
+
+[realtype]
+#title=Symbol RealType
+#shortdescr=A real number helper.
+#protocol=typecaster
+#protocol=factory
+#method=of,std_real,object;Tries to return the object integer value
+
+[boolean]
+#title=Class Boolean
+#shortdescr=A Boolean value storage class
+#parent=elena.html#object:Object
+#protocol=bool
+#protocol=value
+#protocol=variable
+#protocol=std_bool
+#protocol=std_compatible
+#protocol=std_printable
+#method=?,,;Succeeds if the object has <b>true</b> value.
+#method=!,,;Succeeds if the object has <b>false</b> value.
+#method===,std_bool,bool;Returns <b>true</b> if the object is equal to the operand otherwise <b>false</b>.
+#method=!=,std_bool,bool;Returns <b>true</b> if the object is not equal to the operand otherwise <b>false</b>.
+#method=<<,std_bool;Copies the operand value to the object.
+#method=and,std_bool,bool;Returns the result of the logical AND operation.
+#method=if,bool;Succeeds if the parameter is equal to the object
+#method=new,std_bool;Assigns the default value
+#method=or,std_bool,bool;Returns the result of the logical OR operation.
+#method=xor,std_bool,bool;Returns the result of the logical XOR operation.
+
+[nilvalue]
+#title=Symbol NilValue
+#shortdescr=A nil value symbol
+#protocol=value
+#method===,object,bool;Returns <b>true</b> if the operand is nil otherwise returns <b>false</b>.
+#method=!=,object,bool;Returns <b>true</b> if the operand is not nil otherwise returns <b>false</b>.
+#method=ifnotnil,,;Always fails
+
+[array]
+#title=Class Array
+#shortdescr=An array class
+#parent=elena.html#object:Object
+#protocol=std_array
+#method=@,std_int,std_item;Returns the array item at the specified position
+#method=length,,std_int;Returns the array length
+
+[arrayextension]
+#title=Symbol ArrayExtension
+#shortdescr=An array extension.<br>Could be used for horizontal inheritance of basic array functionality
+#protocol=std_enumerable
+#protocol=std_array
+
+[arrayindexer]
+#title=Class ArrayIndexer
+#shortdescr=An array indexer
+#parent=elena.html#object:Object
+#parent=indexer:std'basic'Indexer
+#protocol=std_indexer
+#field=thearray;The indexing object
+#field=theindex;The index
+#field=theitem;The current item
+#method=new,std_array;Assigns the array indexer
+
+[longnumber]
+#title=Class LongNumber
+#shortdescr=A 64bit Integer value
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#protocol=arithmetic
+#protocol=value
+#protocol=magnitude
+#protocol=std_compatible
+#protocol=std_int
+#protocol=std_long
+#protocol=std_printable
+#protocol=std_real
+#protocol=std_writable
+#method===,std_long,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_long,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_long,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_long,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_long,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_long,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=+,std_long,value;Returns the sum of two integer numbers.
+#method=-,std_long,value;Returns the difference of two integer numbers.
+#method=*,std_long,value;Returns the product of two integer numbers.
+#method=/,std_long,value;Returns the fraction of two integer numbers.
+#method=allmask,std_long;Succeeds if all operand bits are set.
+#method=and,std_long,value;Returns the result of bitwise AND operation.
+#method=anymask,std_long;Succeeds if any operand bit is set.
+#method=clone,,std_long;Returns the number copy
+#method=new,std_long;Assigns the initial value or zero if not provided
+#method=not,,std_long;Returns the inverted number
+#method=or,std_long,std_long;Returns the result of Bitwise OR operation.
+#method=shift,std_int,std_long;Returns the result of bitwise shift
+#method=xor,std_long,std_long;Returns the result of Bitwise XOR operation.
+
+[longtype]
+#title=Symbol LongType
+#shortdescr=A 64bit integer number helper.
+#protocol=typecaster
+#protocol=factory
+#method=of,std_long,object;Tries to return the object integer value
+
+[integer]
+#title=Class LongInteger
+#shortdescr=An 64bit Integer variable
+#parent=elena.html#object:Object
+#parent=magnitude:std'basic'Magnitude
+#parent=intnumber:std'basic'IntNumber
+#protocol=arithmetic
+#protocol=arithmetic_variable
+#protocol=value
+#protocol=magnitude
+#protocol=std_int
+#protocol=std_compatible
+#protocol=std_printable
+#protocol=std_readable
+#protocol=std_real
+#protocol=std_writable
+#method===,std_long,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,std_long,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,std_long,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,std_long,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,std_long,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,std_long,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+#method=+,std_long,std_long;Returns the sum of two integer numbers.
+#method=-,std_long,std_long;Returns the difference of two integer numbers.
+#method=*,std_long,std_long;Returns the product of two integer numbers.
+#method=/,std_long,std_long;Returns the fraction of two integer numbers.
+#method=<<,std_long;Copies an integer value
+#method=+=,std_long;Adds an operand to the integer.
+#method=-=,std_long;Subtracts an operand from the integer
+#method=*=,std_long;Multiplies the integer by an operand.
+#method=/=,std_long;Divides the integer into an operand.
+#method=allmask,std_long;Succeeds if all operand bits are set.
+#method=and,std_long,value;Returns the result of bitwise AND operation.
+#method=anymask,std_long;Succeeds if any operand bit is set.
+#method=clone,,std_long;Returns the number copy
+#method=new,std_long;Assigns the initial value or zero if not provided
+#method=next,,;Increments the value
+#method=not,,std_long;Returns the inverted number
+#method=or,std_long,std_int;Returns the result of Bitwise OR operation.
+#method=previous,,;Decrements the value
+#method=shift,std_long,std_long;Returns the result of bitwise shift
+#method=xor,std_long,std_long;Returns the result of Bitwise XOR operation.
+
+[stringwriter]
+#title=Class StringWriter
+#shortdescr=A string writer
+#parent=elena.html#object:Object
+#field=thestring;The string
+#protocol=std_writer
+#method=new,value;Assigns the target string
+
+[hidword]
+#title=Symbol HiDWord
+#shortdescr=A HiDWord property.<br>Is used to return the high integer.
+#method=new,std_long;Returns the high double word.
+
+[lodword]
+#title=Symbol LoDWord
+#shortdescr=A LoDWord property.<br>Is used to return the low integer.
+#method=new,std_long;Returns the low double word.
+
+[booleantype]
+#title=Symbol BooleanType
+#shortdescr=A boolean helper.
+#protocol=typecaster
+#protocol=factory
+#method=of,std_bool,bool;Tries to return the object boolean value
+
+[chartype]
+#title=Symbol CharType
+#shortdescr=A char helper.
+#protocol=typecaster
+#method=of,std_char,object;Tries to return the character value
+
+[substring]
+#title=Symbol SubString
+#shortdescr=A sub string property.<br>Is used to return the sub string.
+#protocol=substring
+#method=new,range,std_literal;Returns the sub string
+
+[imagelist]
+#title=Class ImageList
+#shortdescr=An image list
+#parent=elena.html#object:Object
+#field=thelist;The image list
+#field=theparent;The control parent
+#protocol=std_array
+#protocol=std_enumerable
+#method=new,guiprotocol.html#container;Creates the control
+#method=@,value,std_item;Returns the image list item at the specified position
+#method=+=,std_literal;Loads the bitmap with specified name and adds it to the end of the list

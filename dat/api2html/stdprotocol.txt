@@ -1,0 +1,318 @@
+[#general#]
+#name=Standard Protocols
+#shortdescr=ELENA standart protocols.
+
+[#list#]
+action
+arithmetic
+array
+arraylength
+bool
+collection
+container
+counter
+enumerator
+factory
+indexer
+magnitude
+object
+pattern
+point
+range
+size
+typecaster
+value
+variable
+arithmetic_variable
+writer
+std_array
+std_bool
+std_buffer
+std_bytearray
+std_char
+std_compatible
+std_enumerable
+std_group
+std_objectarray
+std_indexer
+std_int
+std_item
+std_iterator
+std_keyvalue
+std_literal
+std_long
+std_printable
+std_readable
+std_reader
+std_real
+std_seekcriteria
+std_stream
+std_string
+std_textwriter
+std_writable
+std_writer
+
+[object]
+#shortdescr=A common object protocol
+#method=back,object,object;Returns the parameter.
+#method=ifnotnil,,;Always succeeds if the variable is not nil.
+#method=ifsame,object,;Succeeds if the parameter refers to the same object.
+#method=new,,;Is executed when the object is created
+
+[factory]
+#shortdescr=An object factory protocol
+#method=create,object,object;Creates the object with provided properties
+
+[magnitude]
+#shortdescr=A magnitude protocol
+#method===,value,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,value,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+#method=>,value,bool;Returns <b>true</b> if the object value is greater than the parameter otherwise <b>false</b>.
+#method=<,value,bool;Returns <b>true</b> if the object value is less than the parameter otherwise <b>false</b>.
+#method=>=,value,bool;Returns <b>true</b> if the object value is greater or equal to the parameter otherwise <b>false</b>.
+#method=<=,value,bool;Returns <b>true</b> if the object value is less or equal to the parameter otherwise <b>false</b>.
+
+[typecaster]
+#shortdescr=An object typecasting action protocol
+#method=of,object,object;Tries to convert the provide object
+
+[value]
+#shortdescr=A value protocol
+#method===,value,bool;Returns <b>true</b> if the object value is equal to the parameter otherwise <b>false</b>.
+#method=!=,value,bool;Returns <b>true</b> if the object value is not equal to the parameter otherwise <b>false</b>.
+
+[bool]
+#shortdescr=A bool protocol
+#method=?,,;Succeeds if the object has <b>true</b> value.
+#method=!,,;Succeeds if the object has <b>false</b> value.
+
+[std_enumerable]
+#shortdescr=An enumerable protocol
+#method=std'properties'$getenumerator,,enumerator;Returns the enumerator
+
+[std_array]
+#shortdescr=An array protocol
+#method=length,,std_int;Returns the array length
+#method=std'basic'$getarray,,object;Returns the array
+#method=std'properties'$getindexer,,std_indexer;Returns the array indexer
+
+[std_literal]
+#shortdescr=A literal value protocol
+#method=std'basic'$getliteral,,object;Returns literal value
+
+[std_printable]
+#shortdescr=A printable protocol
+#method=std'properties'$printon,std_textwriter;Writes the object text represenation to the stream writer
+
+[std_writable]
+#shortdescr=A binary value writable protocol
+#method=std'properties'$writeto,std_writer,object;Writes the object into the writer
+
+[std_writer]
+#shortdescr=A writer protocol
+#method=<<,std_writable;Writes the object into the stream
+#method=std'basic'$writeasliteral,std_literal;Writes the literal value
+#method=std'basic'$writeasint32,std_int;Writes the integer value
+#method=std'basic'$writeasreal64,std_real;Writes the integer value
+
+[enumerator]
+#shortdescr=An enumerator protocol
+#method=end,,;Goes to the last collection item
+#method=get,,object;Returns the current collection item
+#method=next,,;Goes to the next collection item
+#method=previous,,;Goes to the previous collection item
+#method=set,object;Sets the current object
+#method=start,,;Goes to the first collection item
+
+[indexer]
+#shortdescr=An indexer adapter protocol
+#method=delete,counter;Deletes the specified number of items at the current indexer position
+#method=get,,object;Returns the current item
+#method=insert,object;Inserts the parameter into the current indexer position
+#method=seek,object;Goes to the specified in the parameter position
+#method=set,object;Sets the current item
+
+[std_textwriter]
+#shortdescr=A text writer protocol
+#method=<<,std_printable;Writes the object text representation to the stream
+#method=std'basic'$writeasliteral,std_literal;Writes the literal value to the stream
+
+[writer]
+#shortdescr=A writer protocol
+#method=<<,object;Writes the object into the stream
+
+[reader]
+#shortdescr=A reader protocol
+#method=>>,object;Reads the object from the stream
+
+[std_stream]
+#shortdescr=A stream protocol
+#method=std'properties'$gettextwriter,,std_writer;Returns the text writer adapter
+#method=std'properties'$getwriter,,std_writer;Returns the writer adapter
+#method=std'properties'$gettextreader,,std_reader;Returns the text reader adapter
+#method=std'properties'$getreader,,std_reader;Returns the reader adapter
+
+[arithmetic]
+#shortdescr=An arithmetic protocol
+#method=+,object,object;Returns the sum.
+#method=-,object,object;Returns the difference.
+#method=*,object,object;Returns the products
+#method=/,object,object;Returns the fraction.
+
+[std_int]
+#shortdescr=A 32bit integer number protocol
+#method=std'basic'$getinteger,,object;Returns integer value
+
+[array]
+#shortdescr=An array protocol
+#method=length,,object;Returns the array length
+
+[std_compatible]
+#shortdescr=A literal compatible value protocol
+#method=std'basic'$tointeger,,object;Converts to the integer value
+#method=std'basic'$toliteral,,object;Converts to the literal value
+#method=std'basic'$tolong,,object;Converts to the 64bit integer value
+#method=std'basic'$toreal,,object;Converts to the real value
+
+[std_objectarray]
+#shortdescr=An object array protocol
+#method=std'basic'$getarray,,object;Returns an array
+
+[collection]
+#shortdescr=A collection protocol
+#method=+=,object;Adds an item to the collection
+#method=count,,object;Returns a number of items in the collection
+
+[variable]
+#shortdescr=A variable protocol
+#method=<<,object;Copies the object content
+#method=>>,variable;Copies the content into the object
+
+[arithmetic_variable]
+#shortdescr=An arithmetic variable protocol
+#method=<<,object;Copies the object content
+#method=+=,object;Adds an operand to the object.
+#method=-=,object;Subtracts the operand from the object
+#method=*=,object;Multiplies the object by an operand
+#method=/=,object;Divides the object into an operand
+
+[std_reader]
+#shortdescr=A standard reader protocol
+#method=>>,std_readable;Reads the object from the stream and returns it
+#method=std'basic'$readasliteral,std_literal;Reads the literal value
+
+[std_readable]
+#shortdescr=A readeable protocol
+#method=std'properties'$readfrom,std_reader,object;Reads the object from the reader and returns it
+#method=std'properties'$input,std_reader,object;Reads the text value from the reader and returns the object containing this value
+
+[std_bool]
+#shortdescr=A boolean type protocol
+#method=std'basic'$getbool,,bool;Returns a boolean value
+#method=?,,;Succeeds if the object has <b>true</b> value.
+#method=!,,;Succeeds if the object has <b>false</b> value.
+#method=and,std_bool,std_bool;Returns the result of the logical AND operation.
+#method=not,,std_bool;Inverts the boolean value
+#method=or,std_bool,std_bool;Returns the result of the logical OR operation.
+#method=xor,std_bool,std_bool;Returns the result of the logical XOR operation.
+
+[pattern]
+#shortdescr=A pattern protocol
+#method=run,action,object;Executes the action
+
+[action]
+#shortdescr=An action protocol
+#method=proceed,object;Executes the action
+
+[std_seekcriteria]
+#shortdescr=A seek criteria protocol
+#method=std'properties'$seekin,std_indexer
+
+[std_indexer]
+#shortdescr=A indexer proxy protocol
+#method=std'properties'$delete,object;Deletes the specified number of items
+#method=std'properties'$getcontent,,object;;Returns the indexed object
+#method=std'properties'$getindex,,object;;Returns the index
+#method=std'properties'$goto,object;Sets the index
+#method=std'properties'$insert,object;Inserts the parameter into the current indexer position
+#method=std'properties'$next,,;Increments the index
+#method=std'properties'$previous,,;Decrements the index
+#method=std'properties'$seek,object;Sets the index to the first occurrence of the specified text starting from the current position otherwise fails
+#method=std'properties'$setcontent,object;Sets the content
+
+[counter]
+#shortdescr=A counter protocol
+#method=count,,object;Returns the counter value
+
+[std_char]
+#shortdescr=A character value protocol
+#method=std'basic'$getchar,,object;Returns a character value
+
+[std_string]
+#shortdescr=A literal value protocol
+#method=std'basic'$getstring,,variable;Returns a literal variable
+
+[std_real]
+#shortdescr=A real number protocol
+#method=std'basic'$getreal,,object;Returns a real value
+
+[std_item]
+#shortdescr=An item protocol
+#method=std'properties'$getcontent,,object;Returns the content
+#method=std'properties'$setcontent,object;Sets the content
+
+[arraylength]
+#shortdescr=An array length
+#method=length,,object;Returns the required array length.<Br>Should be overridden
+
+[std_iterator]
+#shortdescr=An iterator protocol
+#method=std'patterns'$getcurrent,object,object;Returns the current iteration value
+#method=std'patterns'$getiterator,,object;Creates the iterator
+#method=std'patterns'$step,object;Makes the iteration step.Fails if the iterator reached the iteration boundary
+
+[container]
+#shortdescr=A container protocol
+#method=get,,object;Returns the content object
+#method=set,object;Sets the content object
+
+[std_group]
+#shortdescr=A goup protocol
+#method=std'patterns'$getgroup,,object;Returns the group
+#method=std'patterns'$setgroup,object;Sets the group
+
+[std_long]
+#shortdescr=A real number protocol
+#method=std'basic'$getlong,,object;Returns a 64bit integer value
+
+[std_keyvalue]
+#shortdescr=A key-value pair protocol
+#method=std'properties'$getkey,,object;Returns the key
+#method=std'properties'$getcontent,,object;Returns the value
+
+[range]
+#shortdescr=A range protocol
+#method=for,,object;Returns the range owner
+#method=from,,magnitude;Returns the minimal range value
+#method=till,,magnitude;Returns the maximal range value
+
+[std_bytearray]
+#shortdescr=A byte array protocol
+#method=length,,std_int;Returns the array length
+#method=std'basic'$getbytearray,,object;Returns the array
+
+[std_buffer]
+#shortdescr=A buffer protocol
+#method=length,,std_int;Returns the array length
+#method=std'basic'$getdump,,object;Returns the array
+
+[point]
+#shortdescr=A coordinate protocol
+#method=x,,std_int;Returns X coordinate.<br>Should be overridden
+#method=y,,std_int;Returns Y coordinate.<br>Should be overridden
+
+[size]
+#shortdescr=A size protocol
+#method=height,,std_int;Returns a height
+#method=width,,std_int;Returns a width
+

@@ -1,0 +1,49 @@
+[#general#]
+#name=gui'forms
+#shortdescr=Provides basic GUI forms
+
+[#list#]
+custom
+dialog
+sdi
+sdidialog
+
+[sdidialog]
+#title=Class SDI Dialog
+#shortdescr=A SDI dialog form
+#parent=elena.html#object:Object
+#parent=guicontrols.html#control:gui'controls'Control
+#parent=guicontrols.html#container:gui'controls'Container
+#parent=#custom:gui'forms'Custom
+#parent=#sdi:gui'forms'SDI
+#method=new,guiprotocol.html#gui_container;Creates the window
+#method=open,,;Shows the window
+
+[sdi]
+#title=Class SDI
+#shortdescr=A Single Document Interface form
+#parent=elena.html#object:Object
+#parent=guicontrols.html#control:gui'controls'Control
+#parent=guicontrols.html#container:gui'controls'Container
+#parent=#custom:gui'forms'Custom
+#method=new,guiprotocol.html#gui_container;Creates the window
+#method=open,,;Shows the window
+
+[custom]
+#title=Class Custom
+#shortdescr=A base form
+#parent=elena.html#object:Object
+#parent=guicontrols.html#control:gui'controls'Control
+#parent=guicontrols.html#container:gui'controls'Container
+#method=new,guiprotocol.html#gui_container;Creates the window
+#method=open,,;Shows the window
+
+[dialog]
+#title=Class Dialog
+#shortdescr=A dialog form
+#parent=elena.html#object:Object
+#parent=guicontrols.html#control:gui'controls'Control
+#parent=guicontrols.html#container:gui'controls'Container
+#parent=#custom:gui'forms'Custom
+#method=new,guiprotocol.html#gui_container;Creates the window
+#method=open,,;Shows the window

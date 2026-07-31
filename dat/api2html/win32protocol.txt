@@ -1,0 +1,73 @@
+[#general#]
+#name=Win32 Protocols
+#shortdescr=Win32 specified Protocols.
+
+[#list#]
+win32_bitmapattr
+win32_brushattr
+win32_class
+win32_fileattributes
+win32_handle
+win32_hdc
+win32_hinstance
+win32_hwnd
+win32_message
+win32_penattr
+win32_window
+
+[win32_handle]
+#shortdescr=A handle protocol.
+#method=win32'api'$gethandle,,object;Returns the win32 handle
+
+[win32_fileattributes]
+#shortdescr=A file attribute protocol.                          
+#method=win32'api'$filename,,std_literal;Returns the file path
+#method=win32'api'$dwdesiredaccess,,std_int;Returns the file access flags
+#method=win32'api'$dwsharemode,,std_int;Returns the shared mode flags
+#method=win32'api'$dwcreationdisposition,,std_int;Returns the creation flags
+#method=win32'api'$dwflagsandattributes,,std_int;Returns the file attributes
+
+[win32_hinstance]
+#shortdescr=A HINSTANCE protocol.
+#method=win32'api'$gethinstance,,object;Returns the win32 handle
+
+[win32_window]
+#shortdescr=A window protocol.
+#method=open,,;Opens the window
+
+[win32_hwnd]
+#shortdescr=A HWND protocol.
+#method=win32'api'$gethwnd,,object;Returns HWND
+
+[win32_message]
+#shortdescr=A Message protocol.
+#method=win32'api'$getid,,std_int;Returns Message ID
+#method=win32'api'$getwparam,,object;Returns Message LParam
+#method=win32'api'$getlparam,,object;Returns Message WParam
+
+[win32_hdc]
+#shortdescr=An HDC handle protocol.
+#method=win32'api'$gethcd,,object;Returns HDC handle
+
+[win32_class]
+#shortdescr=A class protocol.
+#method=win32'api'$getbackground,,std_int;Returns the class background
+#method=win32'api'$getclassname,,std_literal;Returns the class name
+#method=win32'api'$getstyle,,std_int;Returns the class style
+
+[win32_bitmapattr]
+#shortdescr=A bitmap attribute protocol.
+#method=win32'api'$getbitmap,,win32_handle;Returns the bitmap handle
+#method=win32'api'$getdc,,win32_handle;Returns HDC
+#method=win32'api'$getfilename,,std_literal;Returns the bitmap path
+#method=win32'api'$getsize,,size;Returns the size
+
+[win32_penattr]
+#shortdescr=A pen attribute protocol.
+#method=win32'api'$getcolor,,std_int;Returns the pen color
+#method=win32'api'$getstyle,,std_int;Returns the pen style
+#method=win32'api'$getwidth,,std_int;Returns the pen width
+
+[win32_brushattr]
+#shortdescr=A pen attribute protocol.
+#method=win32'api'$getcolor,,std_int;Returns the pen color

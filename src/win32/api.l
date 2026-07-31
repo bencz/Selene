@@ -1,0 +1,661 @@
+// --- namespace shortcuts ---
+#define basic'*  = std'basic'*.
+#define memory'* = std'basic'memory'*.
+#define api'*    = win32'api'*.
+#define consts'* = win32'api'constants'*.
+#define ctrl'*   = std'patterns'*.
+#define prop'*   = std'properties'*.
+
+#define graph'*  = gui'graphics'*.
+
+// --- compiler hints ---
+#define[const] IntegerExtension = basic'IntegerExtension. 
+#define[const] BasicExtension   = basic'BasicExtension.
+
+// === Win32 Basic type wrappers ===
+
+// --- DWORD ---
+
+#static DWORDGroup = #group(IntegerExtension, BasicExtension).
+
+#class[dbg:int] DWORD (basic'Magnitude)
+{
+    #field (4).
+
+    #method basic'$equal : aValue
+    [
+        #if(basic'IntegerType of:self == aValue)!
+            [ self fail. ].
+    ]
+
+    #method basic'$toInteger = #inline standard'3(basic'IntNumber, $self).
+
+    #annex DWORDGroup.
+}
+
+// --- LPSTR ---
+
+#class LPSTR(DWORD)
+{
+    #method new : aLiteral
+    [
+        #inline standard'40($self, basic'LiteralType of:aLiteral).
+    ]
+}
+
+// --- LPVOID ---
+
+#class LPVOID(DWORD)
+{
+    #method new : anObject
+    [
+        #inline win32'15($self, anObject).
+    ]
+}
+
+// --- Handle ---
+
+#class Handle (DWORD)
+{
+    #method $getHandle = $self.
+}
+
+// --- HWND ---
+
+#class HWND (Handle)
+{
+    // class methods
+
+    #method[def] $getClassName = "win32'api'HWND".
+
+    // public methods
+
+    #method refresh
+    [
+        #external win32'16($self).
+    ]
+
+    #method free
+    [
+        #external win32'17($self).
+    ]
+
+    // private methods
+
+    #method $getHWND = $self.
+
+    #method $getHDC = #external win32'18(api'HDC, $self).
+
+    #method $show : aCode
+    [
+        #external win32'19($self, aCode).
+    ]
+
+    #method $enable : aCode
+    [
+        #external win32'20($self, aCode).
+    ]
+
+    #method $getText
+    [
+        #var aLen := api'Message::{ $getID=consts'EM_LINELENGTH. } $return:$self.
+
+        #var aLiteral := basic'LiteralType create:{ Length = aLen. }.
+
+        #external win32'21($self, aLiteral).
+
+        ^ aLiteral.
+    ]
+
+    #method $setText : aLiteral
+    [
+        #external win32'22($self, api'LPSTR::aLiteral).
+    ]
+
+    #method $getSize
+    [
+        #var anX1 := basic'IntNumber.
+        #var anY1 := basic'IntNumber.
+        #var aWidth := basic'IntNumber.
+        #var aHeight := basic'IntNumber.
+
+        #external win32'23($self, anX1, anY1, aWidth, aHeight).
+
+        ^ graph'Size { Width = aWidth. Height = aHeight. }.
+    ]
+
+    #method $getLocation
+    [
+        #var anX1 := basic'IntNumber.
+        #var anY1 := basic'IntNumber.
+        #var aWidth := basic'IntNumber.
+        #var aHight := basic'IntNumber.
+
+        #external win32'23($self, anX1, anY1, aWidth, aHight).
+
+        ^ graph'Point { X = anX1. Y = anY1. }.
+    ]
+
+    #method $setSize : aSize
+    [
+        #external win32'24($self, aSize Width, aSize Height).
+    ]
+
+    #method $setLocation : aCoord
+    [
+        #external win32'25($self, aCoord X, aCoord Y).
+    ]
+}
+
+// --- HINSTANCE ---
+
+#class HINSTANCE (DWORD)
+{
+    #method $getHINSTANCE = $self.
+
+    #method $setHandle : aValue
+    [
+        #inline standard'3($self, aValue).
+    ]
+}
+
+// --- FileHandle ---
+
+#class FileHandle (Handle)
+{
+    #method $getFileHandle = $self.
+
+    #method basic'$readAsLiteral : aLiteral
+    [
+        #external win32'10($self, aLiteral).
+    ]
+
+    #method basic'$writeAsLiteral : aLiteral
+    [
+        #external win32'11($self, aLiteral, aLiteral Length * 2).
+    ]
+
+    #method close
+    [
+        #external win32'12($self).
+    ]
+}
+
+// --- Cursor ---
+
+#class Cursor
+{
+    #field theCursor.
+
+    #method new : aCursor
+    [
+        #if aCursor ifNotNil
+        [
+            theCursor := basic'IntegerType of:aCursor.
+        ]
+        | [
+            theCursor := consts'IDC_ARROW.
+        ].
+    ]
+
+    #method $set : anEvent
+    [
+        #external win32'26(anEvent, theCursor).
+    ]
+}
+
+// --- MSG ---
+
+#class MSG
+{
+    #field(28).
+
+    #method $getMSG = $self.
+
+    #method $peek : aHWND
+    [
+        #external win32'27($self, aHWND).
+    ]
+
+    #method $dispatch : aHWND
+    [
+        #external win32'28($self, aHWND).
+    ]
+
+    #method $wait
+    [
+        #external win32'29($self).
+    ]
+}
+
+// --- Message ---
+
+#class Message
+{
+    #field (12).
+    
+    #method new : aMessage
+    [
+        #if aMessage ifNotNil
+        [
+            #inline standard'80($self, 0, aMessage $getID).
+            #inline standard'80($self, 4, aMessage $getWParam | back:0).
+            #inline standard'80($self, 8, aMessage $getLParam | back:0).
+        ].
+    ]
+    
+    #method $getWParam = #inline standard'61(basic'IntNumber, $self, 4).
+    
+    #method $getLParam = #inline standard'61(basic'IntNumber, $self, 8).
+    
+    #method $getID = #inline standard'61(basic'IntNumber, $self, 0).
+
+    #method $return : anHWND
+    [
+        #var aRetVal := basic'IntNumber.
+        
+        #external win32'30(aRetVal, anHWND $getHWND, self).
+        
+        ^ aRetVal.
+    ]
+
+    #method $send : anHWND
+    [
+        #external win32'31(anHWND $getHWND, self).
+    ]
+
+    #method $post : anHWND
+    [
+        #external win32'32(anHWND $getHWND, self).
+    ]
+}
+
+// --- HDC ---
+
+#class[dbg:int] HDC
+{
+    #field(4).
+
+    #method $getHDC = self.
+
+    #method new : anHDC
+    [
+        #if anHDC ifNotNil
+        [
+            #inline standard'3($self, anHDC $getHDC).
+        ].
+    ]
+
+    #method $setTextColor : aColor
+    [
+        #external win32'33($self, aColor).
+    ]
+
+    #method $SetBkMode : aMode
+    [
+        #external win32'34($self, aMode).
+    ]
+
+    #method $SetBkColor : aColor
+    [
+        #external win32'35($self, aColor).
+    ]
+
+    #method close
+    [
+        #external win32'36($self).
+    ]
+}
+
+// --- HPEN ---
+
+#class HPEN (Handle)
+{
+    #field (4).
+
+    #method $getHPEN = $self.
+
+    #method $getColor = #inline standard'61(basic'IntNumber, $self, 4).
+
+    #method close
+    [
+        #external win32'37($self).
+    ]
+
+    #method $select : aCanvas
+    [
+        aCanvas $selectPen:self $selectColor:(self $getColor).
+    ]
+}
+
+// --- HBRUSH ---
+
+#class HBRUSH (Handle)
+{
+    #field (4).
+
+    #method $getHBRUSH = $self.
+
+    #method $getColor = #inline standard'61(basic'IntNumber, $self, 4).
+
+    #method close
+    [
+        #external win32'37($self).
+    ]
+
+    #method $select : aCanvas
+    [
+        aCanvas $selectBkColor:(self $getColor) $selectBrush:self.
+    ]
+}
+
+// --- PAINTSTRUCT ---
+
+#class PAINTSTRUCT
+{
+    #field(64).
+
+    #method $getHDC = $self.
+
+    #method $getPaintStruct = $self.
+
+    #method open : aWindow
+    [
+        #external win32'38(aWindow $getHWND, $self).
+    ]
+
+    #method close : aWindow
+    [
+        #external win32'39(aWindow $getHWND, $self).
+    ]
+}
+
+// --- HBITMAP ---
+
+#class HBITMAP (Handle)
+{
+    #method $getHBITMAP = $self.
+
+    #method $getSize
+    [
+        #var theWidth := basic'IntNumber.
+        #var theHeight := basic'IntNumber.
+
+        #external win32'40($self, theWidth, theHeight).
+
+        ^ { Width=theWidth. Height=theHeight. }.
+    ]
+
+    #method $getHDC : anHDC
+    [
+        #var aDestHDC := HDC.
+
+        #external win32'41($self, anHDC, aDestHDC).
+
+        ^ aDestHDC.
+    ]
+
+    #method close
+    [
+        #external win32'37($self).
+    ]
+}
+
+// === Win32 Basic type adapters ===
+
+// --- HandleType ---
+
+#symbol HandleType =
+{
+    of : anObject = anObject $getHandle.
+}.
+
+// --- HWNDType ---
+
+#symbol HWNDType =
+{
+    of : anObject = anObject $getHWND.
+
+    create : aProfile
+    [
+        #var aHandle := aProfile $getWindowHandle.
+        #var anOwner := aProfile $getOwner | back:aHandle.
+        #var aParent := aProfile $getParent | back:0.
+
+        ^ aHandle new:(#external win32'45(
+            api'HWND,
+            aProfile $getExStyle,
+            api'LPSTR::(aProfile $getClass),
+            0,
+            aProfile $getStyle,
+            0, 0, 50, 50,
+            aParent,
+            0,
+            api'Instance $getHINSTANCE,
+            aProfile $getState:anOwner)).
+    ]
+}.
+
+// --- FileHandleType ---
+
+#symbol FileHandleType =
+{
+    of : anObject = anObject $getHandle.
+
+    create : aProfile = #external win32'9 (
+            api'FileHandle, 
+            api'LPSTR::(aProfile $FileName),
+            aProfile $dwDesiredAccess,
+            aProfile $dwShareMode,
+            aProfile $dwCreationDisposition,
+            aProfile $dwFlagsAndAttributes
+    ).
+}.
+
+// --- ClassType ---
+
+#symbol ClassType =
+{
+    create : aProfile
+    [
+        #var aDump := memory'ByteArrayType create:{ Length = 40. }.
+        #var aStyle := aProfile $getStyle.
+        #var aClassName := aProfile $getClassName.
+        #var aBackground := aProfile $getBackground.
+
+        prop'Writer::aDump
+            << aStyle 
+            << api'WindProcPtr
+            << 0
+            << 0
+            << api'Instance
+            << 0
+            << 0
+            << aBackground
+            << 0
+            << api'LPSTR::aClassName.
+
+        ^ #external win32'46(aClassName, aDump).        
+    ]
+}.
+
+// --- BitmapType ---
+
+#symbol BitmapType =
+{
+    $create : aProfile
+    [
+        #var aSize := aProfile $getSize.
+        #var aHDC := aProfile $getDC.
+
+        #var aWidth := aSize Width.
+        #var aHeight := aSize Height.
+        #var aBitmap := HBITMAP.
+
+        #external win32'47(aBitmap, aWidth, aHeight, aHDC).
+        
+        ^ aBitmap.
+    ]
+
+    $load : aProfile
+    [
+        #var aFileName := api'LPSTR::(aProfile $getFileName).
+        #var aBitmap := aProfile $getBitmap | back:HBITMAP.
+
+        #external win32'48(aBitmap, 0, aFileName, consts'IMAGE_BITMAP, 0, 0, consts'LR_LOADFROMFILE).
+        
+        ^ aBitmap.
+    ]
+
+    create : aProfile
+    [
+        #var aFileName := aProfile $getFileName | back:nil.
+
+        #if aFileName ifNotNil
+        [
+            ^ $self $load:aProfile.
+        ]
+        | [
+            ^ $self $create:aProfile.
+        ].
+    ]
+}.
+
+// --- PenFactory ---
+
+#symbol PenFactory =
+{
+    create : aProfile
+    [
+        #var aStyle := aProfile $getStyle | back:consts'PS_SOLID.
+        #var aWidth := aProfile $getWidth | back:0.
+        #var aColor := aProfile $getColor | back:0.
+        #var aPen := HPEN.
+
+        #external win32'49(aPen, aStyle, aWidth, aColor).
+
+        #inline standard'80(aPen, 4, aColor).
+
+        ^ aPen.
+    ]
+}.
+
+// --- BrushFactory ---
+
+#symbol BrushFactory =
+{
+    create : aProfile
+    [
+        #var aColor := aProfile $getColor | back:0.
+        #var aBrush := HBRUSH.
+
+        #external win32'50(aBrush, aColor).
+
+        #inline standard'80(aBrush, 4, aColor).
+
+        ^ aBrush.
+    ]
+}.
+
+// === Win32 properties ===
+
+// --- WParam ---
+
+#symbol WParam : aMessage = aMessage $getWParam.
+
+// --- LParam ---
+
+#symbol LParam : aMessage = aMessage $getLParam.
+
+// --- ID ---
+
+#symbol ID : aMessage = aMessage $getID.
+
+// === Win32 symbols ===
+
+// --- Instance ---
+
+#static Instance
+    = HINSTANCE.
+
+// --- StdOutput ---
+
+#symbol StdOutput
+    = #external win32'1(api'Handle).
+
+// --- StdOutput ---
+
+#symbol StdInput
+    = #external win32'4(api'Handle).
+
+// --- WindProcPtr ---
+
+#symbol WindProcPtr = #external win32'42(DWORD).
+
+// --- SystemColor ---
+
+#symbol SystemColor :anIndex
+    = #external win32'44(DWORD, anIndex).
+
+// --- SystemBrushColor ---
+
+#symbol SystemColorBrush : anIndex
+    = #external win32'43(HBRUSH, anIndex).
+
+// --- CommandLine ---
+
+#symbol CommandLine = ctrl'control run: =>
+[
+    #var aLength := basic'Integer.
+    #external win32'13(aLength).
+
+    #var aCommandLine := basic'LiteralType create:{ Length = aLength. }.
+    #external win32'14(aCommandLine).
+
+    ^ aCommandLine.
+].
+
+// === Common actions ===
+
+#class SDILoopAction
+{
+    #field theMSG.
+
+    #method new : aMessage
+    [
+        theMSG := aMessage $getMSG.
+    ]
+
+    #method proceed : aHWND
+    [
+        #external win32'51(theMSG).
+        #external win32'28(theMSG, aHWND).
+    ]
+}
+
+#class DialogLoopAction
+{
+    #field theMSG.
+
+    #method new
+    [
+        theMSG := MSG.
+    ]
+
+    #method $ifVisible : aHWND
+    [
+        #external win32'52(aHWND).
+    ]
+
+    #method run : aWindow
+    [
+        #var aHWND := aWindow $getHWND.
+
+        #loop self $ifVisible:aHWND
+        [
+            #if theMSG $peek:0 //aHWND
+                [ theMSG $dispatch:aHWND. ]
+                | [ theMSG $wait. ].
+        ].
+    ]
+}

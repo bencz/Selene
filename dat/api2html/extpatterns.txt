@@ -1,0 +1,12 @@
+[#general#]
+#name=ext'patterns
+#shortdescr=Provides classes that describe the common patterns
+
+[#list#]
+printing
+
+[printing]
+#title=Symbol Printing
+#shortdescr=A printing action
+#protocol=action
+#method=proceed,std_printable;Prints the operand text value on the console

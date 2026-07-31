@@ -1,0 +1,803 @@
+ELENA Language:
+---------------------------------------------------------------------
+[ ] Documentation
+    1) Syntax
+    2) Language
+
+[ ] Discussion:
+    1) new concepts
+       - should we allow to declare empty expression symbol (without methods,
+         it is inconvinient)?  
+       - new statement #release to reset static symbols!?
+
+       - only modules belonging to the same project could share message protected
+         namespace (i.e. protected message namespace forms from the project root
+         namespace + sub namespace)?
+
+       - should we allow to pass the parameter to static symbol?
+         (see upndown'game'client)?
+
+    2) Stack
+       - gui + win32 interaction, could we get rid of dynamically created objects
+         and start to use temporal ones?
+       - loop implementation, could it be improved (if in the statement 
+         #loop i > 5 ? [ ... ], message > fails, it is considered as end of loop, is
+         it ok? )
+       - if the inheriting class has roles only role overriding should be allowed?
+       - what about parallel programming. Problem with GC.Mutlithread support
+         overview;
+       - could we use #define statement to forward private class?
+       - if inline object depends only on its class it should be created only once
+         and saved as a hidden object field
+       - could we replace $invoke with something less ambigues or keyword?
+
+[ ] Review:
+
+[ ] Development
+    1) Language Extension
+       - list the number of popular programming code patterns and implements them in ELENA
+    2) Dynamic symbol loading
+    3) Platform independent Virtual Machine
+    4) Multi-thread support
+    5) dynamic standard library modifaction (basic data type extension)
+    6) exception handling / code tracking
+    7) automatic code writing / reading from stream
+
+
+ELENA API & Samples:
+---------------------------------------------------------------------
+[x ] UPNDOWN:
+    1) New functionality
+
+    2) Review
+       - review the whole code starting with game engine, using the new
+         paradigm
+
+    3) Stack
+       - continue move to ELENA: play the round
+       - continue move to ELENA: show scores
+       - the game could not be released from the memory if it waiting for the result;
+         fix it
+       - fix the issue with missing trump time to time
+       - warn the player that he / she could not make an eval order
+       - test if random generator generates actually a random numbers
+       - continue move to ELENA: show the card on the table using the mask to make
+         cards look oval
+       - display messages that the program waiting for other players / host reply
+       - host panel should display the current IP address
+       - the playground background color should be green
+       - hide the cards when F5 pressed
+       - show warning if distribute attempt to order the forbidden number of
+         tricks
+       - make not possible to press any key inside edit box of Ordering dialog
+       - unsynchronized prepare command could block the program exit (on close of main 
+         window should class onstop application event)
+       - PlayerController::$reactOnCommand contains a lot of duplicate code; could
+         we optimize it? (using the protocol-based approach - we could actually
+         have only one code which should be polymorphic)
+       - fix !!:the index should be the same like in players and sockets
+       - fix !!:should be the same like the below code 
+       - too many duplicate codes (which do actually the same only for
+         another control - use some common symbols). So instead of setting
+         enable property for every control - run the circle for the collection
+         of items?  
+       - prepare method is duplicated three times
+       - continue move to ELENA: play the game
+       - continue move to ELENA: show statistics
+       - continue move to ELENA: load / save game
+       - get rid of code duplication in handindexer class
+       - on connect make sure that clients and the host use the same program version
+       - if makeorder or getcard is failed in gamemaster code it should try to send the 
+         command once again
+       - use original colors
+       - disable accept button on start.
+       - disable search button after pressing.
+       - refresh panel after changing the label text.
+       - !! check if frmConnector is destroyed and removed from referencepool
+         after game start
+       - refactored the code in accordance with ELENA paradigm
+       - modify the code to make possible any card game on UPNDOWN engine
+       - close all unused connection after the game start
+       - basic game version    
+       - use buttons with original glyphs
+       - modify UI to make possible any card game UI on UPNDOWN engine
+
+[ ] ELENA API development:
+
+    0) ELENA API rieview
+       - test textfilewriter
+       - basic'substring, maybe better to use indexer, or maybe it could be
+         a mutation which actually emulate the substring and do it only when
+         asked by calling $getLiteral?   
+       - update send message routine in windproc to be in accordance with
+         the way is is used in other places
+
+       - implements the possibility to dynamically add a new member to one
+         of existing goups (e.g. in literal group) (e.g. ext'Date should be able
+         to add new converting function to literal group)
+
+       - std'basic'Literal should be expandable (uncomment newExtension method)
+       - reading / writing binary files
+       - should we get rid of old style properties, like enumerator, indexer or
+         make them obsolete (in 1.5.1)?
+       - should we use the approach used for iteration / enumeration for other
+         properties (indexer, reader / writer)?
+       - bytearrayreader / writer should use seek in the same way like indexer did
+       - continue work on date / time routine
+       - gui / win32 style groups could be constant one 
+         (e.g. #group(theParent, 'gui'styles'GroupBox3D, 'gui'styles'Parent), instead
+         of #group('gui'styles'GroupBox3D, 'gui'styles'Parent::theParent))
+       - there should not be a mutual links from win32'api'factories and win32'api'styles,
+         std'basic and str'patterns and so on
+
+    1) New functionality:
+       - make possible to execute another exe? 
+       - std'math - power 
+       - std'basic'IntNumber / LongNumer modulus
+       - 'program'output clear  
+       - basic'intnumber / longnumber / real should support method "in" to validate range
+
+    3) Stack
+       - FileHandle should support all stream operations $writeAsxxx and $readAsxx
+         (for all int32, int64, real64, literal and buffer) 
+       - reimplement TextFileWriter: TextfileWriter should send
+         $writeAsBuffer to the FileHandlem instead of $writeLiteral for Ansi
+         file
+       - reimplement FileWriter, it should reacts on $writeAsInt32, $writeAsReal64
+         $writeAsLiteral and $writeAsBuffer
+       - support both unicode and ansi files
+       - rename ContentKey to Key (keeping ContentKey till 1.5.*)
+       - add, subtract date   
+       - returns date and timespan year, month, day, hour, minute, second and millisecond    
+       - convert to literal (different formats, timezones)
+    - win32: maybe we need to raise some kind of exception if there is an error
+      in file operatation and return special value to indicate EOF? Do the same
+      for all win32
+    - ext: #loop self $read:(theEnumerator get) prevents possible failure to be
+      known on the upper levels; could we redesign?
+    - Bad practice: StatusBar create method, we need to privide the better way to
+      initialize status bar items
+    - real to long / real to int
+    - long readable / writable 
+    - enumerators / indexers should support prop'Owner property?
+    - think over how could we implement the extension of the standard library 
+      code with external functionality (e.g. new data type which is supported by
+      standard types)
+    - make possible to select system colors / brushes on the gui level
+    - fcomip could be used only for pentium
+    - we should use imul / idiv instead of mul / div (?)
+
+    - Date / Time sample (on the base of java sample)
+    - check if the imagebox reacts on resize event
+    - calcgui two modes: calculator like and the current one with the list of
+      last operations 
+    - use createcomatibledc for every draw operation looks too expensive;can
+      we modify paintboxhandler / imagehandler to do it only once?
+    - trouble shooting: we need some analogs of exception to be able to find out
+      the  problems in the code flow
+    - adds form events: onopen / onhide
+    - code duplication: onlbutton method the same both for window and paintbox
+    - make sure bitmap / hdc are properly released from the memory
+    - calc: make possible to declare constants
+    - for Image / PaintBox handle Paintstruct could be created as local one
+      (no need to keep it on class level)
+    - maybe better to initialize the array with zero instead if nils?
+       (could be a performance issue for event collections) 
+    - should basic data objects be filled with zeros on creating?
+      (in new message) 
+    - std'collections'list should support count property to optimize the
+      performance
+    - std'patterns'decrimentloop should extends integervalue rather then
+      agrigate it
+    - make possible to round the real value to the closest integer number
+    - abs function should support integer as well
+    - as a result of integer / real mathematic expression should be a 
+      intexpression which returns itself after any farther mathematic operations
+    - sample with int64
+    - the example of the extension of the standard library 
+      code with external functionality (e.g. new data type which is supported by
+      standard types)
+    - sort array of literal as well
+    - $sort method should become an extension which could extend any array
+    - extend PaintBox functionality
+    - extend ImageList functionality
+    - combobox / statusbar / radiogroup maybe we need to create object 
+      collection only if it is required?
+    - statusbar create - should be redesigned; width should be supported
+      by statusbar item
+    - (aLiteral::getIndexer goto:1 getSubString:(aLiteral::getLength-2).)
+      could we instead of creating substring just create enumerator which goes
+      within restricted region?
+    - textfile sample should allow to create / search a text file;
+    - make sure that whenever the code writes to the literal value the 
+      object size rather then literal size is used (except the case when
+      we need exact size)
+    - standard'72 is in fact a copy of array - could we use this routine not for
+      events only?
+    - modify all float-oriented code to be correct, error handling, 
+      (should we save the float registers before operations?)
+    - bytearrayreader / writer - supports real64
+    - find out why the input buffer is not cleared on the program start
+    - optimize factory creating routines (try to minimize then number of
+      operation for getting appropriate factory)
+    - continue to work on graph sample: make possible to specify different
+      functions, write your own ones, provide scaling and borders 
+    - refactore the code: try to use a proxy class which will modify the coordinate
+      to be scaled and adjusted for the display on the window
+    - consider filenumerator / wordlist use cases and redesign the classes
+    - consider basic use cases and refactor ext patterns if necessary
+    - support Win32 menu controls
+    - investigate file operation routines. Are they effective and feasible?
+    - support of variables, including result (the result of latest operation)
+    - Possibility to create / delete file / folder, enum files / folders
+    - make possible to truncate existing files 
+    - examples to work with TextFileWriter / FileWriter
+    - make possible to write / read Unicode files as well
+    - FileWriter::writeLiteral; Maybe FileWriter should have buffer which
+      would be used during writing literal value to the file?
+    - console output should support clear method
+    - think over error handling. How could we know the error reason?
+    - win32 application code should provide default error handler - at least
+      message box (custom error handlers for both calcgui and upndown as well)
+      using the error info defined above
+    - do we need std'properties'contentproxy?
+    - 'value' classes should support: min, max, succ, pred (int32value, real64value, ansichar)
+    - do we need Literal::getSize to return the actual string size?
+    - standard'72 and 73 seems the same. maybe the need only one?
+    - add new pattern to run two indexer simultaneously (e.g. could be used
+      to copy from one array to another)
+    - could basic'SubString be applied to another objects (is it reusabe)?
+      could we make it for example to be compatible with array as well?
+    - is it possible to automize the process of data transfer over sockets?
+    - new sample - expert system (prolog like sample)
+    - new sample - logical game
+    - database application which manage TODOs and KNOWNBUGs, possible to create
+      what's new automatically, statistics
+    - could we make possible to read / write collection in the way it is implemented
+      in _ELENA_ enigine?
+    - optimize insert / delete / copysubs to copy dwords rather then bytes / words
+    - new sample - code generator (work with database)
+    - ext'utilities'Date should contain time in milliseconds since 1 Jan 1900
+      rather then in 100-nanosecond since January 1, 1601 (UTC)
+
+[x] Samples:
+    1) New functionality
+       - calcgui should provide the list of calculation - in Listbox -> so we could select previous result
+       - compiler sample, convert from c
+
+    2) Review
+       - bsort, try to make it more clear / correct
+
+    3) Stack
+
+[ ] Tests
+    1) Functionality
+    - check if sys'patterns classes work correctly
+
+[ ] Development
+
+[ ] Review
+
+[x] Documentation
+    1) Tutorials
+    - review Programming with ELENA article
+
+    2) API Documentation 
+    - review ELENA API - is there enough info to use the object without looking 
+      into source code?
+    - add samples
+    - add long description 
+
+    3) Stack
+    - create a documentation describing the current Coder implemtation with
+      known restrinction
+    - documentation is not up to date and too laconic
+    - describe the ELENA.40 system features and common patterns
+    - ELENA compiler / language technical documentation should be reviewed 
+      and enhanced
+    - creates a documentation describing the handlers and events used by
+      gui package
+    - make possible to provide the symbol parameter protocol for property symbols
+    - add class full descriptions
+    - add class roles
+    - add class events
+    - what's new in ELENA 1.5.x API
+    - goes through the public message list and assigns the expected functionality
+    - review that these messages are used in comply with these protocol list
+    - review old documentations and copy the actual info
+    - update VMT structure (including hash table) info
+    - provide the full list of language features
+    - re-read / correct ELENA API
+    - API index link to $elena module
+    - Adds the long description to be shown on the main page (shortdescr would be
+      used only in index page)
+    - read, correct and extend API descriptions. (now it's too short)
+    - add new method descriptions for all classes
+    - list of object roles?
+    - code samples?
+    - list the class protocols separated by comma 
+    - example of work with arrays
+    - example of work with files
+    - Calculator
+    - Win32Calculator 
+     - enhance the SourceForge documentation outlook
+     - continue to formulate ELENA paradigm.
+    - Starts the number of articles about programming with ELENA in Public Forum
+      Programming with ELENA
+    - write the article Power Of VMT
+    - document ELENA syntax
+
+ELENA Compiler:
+---------------------------------------------------------------------
+[   ] ELENA Virtual Machine
+    0) Plan	
+       - do not use processor specified offsets in byte code (e.g. for bcOMovePtr
+         we should use index instead of real offset)
+       - redesign ELENA byte code commands, more consistent syntax, think over
+         all possible combinations         
+       - start to support Pentium commands (IA-32)
+       - two compile mode - debug / release (we actually could have two
+         sets of sections - with and without debug)
+       - compile module only if it was  changed
+       - make possible to EVM prototype to compiler the code into the memory
+         and execute it without need to create a real executable
+       - create a real EVM as a DLL (phase 1 - use NL files)
+       - invetigate do we really need to produce DLL files (.Net style) or 
+         keeping with NL (JAVA style)
+       - syntax review: try to simplify (reduce the symbol number)
+       - rewrite GC on C (better debugging / opimizing)
+       - dynamic class creating: make possible to create the object by the
+         name (to use in any config file) 
+       - optimize JIT compiler by time and resources (minimize the number of
+         passed parameters and so on)
+       - think over could we simplify any handler implementation (may be we could
+         gt rid of separate VMT for handler?) 
+       - start to support 64bit platform
+
+    1) Developement
+       - try to use more informative errors in the linker (module not found, symbol
+         not found, symbol is not a constant one) 
+       - warn if the symbol declared as constant in forward statement can not
+         be constant
+       - reference helper should have a cache of resolved references
+       - support linker map option
+       - linker _symbolEntryPoint and _entryPoint are the same, so we should
+         get rid of _symbolEntryPoint and use only _entryPoint
+       - make sure hash table is effectively used in parser / compiler / linker
+         (parsetable, module, linker)
+       - maybe we should during module save convert all sections into one
+         big memorymap and load already the whole list at once?
+       - replace Stack with MemoryStack in bccompiler to more effectively use
+         the memory (better CachedMemoryStack)
+       - maybe for send indexed we could use 4 version of the code?
+       - generate exception / warning if $self / fields are used in "class"
+         method
+       - generate exception if in the class declared several roles with the
+         same name
+       - we need a command for every opcode - instead of only for high 4 bits
+         (to get rid of multy if statements)
+       - we should check if we are returning temporal objects (like in 1.4.6)
+       - remove obsolete classes std'properties'indexenumerator, std'properties'range
+
+    2) Test
+       - test if it possible to use national letters (russian for example) in
+         syntax code
+       - test syntax errors (like missing brackets, dot and so on)
+       - test invalid integer constants (looks like the error is not recognized)
+
+    3) Optimization
+       - replace sequence of pops with a single one command
+       - local symbol expressions
+       - local properties                                             
+       - if there is no entry in vmt corresponding to the appropriate messageid
+         it's better to jump directly to alternative branch instead of jumping
+         to the end of the send command and only then to alternative branch.
+       - empty methods
+       - methods which returns constant
+       - replace fail with built-in action
+       - replace ifNotNil with built-in action
+       - idle jumps 
+       - idle pushing / poping
+       - idle failure code
+       - think over send / index optimization (pairing, pentium commands, size)
+       - alternative sub code starts with useless push
+       - is it make any sence to search for the message in vmt starting with
+         a second line (except new message)?, if no, we could simplify the code
+         and get rid of message place holder for role vmt
+       - try to optimize send routine (the most critical in the system)      
+       - we do not need to inherite inline objects from $elena'object
+       - iocall should have an optimized implementation for release, to jump
+         directly to the branch end rather then to the end of the command and
+         only then to the branch end        
+       - cosntant collections / groups / casts
+
+[ ] Maintanance
+    1) Review
+       - shiftKeys is a "hack", could we redisign it?
+       - if substring fails the operation is not considered to be broken in the 
+         following expression: #var aSubExpression := std'basic'SubString::{for = aToken. from = 1. till = aToken Length - 2.}.   
+    2) Hot fixes
+       - optimmization bug: #method ifSame : anObject = #inline elena'8 (self, anObject).
+         works incorrectly
+       - compiler bug: #if prop'Content::anItem set:(anObject create:anItem) [..]
+         doesn't work correctly due to the current implementation of compileControlExpression
+         (it actually miss property part of the expression) 
+       - compiler bug: #if(self)$ifTrumpless
+            | [ aMaster $selectTrump:(aPack peek). ]. - the alternative code
+         is not called then the message fails       
+       - invalid self variable in the following code:
+         #method controls'$createHandle = 'gui'handlerType create:#annex(('gui'styles'SDIDialog, 'gui'styles'Owner::self)) {}.
+       - super variable could lead to unexpected behaviour if we use dynamic mutation
+         (after super self variable becomes $self one)
+
+    3) Improvement
+       - support strong references (both protected messages and classes), linker
+         should check if they are valid
+       - when symbol used as a base class wrong error message
+         (e.g. #symbol My = 2. ... #class My2 (My) ... )
+       - show friendly message if '=' expected
+
+    4) Stack
+       - do we need list set method? iterator itself could do it
+         (instead list.set(it, value) - *it = value)
+       - step over offset doesn't work correctly in the following code:
+         #var aS1 := "1234567890".
+         #var aS2 := "-1234567890".
+         (see x86coder::addLineInfo, we expect sequence dbgBreakpoint, dbgBreakpoint, but in this
+         case we have dbgBreakpoint, dbgLocal, dbgBreakpoint)
+       - if invoke symbol followed by break - they should be separated by nop
+       - if static symbol is constant it should be implemented as normal one
+       - Remoting:
+       - Paralel programming / Multi-threading
+       - maybe constant classes should be always collected? (glCollected flag set in
+         data section from the beginning)
+       - try to create the mechanism to warn about outage if the library used
+         for the project is recompiled
+
+       - the symbol which returns constant objects - could use constant directly
+         instead?
+       - should we check for assigning yg object to mg in case of the normal assigning?
+         (see !! comment in x86coder moveobject)
+       - make strong link to the parent class? (!!)
+       - make possible to change basic linker options (opImageBase, and so on)
+       - look like opGCHeapSize and opSizeOfHeapCommit are connected with each other
+       - should codeBase is always 0x1000?; maybe should be customized (see !! 
+         remark in linker)
+       - writeNtHeader: stack size and similar parameters is constant; maybe should 
+         be possible to customize (see !! remark in linker)
+       - support resources in exe file  
+       - if we use the parameter as a top object first in the code, we do not need
+         to load it from stack, it's already in ebx
+       - could we minimize the number of entries in call stack (direct return
+         from any handler to the called code?)
+       - parsetable::save: maybe better to save only terminal symbols (see !! comment)
+       - could we minimize the symbol direct call for constant symbols
+         (maybe create both normal entry point and constant and enable compiler 
+         directive to use it)?
+       - replace back / ifNotNil / ifSame method with optimized version (should be able to 
+         switch on / off)
+       - maybe introduce the new hint - noconstructor which indicates that the 
+         implicit symbol should not send new message? (no need to call new for
+         every reference of true / basic / literal / integer constants)
+       - how could GC algorithm modified to deal with multi-thread applications
+         (thread stacks, synchronization)
+       - try to optimize the parser table (less number of symbols)
+       - support weak references?
+       - inline classes can be created at the first reference to it and exists
+         until the next GC call.
+       - localization
+       - project config file should have a list of references treated like stateless
+         (e.g. true, false, nil symbols)?
+       - support the following types of unicode source files:little endian, UTF-8?
+       - support only 2.5r constant format
+       - new option target CPU: 386 / 686
+       - add new coder: 686Coder whic override x86Coder
+       - optimize the most critical code parts like send / redirect / cast routines
+         using pentium commands
+       - starts to use Pentium commands: we need to introduce the mode for
+         i686 (cmov is not supported for older CPU, so we have to have two
+         set of commands)
+       - get rid of wait command for float-base operations?
+ 
+       - x64 platform support
+       - we need to guarantee that the message id is never within program heap;
+         so maybe we should use VirtualAlloc and provides the starting address
+         which by default is never used for message ids?      
+       - problem with console unicode output (works only for Vista?)
+       - could we instead of the symbols like #symbol a = b - use directly symbol
+         value?
+       - try to use pairing instructions
+       - Replace MOV AL,BYTE PTR [MEM8] by MOVZX EAX,BYTE PTR [MEM8]
+       - if the code do not use parameter ignore it
+       - we do not need to check for 'mg -> yg conflict' for newly created
+         objects
+       - maybe we should create functions send / index which will contain the
+         common send code but return directly to the send caller (in that case
+         may be there will be more near jumps - shich could helps a lot)
+       - $this + local message -> direct call?
+       - MMX, SSE, SSE2 commands; could we start to use these commands?
+       - PREFETCH command could be useful
+       - try to minimize the number of VMTs (at the moment every inline symbol creates
+         a new VMT, maybe we could find the Generic form of VMT and reuse it)
+       - compiler option which specifies the target CPU
+       - provide the correct error message for the most 'invalid syntax' errors
+       - compiler should warn if any of predefined messages is used           
+       - local properties: could we make most of the properties - a local ones?
+       - limit the number of warnings
+       - warn if you dynamically override itself (like #symbol my = #annex(my){...})
+       - we should fill the temporal object body with 'nils
+       - better to move descriptor than the objects in GC ?
+       - think over how could we optimize garbage collection routines
+       - optimize constant implementation (due to gc every integer takes 12 bytes);
+       - test if there could be any performance gains in replacing call with jump
+         in the case if the return command follows the call command
+       - try different combinations to speed up : gc and send routines
+       - temporal VMT for inline classes (for
+         the construction like vprop'Point{$$X=1. $$Y=1.} )?
+
+[ ] Documentation
+    1) Virtual machine
+       - dl, dnl file structure
+       - byte code description
+
+    2) Compiler / Linker (ELC)    
+   
+[ ] New functionality
+    1) New language construction
+       - int64 constant (with postfix l)?
+
+       - #share keyowrd to list the private methods which could be overloaded
+       - module should have list of allowed protected messages, check it during
+         compilation
+
+    2) Stack 
+       - link c++ / c .obj files as primitives
+
+[ ] Source code
+    1) Developming
+
+    2) Stack
+    - place all messages as a constants
+    - relative fixup works incorrectly if the reference has an offset
+    - make possible to declare the longest possible identifier with the
+      longest possible namespace
+    - maybe we should always keep separate mask and reference and only
+      combine them for getting section?
+    - change parser constant mskTraceble from 0x100 to 0x1000 (the total
+      number of symbols could reach the number > 0x100)
+    - check if Terminal is nsNone and generates the exception
+    - too many duplicate code in editframe (toLowercase, toUpperCase, trim and
+      so on), could we get rid of it?
+    - review compiler code to remove all dependencies on platform, CPU,
+    - maybe use CP_OEMCP then CP_ACP?
+    - elc: get rid of comment-warnings starting with !!
+    - optimize hash table filling for Linker tables
+    - Text: instead of check + go - use find() (in gonexttobool, gobacktobool) 
+    - check if moveToClosestRow / movetoclosestposition works correctly
+      (use big navigation step from start to end, page down / up)
+    - check when global navigation (if moveToClosestRow / movetoclosestposition)
+      is used and if it's more effective when normal one
+    - no need for movetoclosestposition goes to the text beginning
+
+    - get rid of as many warnings ( and comment warnings starting with !!) 
+      as possible
+    - make sure Text and TextHistory objects don't torn apart \r\n sequence 
+      (either on one page / buffer or on another)
+    - optimize (Styler)
+    - rewrite StatusBar (get rid of old memory allocating routine)
+    - optimize the code using profiler
+    - move all messages to the dictionary (either in resource, header file or external file)
+    - change the constant name elEmptyObject to elObjectOffset (more precise name)
+    - think over LL(2)? (plus no need in look ahead, minus BIG parse table).
+    - try to use more template functions for readToMap (code duplications)
+    - check for memory leaking (either profiler or simple check on the start
+      and on the finish)
+    - better to save only parser terminal symbols (see !! comment)
+    - start to review IDE code (think over platform-independent code, correct
+      and precise method names, remove all duplicate code and so on)
+    - refactor dialogs module
+    - optimize the code using profiler
+    - move all messages to the dictionary (either in resource, header file or external file)
+    - try to use DFA class for IDE sourcedoc class
+    - check for memory leaking (either profiler or simple check on the start
+      and on the finish)
+    - review all source coe warning (!!)
+    - optimize hash table filling for ParserTable
+    - refactor IDE to extract platform dependent code
+
+[ ] Tools:
+    1) Development:
+       - new tools to view byte code modules -> should be written in ELENA  
+    2) Stack:
+       - ASM2BINX: clear labelhelper after each entry compiled
+       - ASM2BINX: Warn on unresolved labels
+       - Installation package 
+
+[ ] Tests:
+    1) Stack
+    - test if the outer code is failed if the redirect fails
+    - check implementation of super variable in inherited role
+    - check if most of the inline objects are temporal
+    - test if all hpen / hbitmap / hdc are properly released
+    - test if gc works correctly after introducing temoral objects
+   - test long number convert routines
+   - test long arithmethic / conditional
+    - x86Coder::x86LabelHelper::convertShortToNear should be tested
+    - tests calculator
+    - check if AnsiLiteral::less method works correctly
+    - check seek, insert, delete and getsubstring methods of ansiliteralindexer 
+    - check literal concatenation routines 
+    - check WideString (empty role) reaction on + message: is correct
+      $toliteral method is called?
+    - check if the classes with unicode names are allowed
+    - check insert / delete / substring / seek for ansi and wide literals
+      (search for sybstrings > 1)
+    - check scientific notation of real numbers for converting
+    - check file read / write operations
+    - check how the console reads a big text
+    - check if window child created handles are destroyed (destroy method)
+    - check for all invalid / valid combination (russia characters)
+    - check the debugger behavior in the case of system exception
+      (does event EXIT_PROCESS_DEBUG_EVENT occur in this case);
+    - check the compilation the project containing russian letters in
+      file names, class names and symbols (and in error messages)
+    - test Undo / Redo operations for the small capacity (~40 or 50);
+    - test operations with tab both virtual and real;
+    - create test case to check MG garbage collection routines
+    - create test case to check OG garbage collection routines
+    - create the automatic tests for checking chain of action implementations[!!]
+    - check work with Unicode files / files with unicode names
+    - check if calcgui and upndown works correctly in unicode mode
+    - test if FOLLOW sets calculated correctly (look like problem with eps
+      rules)
+
+[ ] Documentation
+    1) Current
+    - document ELENA byte code
+    - document ELENA internal structures
+    - document ELENA file structures
+
+1.6.x
+-----
+[ ] Porting to Linux
+    - port elc to Linux
+
+
+ELENA IDE:
+---------------------------------------------------------------------
+1.5.x
+-----
+[ ] Maintanance
+    1) Hot-fixes
+    - do not show self for inline symbol (like it was in the previous  version)
+    - step into / over property should be fixed 
+    - IDE should use linker type instead of project type to define the project
+      type (the problem that is is declared in console template, could we still
+      use it?) and remove project template from all project files (we should
+      save it only if it is distinct from the one declared in template)
+    - IDE project setting should allow to turn on debug info generating
+    - line enumeration works incorrectly
+    - warn if source code is not found by debug controller
+    - raise an exception if debug module not found by debug controller  
+    - debugger does not go into symbol in the following expression:
+        #var aSubExpression := std'basic'SubString::{for = aToken. from = 1. till = aToken Length - 2.}.   
+
+    2) Stack
+    - possible problem when coping ascii text through clipboad - test with russian text
+    - undo in overwrite mode works a bit strange
+
+[ ] ELENA Code Wizard Plug in
+    1) Prototype
+       - create simple version of ELENA Code Wizard which add new menu item
+          - Plugins - and display message when selected
+
+[ ] Development:
+    1) New IDE features
+      - auto indent
+
+      - call stack window
+      - auto trim for tailing whitespaces (space and tab)
+      - open all recent files
+      - highlight private / protected messages
+
+    2) Plugin support
+       - the simplest plugin support (only editor)
+
+    3) Debugger
+       - write self for noninline classes only
+       - prevent from slowing down on the program exit (make possible to inidicate
+         to the sistem that this step is the last in the program)
+       - optimize debugger step collection access (use some kind of hash table,
+         divide the code range into several bands and before direct search use
+         it to narrow collection)
+
+       - we do not need stop over inline symbols (except at the symbol beginning)
+       - try to deal with the slowing debugger when it goes through the window 
+         system code in trap mode (e.g. in case of failed method in GUI application
+         which terminates the application - is it correct?)
+         (try to use breakpoint for any external code call to skip the step mode
+         inside external written code - in fact no sense to do it)  
+       - check if debugger still goes into the symbol when F8 pressed
+       - investigate stepping over / into annex inline symbols (e.g. $createHandle)
+
+    4) Stack
+    - use more user-friendly messages for typical errors
+    - highlight the current line
+    - new ide settings dialog: autocomp
+    - debug watch should be able to display the longest possible identifer
+      with the longest possible type e.g. IDENTIFIER_LEN * 2
+    - show escape symbols
+    - should not be possible close / open / compile project during debug -
+      either break the debug or stop the operation 
+    - debugwatch should indicate if the object plays a role (shifted mode)
+    - convert encoding routines
+    - make possible not to load some source files (to simplify the debugging)
+    - before start debugging make sure debug module is up to date
+    - warn if the debug module is out of date
+    - indent / outdent should align the selected code rather then simply
+      move it (like in VS IDE)
+    - find out optimal page size / history buffer capacity
+    - tune up horizontal and vertical scrollers (like it's done in NP++)
+    - set read only (?)
+    - hide status bar (?)
+    - display correct messages when the project is not compiled (missing
+      exe / source files)
+    - save the last active document / cursor position (?)
+    - shows the number of warnings
+    - source code assisten plug-in written with ELENA 
+    - configurable styles: colors / fonts
+    - Outlining
+    - Class Wizard
+    - Auto complete?
+    - Code patterns?
+    - Message dictionary?
+    - error recovering (several errors)
+    - make possible to change all tabs to spaces
+    - code patterns like in VS (type short cut and press tab-tab)
+    - Print 
+    - add Add Watch menu option
+    - full screen mode
+    - "find in files" function
+    - Two editor panels like in NPP
+    - clone current view
+    - macros
+    - autoformat
+    - localization
+    - zoom in / zoom out
+    - try to bring as much functionality as in notepad++
+    - an icon on tab page?
+    - make possible to treat the object as an array of bytes
+    - move recently reopened projects / files to the list end
+    - make sure in the case of crash saveAllAsDraft and saveSettings are called
+    - should we add the path to the recent history right after the project
+      was open (or save the project even the program is crashed)
+    - try to minimize the number of repaint (after pressing F8 repaint is invoked
+      two times instead of one)
+    - refactor IDE document code (optimize)
+    - find out why sometimes IDE thinks the module files outaged when
+      the project was just compiled
+    - review and optimize annex / cast routines
+    - introduce project templates (with basic forwards)
+    - make possible not to close the console window after the program finishing
+    - add the editor option controlling this feature
+    - could we prevent Win2003 from fashing instead of bringing the window
+      on top during the debugging
+    - should we show $self for extension?
+    - tips?
+    - new short-cut to got to message / output window
+    - debugger should not go directly into a construnctor when pressing F8 
+      (step over) on the symbol
+    - remove the code to import old style project file
+
+[ ] Linux Support
+    1) Porting
+    - move the code to the Linux / GTK platform
+
+[ ] Source code:
+    1) Review
+       - why we create the string every time in EditFrame::paint function?
+
+    2) Stack
+    - do we need now IDE_DEBUGGER_LOADMODULE notification? We are trying to
+      load module every time now
+   

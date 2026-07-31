@@ -1,0 +1,20 @@
+[#general#]
+#name=GUI Protocols
+#shortdescr=GUI specified Protocols.
+
+[#list#]
+gui_container
+gui_size
+gui_point
+
+[gui_size]
+#shortdescr=a size protocol.
+#method=gui'graphics'$getcoord,,size;Returns coordinates
+
+[gui_point]
+#shortdescr=a point protocol.
+#method=gui'graphics'$getsize,,point;Returns size
+
+[gui_container]
+#shortdescr=a container protocol.
+#method=gui'properties'$addcontrol,object;Adds the control to the container

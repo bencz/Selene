@@ -1,0 +1,16 @@
+[project]
+output=..\..\lib\std
+package=std
+projecttype=0
+warn:unresolved=-1
+debuginfo=-1
+
+[files]
+properties.l
+basic.l
+basic\memory.l
+patterns.l
+collections.l
+basic\math.l
+
+

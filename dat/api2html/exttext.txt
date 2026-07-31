@@ -1,0 +1,43 @@
+[#general#]
+#name=ext'text
+#shortdescr=Provides classes implementing the patterns for working with text
+
+[#list#]
+printvalue
+wordenumerator
+wordparsing
+words
+
+[wordparsing]
+#title=Class WordParsing
+#shortdescr=A word parsing pattern
+#parent=elena.html#object:Object
+#protocol=pattern
+#field=thewords;The parsing text
+#method=new,std_enumerable;Assigns the parsing text
+#method=run,action;Parse the text and execute the action for every parsed word
+
+[words]
+#title=Symbol Words
+#shortdescr=A word enumerator
+#method=new,std_enumerable=enumerator;Returns the word enumerator
+
+[wordenumerator]
+#title=Class WordEnumerator
+#shortdescr=A text parser helper
+#protocol=enumerator
+#parent=elena.html#object:Object
+#field=theenumerator;The text enumerator
+#field=theword;The current word
+#method=new,std_enumerable;Assigns the text enumerator.
+#method=start,,;Starts the parsing process.
+#method=get,,value;Returns the parsed word.
+#method=next,,;Continues the parsing.
+
+[printvalue]
+#title=Class PrintValue
+#shortdescr=A text representation property
+#parent=elena.html#object:Object
+#protocol=std_literal
+#field=thevalue;The literal value
+#method=new,std_printable;Gets the operand representation
