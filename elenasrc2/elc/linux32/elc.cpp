@@ -15,6 +15,8 @@
 #include "linker.h"
 #include "image.h"
 #include "x86jitcompiler.h"
+#include "llvmgen.h"
+#include "module.h"
 
 #include <stdarg.h>
 #include <unistd.h>
@@ -216,11 +218,20 @@ const char* _ELC_::Project :: getOption(_ELENA_::_ConfigFile& config, _ELENA_::P
 
 void _ELC_::Project :: addSource(const char* path)
 {
+   // .prj files keep Windows path separators; normalize at ingestion so the
+   // same project file drives both platforms (module names derive from the
+   // normalized form, file access uses it as-is)
+   _ELENA_::String<char, LOCAL_PATH_LENGTH> normalized(path);
+   for (size_t i = 0; i < _ELENA_::getlength(normalized); i++) {
+      if (normalized[i] == '\\')
+         normalized[i] = '/';
+   }
+
    _ELENA_::Path fullPath(StrSetting(_ELENA_::opProjectPath));
-   fullPath.combine(path);
+   fullPath.combine(normalized);
    fullPath.lower();
 
-   _sources.add(path, _ELENA_::StringHelper::clone(fullPath));
+   _sources.add(normalized, _ELENA_::StringHelper::clone(fullPath));
 }
 
 void _ELC_::Project :: cleanUp()
@@ -369,6 +380,347 @@ void setCompilerOptions(_ELC_::Project& project, _ELENA_::Compiler& compiler)
    }
 }
 
+// --- llvmTranslateModule ---
+
+static void llvmTranslateBody(_ELENA_::LLVMGenerator& generator, const char* name,
+   _ELENA_::_Memory* section, size_t offset, unsigned int entryMessage,
+   _ELENA_::TranslateStats& stats)
+{
+   // a procedure is serialized as [u32 byte length][e-code]
+   unsigned int size = 0;
+   section->read(offset, &size, 4);
+   if (size == 0 || size == 0xFFFFFFFF || offset + 4 + size > section->Length())
+      return;   // inherited/abstract entry or trailing metadata
+
+   _ELENA_::GenError error;
+   if (!generator.translateProcedure(name, (const unsigned char*)section->get(offset + 4),
+      size, entryMessage, stats, error))
+   {
+      if (stats.failed <= 8)
+         printf("  %-48s %s\n", name, (const char*)error);
+   }
+}
+
+static const char* llvmReferenceName(void* context, unsigned int reference)
+{
+   return ((_ELENA_::Module*)context)->resolveReference(reference);
+}
+
+static const char* llvmConstantValue(void* context, unsigned int reference)
+{
+   return ((_ELENA_::Module*)context)->resolveConstant(reference);
+}
+
+static unsigned int llvmInternMessage(void*, unsigned int message)
+{
+   // per-module milestone: the module-local encoding IS the id; real
+   // interning into one global id space arrives with the closure driver
+   return message;
+}
+
+static int llvmTranslateModule(const char* path)
+{
+   _ELENA_::Path modulePath(path);
+   _ELENA_::FileReader reader(modulePath, _ELENA_::feRaw, false);
+   _ELENA_::Module module;
+   if (module.load(reader) != _ELENA_::lrSuccessful) {
+      printf("cannot load the module %s\n", path);
+      return -1;
+   }
+
+   _ELENA_::LLVMGenerator generator;
+   _ELENA_::GenError error;
+   if (!generator.init(_ELENA_::getCurrentTarget(), error)) {
+      printf("LLVM: %s\n", (const char*)error);
+      return -1;
+   }
+
+   _ELENA_::TranslateCallbacks callbacks;
+   callbacks.context = &module;
+   callbacks.referenceName = llvmReferenceName;
+   callbacks.constantValue = llvmConstantValue;
+   callbacks.internMessage = llvmInternMessage;
+   generator.setCallbacks(callbacks);
+
+   _ELENA_::TranslateStats stats;
+   int classes = 0, symbols = 0;
+
+   for (_ELENA_::ReferenceMap::Iterator it = module.References() ; !it.Eof() ; it++) {
+      _ELENA_::ref_t reference = *it & ~_ELENA_::mskAnyRef;
+
+      _ELENA_::_Memory* symbol = module.mapSection(reference | _ELENA_::mskSymbolRef, true);
+      if (symbol) {
+         symbols++;
+         llvmTranslateBody(generator, it.key(), symbol, 0, 0, stats);
+      }
+
+      _ELENA_::_Memory* vmt = module.mapSection(reference | _ELENA_::mskVMTRef, true);
+      _ELENA_::_Memory* body = module.mapSection(reference | _ELENA_::mskClassRef, true);
+      if (vmt && body) {
+         classes++;
+
+         // the VMT tape: [u32 size][u32 classClassRef][ClassHeader][entries]
+         // where an entry is [u32 message][u32 code offset]
+         unsigned int size = 0;
+         vmt->read(0, &size, 4);
+
+         size_t position = 8 + sizeof(_ELENA_::ClassHeader);
+         size_t end = 4 + size;
+         while (position + 8 <= end) {
+            unsigned int message = 0, address = 0;
+            vmt->read(position, &message, 4);
+            vmt->read(position + 4, &address, 4);
+            position += 8;
+
+            _ELENA_::String<char, 300> name(it.key());
+            name.append('.');
+            name.appendHex(message);
+
+            if (address != 0xFFFFFFFF)
+               llvmTranslateBody(generator, name, body, address, message, stats);
+         }
+      }
+   }
+
+   printf("\n%d classes, %d symbols\n", classes, symbols);
+   printf("procedures: %u   translated: %u   failed: %u  (%.1f%%)\n",
+      stats.procedures, stats.translated, stats.failed,
+      stats.procedures ? (100.0 * stats.translated / stats.procedures) : 0.0);
+
+   // the emitted IR must be structurally valid regardless of coverage
+   if (!generator.verify(error)) {
+      printf("VERIFIER: %s\n", (const char*)error);
+      return -2;
+   }
+   printf("module verified\n");
+
+   _ELENA_::Path irPath("/tmp/elena-translate.ll");
+   if (generator.emitIR("/tmp/elena-translate.ll", error))
+      printf("IR written to /tmp/elena-translate.ll\n");
+
+   if (!generator.optimize(2, error)) {
+      printf("OPTIMIZER: %s\n", (const char*)error);
+      return -2;
+   }
+   if (generator.emitObject("/tmp/elena-translate.o", error)) {
+      printf("object written to /tmp/elena-translate.o\n");
+   }
+   else printf("OBJECT: %s\n", (const char*)error);
+
+   bool any = false;
+   for (int i = 0 ; i < 256 ; i++) {
+      if (stats.failedOpcode[i] > 0) {
+         if (!any) {
+            printf("\nfailures by opcode:\n");
+            any = true;
+         }
+         _ELENA_::ident_c mnemonic[30];
+         _ELENA_::ByteCodeCompiler::decode((_ELENA_::ByteCode)i, mnemonic);
+         printf("  %02X %-12s %u\n", i, mnemonic, stats.failedOpcode[i]);
+      }
+   }
+
+   return stats.failed == 0 ? 0 : 1;
+}
+
+// --- target selection ---
+
+// consumed BEFORE the ordinary option loop: the leading "--" would parse
+// as an empty option letter there. --target=? lists the table and exits.
+static bool processTargetOptions(int argc, char* argv[], bool& exit)
+{
+   exit = false;
+   for (int i = 1 ; i < argc ; i++) {
+      if (strncmp(argv[i], "--target=", 9) != 0)
+         continue;
+
+      const char* name = argv[i] + 9;
+      if (strcmp(name, "?") == 0) {
+         size_t count = 0;
+         const _ELENA_::TargetInfo* targets = _ELENA_::getTargetList(count);
+         for (size_t t = 0 ; t < count ; t++) {
+            printf("  %-10s %-34s %s-bit %s\n", targets[t].name, targets[t].triple,
+               targets[t].is64Bit() ? "64" : "32",
+               targets[t].isBigEndian() ? "BE" : "LE");
+         }
+         exit = true;
+         return true;
+      }
+
+      const _ELENA_::TargetInfo* target = _ELENA_::getTargetByName(name);
+      if (!target) {
+         printf("unknown target '%s' (use --target=? for the list)\n", name);
+         return false;
+      }
+      _ELENA_::setCurrentTarget(target);
+   }
+   return true;
+}
+
+// loads targets/<os>.cfg -- the operating-system axis of platform
+// selection: the forwards that decide WHICH library modules implement the
+// program-facing names. Loaded after the root configuration (so it can
+// rely on library paths) and before the project (so a project can still
+// override an individual forward).
+static void loadTargetConfig(_ELC_::Project& project)
+{
+   const char* osName = _ELENA_::getCurrentTarget()->osConfigName();
+   if (!osName)
+      return;
+
+   _ELENA_::Path configPath(project.appPath);
+   configPath.combine("targets");
+   configPath.combine(osName);
+   configPath.appendExtension("cfg");
+
+   project.loadConfig(configPath, false, false);
+}
+
+// --- llvmBuildProgram ---
+
+static int llvmBuildProgram(_ELC_::Project& project, const char* modulePath,
+   const char* programSymbol, const char* output)
+{
+   _ELENA_::Path path(modulePath);
+   _ELENA_::FileReader reader(path, _ELENA_::feRaw, false);
+   _ELENA_::Module module;
+   if (module.load(reader) != _ELENA_::lrSuccessful) {
+      printf("cannot load the module %s\n", modulePath);
+      return -1;
+   }
+
+   _ELENA_::LLVMGenerator generator;
+   _ELENA_::GenError error;
+   if (!generator.init(_ELENA_::getCurrentTarget(), error)) {
+      printf("LLVM: %s\n", (const char*)error);
+      return -1;
+   }
+
+   _ELENA_::TranslateCallbacks callbacks;
+   callbacks.context = &module;
+   callbacks.referenceName = llvmReferenceName;
+   callbacks.constantValue = llvmConstantValue;
+   callbacks.internMessage = llvmInternMessage;
+   generator.setCallbacks(callbacks);
+
+   _ELENA_::TranslateStats stats;
+   for (_ELENA_::ReferenceMap::Iterator it = module.References() ; !it.Eof() ; it++) {
+      _ELENA_::ref_t reference = *it & ~_ELENA_::mskAnyRef;
+
+      _ELENA_::_Memory* symbol = module.mapSection(reference | _ELENA_::mskSymbolRef, true);
+      if (symbol)
+         llvmTranslateBody(generator, it.key(), symbol, 0, 0, stats);
+
+      _ELENA_::_Memory* vmt = module.mapSection(reference | _ELENA_::mskVMTRef, true);
+      _ELENA_::_Memory* body = module.mapSection(reference | _ELENA_::mskClassRef, true);
+      if (vmt && body) {
+         unsigned int size = 0;
+         vmt->read(0, &size, 4);
+         size_t position = 8 + sizeof(_ELENA_::ClassHeader);
+         size_t end = 4 + size;
+         while (position + 8 <= end) {
+            unsigned int message = 0, address = 0;
+            vmt->read(position, &message, 4);
+            vmt->read(position + 4, &address, 4);
+            position += 8;
+
+            _ELENA_::String<char, 300> name(it.key());
+            name.append('.');
+            name.appendHex(message);
+            if (address != 0xFFFFFFFF)
+               llvmTranslateBody(generator, name, body, address, message, stats);
+         }
+      }
+   }
+   printf("translated %u/%u procedures\n", stats.translated, stats.procedures);
+   if (stats.failed) {
+      printf("aborting: %u procedures failed\n", stats.failed);
+      return -1;
+   }
+
+   if (!generator.emitEntry(programSymbol, error)) {
+      printf("ENTRY: %s\n", (const char*)error);
+      return -1;
+   }
+
+   generator.emitStubs();
+
+   if (!generator.verify(error)) {
+      printf("VERIFIER: %s\n", (const char*)error);
+      return -2;
+   }
+
+   // the IR as translated, before and after optimization -- debugging aid
+   _ELENA_::String<char, 512> irPath(output);
+   irPath.append(".ll");
+   generator.emitIR(irPath, error);
+
+   if (!generator.optimize(2, error)) {
+      printf("OPTIMIZER: %s\n", (const char*)error);
+      return -2;
+   }
+
+   _ELENA_::String<char, 512> optPath(output);
+   optPath.append(".opt.ll");
+   generator.emitIR(optPath, error);
+
+   _ELENA_::String<char, 512> asmPath(output);
+   asmPath.append(".s");
+   generator.emitAssembly(asmPath, error);
+
+   _ELENA_::String<char, 512> objectPath(output);
+   objectPath.append(".o");
+   if (!generator.emitObject(objectPath, error)) {
+      printf("OBJECT: %s\n", (const char*)error);
+      return -2;
+   }
+
+   // the system linker finishes the job; the runtime archive lives next to
+   // the compiler's binary directory. The linker choice follows the TARGET,
+   // never the host.
+   const _ELENA_::TargetInfo* target = _ELENA_::getCurrentTarget();
+   _ELENA_::String<char, 128> linker;
+   _ELENA_::String<char, 128> archive("libelena_rt");
+   if (target == _ELENA_::getDefaultTarget()) {
+      linker.copy("cc");
+   }
+   else if (target->os == _ELENA_::toWindows) {
+      linker.copy(target->is64Bit() ? "x86_64-w64-mingw32-gcc" : "i686-w64-mingw32-gcc");
+      archive.append("-");
+      archive.append(target->name);
+   }
+   else {
+      linker.copy(target->triple);
+      linker.append("-gcc");
+      archive.append("-");
+      archive.append(target->name);
+   }
+
+   _ELENA_::String<char, 1024> command(linker);
+   command.append(" \"");
+   command.append(objectPath);
+   command.append("\" \"");
+   command.append(project.appPath);
+   command.append("/../");
+   command.append(archive);
+   command.append(".a\" -lm -o \"");
+   command.append(output);
+   command.append("\"");
+
+   printf("%s\n", (const char*)command);
+   int status = system(command);
+   if (status != 0) {
+      // a missing cross toolchain or runtime archive is not a translation
+      // failure: the object is valid, the link can be finished by hand
+      printf("link failed (%d); the object is kept at %s\n", status,
+         (const char*)objectPath);
+      return -3;
+   }
+
+   printf("executable written to %s\n", output);
+   return 0;
+}
+
 // --- Main function ---
 
 const char* showPlatform(int platform)
@@ -396,13 +748,66 @@ int main(int argc, char* argv[])
          return -3;
       }
 
+      // --target= must be consumed before the ordinary option loop
+      bool exitAfterTargets = false;
+      if (!processTargetOptions(argc, argv, exitAfterTargets))
+         return -3;
+      if (exitAfterTargets)
+         return 0;
+
+      // the --llvm-* verbs may appear anywhere on the command line (after
+      // a --target=, typically); collect the verb and its positional
+      // arguments before the ordinary option loop runs
+      {
+         const char* verb = NULL;
+         const char* positional[3] = { NULL, NULL, NULL };
+         int found = 0;
+         for (int i = 1 ; i < argc ; i++) {
+            if (strncmp(argv[i], "--target=", 9) == 0)
+               continue;
+            if (strncmp(argv[i], "--llvm-", 7) == 0) {
+               verb = argv[i];
+            }
+            else if (verb && found < 3)
+               positional[found++] = argv[i];
+         }
+
+         if (verb && strcmp(verb, "--llvm-selftest") == 0)
+            return _ELENA_::llvmSelfTest("/tmp");
+
+         // translate every procedure of a compiled module and report
+         // opcode coverage -- validated against the real library corpus
+         if (verb && strcmp(verb, "--llvm-translate") == 0) {
+            if (found < 1) {
+               printf("usage: elc [--target=<t>] --llvm-translate <module.nl>\n");
+               return -3;
+            }
+            return llvmTranslateModule(positional[0]);
+         }
+
+         // translate a module, close it with stubs, link against the C
+         // runtime and produce a runnable executable
+         if (verb && strcmp(verb, "--llvm-build") == 0) {
+            if (found < 3) {
+               printf("usage: elc [--target=<t>] --llvm-build <module.nl> <program symbol> <output>\n");
+               return -3;
+            }
+            return llvmBuildProgram(project, positional[0], positional[1], positional[2]);
+         }
+      }
+
       // Initializing..
       _ELENA_::Path configPath(project.appPath);
       configPath.combine(DEFAULT_CONFIG);
       project.loadConfig(configPath, true, false);
 
+      // the operating-system axis: targets/<os>.cfg forwards
+      loadTargetConfig(project);
+
       // Initializing..
       for (int i = 1 ; i < argc ; i++) {
+         if (strncmp(argv[i], "--target=", 9) == 0)
+            continue;   // already consumed
          if (argv[i][0]=='-') {
             project.setOption(argv[i] + 1);
          }

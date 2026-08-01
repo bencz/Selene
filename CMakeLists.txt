@@ -15,7 +15,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(elena VERSION 2.0.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -63,11 +63,24 @@ add_library(elena_engine STATIC
    ${SRC}/engine/parsertable.cpp
    ${SRC}/engine/rtman.cpp
    ${SRC}/engine/section.cpp
+   ${SRC}/engine/targetinfo.cpp
    ${SRC}/engine/textsource.cpp
    ${SRC}/engine/x86helper.cpp
    ${SRC}/engine/x86jitcompiler.cpp
 )
 target_link_libraries(elena_engine PUBLIC elena_common)
+
+# --- LLVM ------------------------------------------------------------------
+# elc IS the LLVM compiler: there is no fallback mode. The back ends listed
+# here must match the ELENA_INIT_TARGET calls in llvmgen/llvmgen.cpp.
+
+find_package(LLVM CONFIG REQUIRED)
+message(STATUS "Using LLVM ${LLVM_PACKAGE_VERSION} from ${LLVM_DIR}")
+
+set(ELENA_LLVM_TARGETS X86 AArch64 PowerPC SystemZ)
+llvm_map_components_to_libnames(ELENA_LLVM_LIBS
+   core support target codegen mc mcparser analysis passes
+   ${ELENA_LLVM_TARGETS})
 
 # --- tools -----------------------------------------------------------------
 
@@ -110,9 +123,27 @@ add_executable(elc
    ${SRC}/elc/syntaxtree.cpp
    ${SRC}/elc/linux32/elc.cpp
    ${SRC}/elc/linux32/linker.cpp
+   ${SRC}/llvmgen/llvmgen.cpp
 )
-target_include_directories(elc PRIVATE ${SRC}/elc)
-target_link_libraries(elc PRIVATE elena_engine)
+target_include_directories(elc PRIVATE ${SRC}/elc ${SRC}/llvmgen)
+# LLVM headers are not warning-clean under -Wall; they are not ours to fix
+target_include_directories(elc SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
+target_link_libraries(elc PRIVATE elena_engine ${ELENA_LLVM_LIBS})
+
+# --- the C runtime ---------------------------------------------------------
+# Static by design: it is what the assembly runtime already was -- linked
+# into every produced image -- and what LTO needs to inline the allocator
+# and dispatcher into generated code.
+
+add_library(elena_rt STATIC
+   ${CMAKE_SOURCE_DIR}/runtime/elena_runtime.c
+)
+set_target_properties(elena_rt PROPERTIES
+   C_STANDARD 11
+   C_STANDARD_REQUIRED ON
+   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+target_compile_options(elena_rt PRIVATE -Wall -Wextra)
 
 # --- staged compiler data --------------------------------------------------
 # elc resolves syntax.dat, rules.dat and elc.config against its own
@@ -144,4 +175,10 @@ add_custom_target(compiler_config ALL
    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/bin/elc.linux.config ${BIN}/elc.config
    COMMAND ${CMAKE_COMMAND} -E make_directory ${BIN}/templates
    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/bin/templates/lib.config ${BIN}/templates
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${BIN}/targets
+   COMMAND ${CMAKE_COMMAND} -E copy
+      ${CMAKE_SOURCE_DIR}/bin/targets/linux.cfg
+      ${CMAKE_SOURCE_DIR}/bin/targets/windows.cfg
+      ${CMAKE_SOURCE_DIR}/bin/targets/macos.cfg
+      ${BIN}/targets
    COMMENT "Staging elc configuration")

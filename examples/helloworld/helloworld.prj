@@ -1,0 +1,8 @@
+[project]
+namespace=helloworld
+template=lib
+output=.
+debuginfo=0
+
+[files]
+helloworld.l

@@ -44,3 +44,7 @@ cmake_install.cmake
 *.swp
 *~
 .DS_Store
+
+*.dnl
+*.nl
+*.o

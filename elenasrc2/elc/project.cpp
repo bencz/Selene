@@ -179,11 +179,20 @@ void Project :: loadSourceCategory(_ConfigFile& config, path_t path)
 {
    ConfigCategoryIterator it = getCategory(config, opSources);
    while (!it.Eof()) {
+      // a source entry may be written with either separator (.prj files use
+      // the Windows one); canonize to the platform separator, which both the
+      // file access and the module-name derivation rely on
+      IdentifierString key(it.key());
+      for (size_t i = 0; i < getlength(key); i++) {
+         if (key[i] == '\\' || key[i] == '/')
+            key[i] = PATH_SEPARATOR;
+      }
+
       // add path if provided
       Path filePath(path);
-      Path::combinePath(filePath, it.key());
+      Path::combinePath(filePath, key);
 
-      _sources.add(it.key(), IdentifierString::clonePath(filePath));
+      _sources.add(key, IdentifierString::clonePath(filePath));
 
       it++;
    }

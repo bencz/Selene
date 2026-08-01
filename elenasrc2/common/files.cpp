@@ -279,7 +279,7 @@ inline int checkDir(const char* name, int mode)
 
 inline void createDir(const char* path)
 {
-   mkdir(path, S_IRWXO | S_IRWXG);
+   mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
 bool Path :: create(const char* root, const char* path)

@@ -39,13 +39,54 @@ the module closure.
 | `doc/` | Original author docs (partly stale; `docs/` supersedes) |
 | `experimental_version/` | Round 1, complete and frozen. Pull code/docs from here when useful |
 
-## Build (current state)
+## Build (current state — P0+P1 done)
 
-Phase P0 in progress: root `CMakeLists.txt` builds the portable toolchain
-subset (`common`, `engine` minus JIT, `elc` front end, `sg`, `og`, `ecv`,
-`asm2bin`) on Linux x86-64, C++17. The JIT, PE/ELF writers, VM, script
-engine and IDE are excluded, not ported. LLVM (llvm-devel) is required for
-the llvmgen phase (P2).
+```bash
+cmake -S . -B build-64
+cmake --build build-64 -j        # elc, sg, og, ecv, asm2bin + staged
+                                 # syntax.dat/rules.dat/elc.config
+
+mkdir -p build-64/lib30/system   # the e-code primitive modules (die in P2)
+build-64/bin/asm2bin src30/asm/core_routines.esm build-64/lib30/system
+build-64/bin/asm2bin src30/asm/ext_routines.esm  build-64/lib30/system
+
+build-64/bin/elc -csrc30/system/system.project \
+   -o$PWD/build-64/lib30 -p$PWD/build-64/lib30
+build-64/bin/elc -csrc30/extensions/extensions.project \
+   -o$PWD/build-64/lib30 -p$PWD/build-64/lib30
+```
+
+Modules carry the signature `ELENA.2.001` (64-bit-self-consistent container;
+2015 modules are rejected as wrong version). The VM, script engine and IDE
+are not built. **LLVM (llvm-devel) is REQUIRED** — llvmgen is linked into
+elc (`elc --llvm-selftest` emits an object for all 12 targets, including
+big-endian).
+
+**The first native program runs.** The e-code→LLVM translator emits and
+verifies 99.3% of the 2,629-procedure library corpus
+(`elc --llvm-translate <mod.nl>` measures it), and:
+
+```bash
+build-64/bin/elc -cexamples/helloworld/helloworld.prj -p$PWD/build-64/lib30
+build-64/bin/elc --llvm-build examples/helloworld/helloworld.nl \
+   "helloworld'program" /tmp/hello
+/tmp/hello        # -> Hello World from ELENA!
+```
+
+`--llvm-build` translates the module, materializes value constants
+([size][vmt][payload] images), emits the `elena_program` entry thunk, turns
+undefined `elena.*` into loud stubs, and links with `cc` against
+`build-64/libelena_rt.a` (runtime/elena_runtime.c — bump allocator, hook
+chain, harness). Pending, in order: VMT data emission + real dispatch in C,
+forward resolution at translate time + `targets/<os>.cfg` (round-1 seam),
+message interning across the closure, coreapi surface, library console via
+typed FFI (P4).
+
+`.prj` is THE project format on both platforms (the `.project` duplicates
+were the experimental Linux variant and will be absorbed when the stdlib is
+restructured in P3); path separators are canonized at ingestion
+(`Project::loadSourceCategory`), so `src30/system/system.prj` compiles on
+Linux, matching the 2015 elc.exe warning-for-warning (validated under Wine).
 
 ## Invariants — do not violate these
 

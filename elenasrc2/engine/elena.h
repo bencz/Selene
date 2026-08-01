@@ -455,6 +455,10 @@ struct ClassInfo
 
 struct SymbolExpressionInfo
 {
+   // the on-disk record is two dwords; the struct itself is wider on 64-bit
+   // hosts, so sizeof() must never be used to recognize the section
+   static const size_t SerializedSize = 8;
+
    size_t expressionTypeRef;
    bool   constant;
 

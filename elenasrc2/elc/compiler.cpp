@@ -580,7 +580,7 @@ ref_t Compiler::ModuleScope :: loadClassInfo(ClassInfo& info, ident_t vmtName, b
 
    // load argument VMT meta data
    _Memory* metaData = argModule->mapSection(moduleRef | mskMetaRDataRef, true);
-   if (metaData == NULL || metaData->Length() == sizeof(SymbolExpressionInfo))
+   if (metaData == NULL || metaData->Length() == SymbolExpressionInfo::SerializedSize)
       return 0;
 
    MemoryReader reader(metaData);
@@ -614,7 +614,7 @@ ref_t Compiler::ModuleScope :: loadSymbolExpressionInfo(SymbolExpressionInfo& in
 
    // load argument VMT meta data
    _Memory* metaData = argModule->mapSection(moduleRef | mskMetaRDataRef, true);
-   if (metaData == NULL || metaData->Length() != sizeof(SymbolExpressionInfo))
+   if (metaData == NULL || metaData->Length() != SymbolExpressionInfo::SerializedSize)
       return 0;
 
    MemoryReader reader(metaData);
@@ -5180,14 +5180,20 @@ void Compiler::optimizeEmbeddableCall(ModuleScope& scope, SyntaxTree::Node& assi
    ref_t subject = info.methodHints.get(Attribute(callNode.argument, maEmbeddableGet));
    // if it is possible to replace get&subject operation with eval&subject2:local
    if (subject != 0) {
-      // removing assinging operation
-      assignNode = lxExpression;
-
-      // move assigning target into the call node
+      // move assigning target into the call node; the rewrite consumes the
+      // assigning target, so it must be located before anything is re-typed
+      // and the second rewrite below can no longer apply
       SyntaxTree::Node assignTarget = assignNode.findPattern(SyntaxTree::NodePattern(lxLocalAddress));
-      callNode.appendNode(assignTarget.type, assignTarget.argument);
-      assignTarget = lxExpression;
-      callNode.setArgument(encodeMessage(subject, EVAL_MESSAGE_ID, 1));
+      if (assignTarget != lxNone) {
+         // removing assinging operation
+         assignNode = lxExpression;
+
+         callNode.appendNode(assignTarget.type, assignTarget.argument);
+         assignTarget = lxExpression;
+         callNode.setArgument(encodeMessage(subject, EVAL_MESSAGE_ID, 1));
+
+         return;
+      }
    }
 
    subject = info.methodHints.get(Attribute(callNode.argument, maEmbeddedInit));
@@ -5196,7 +5202,7 @@ void Compiler::optimizeEmbeddableCall(ModuleScope& scope, SyntaxTree::Node& assi
       // move assigning target into the call node
       SyntaxTree::Node assignTarget = assignNode.findPattern(SyntaxTree::NodePattern(lxLocalAddress));
       SyntaxTree::Node callTarget = callNode.findPattern(SyntaxTree::NodePattern(lxConstantClass));
-      if (callTarget != lxNone) {
+      if (callTarget != lxNone && assignTarget != lxNone) {
          // removing assinging operation
          assignNode = lxExpression;
 
