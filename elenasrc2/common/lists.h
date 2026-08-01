@@ -1817,9 +1817,10 @@ public:
       _buffer.write(position, &item, sizeof(item));
 
       if (KeyStored) {
-         // save stored key
-         ref_t storedKey = (ref_t)storeKey(position, key);
-         _buffer.writeDWord(position + 4, storedKey);
+         // save stored key: patch the item's key field (pointer-width, at its
+         // real struct offset) with the key's buffer offset
+         size_t storedKey = (size_t)storeKey(position, key);
+         _buffer.write(position + offsetof(Item, key), &storedKey, sizeof(storedKey));
       }
 
       size_t beginning = (size_t)_buffer.get(0);
