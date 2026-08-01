@@ -121,20 +121,58 @@ void elena_copy(void* target, void* source)
    memcpy(target, source, (size_t)bytes);
 }
 
-// --- dispatch (arrives with the VMT data emission) -------------------------
+// --- dispatch --------------------------------------------------------------
+//
+// A VMT is emitted by llvmgen as {word message, method fn} entries sorted
+// ascending by interned message and terminated by an all-ones message;
+// [-1] of the table is the class-class table, [-2] the flags, [-3] the
+// entry count. An object's [-1] word is its VMT.
 
-void* elena_send_vi(void* self, word message, void* argframe, word index)
+typedef void* (*elena_method)(void* self, word message, void* argframe);
+
+struct vmt_entry
 {
-   (void)self; (void)message; (void)argframe; (void)index;
-   elena_unimplemented("elena_send_vi");
-   return NULL;
+   word         message;
+   elena_method fn;
+};
+
+static struct vmt_entry* vmt_of(void* object)
+{
+   return (struct vmt_entry*)((word*)object)[-1];
 }
 
+// acallvi: call by SLOT INDEX (0 = the dispatch method by sort order)
+void* elena_send_vi(void* self, word message, void* argframe, word index)
+{
+   struct vmt_entry* table = vmt_of(self);
+   if (!table || !table[index].fn) {
+      fprintf(stderr, "elena runtime: empty dispatch table (message %lX)\n",
+         (unsigned long)message);
+      abort();
+   }
+   return table[index].fn(self, message, argframe);
+}
+
+// bsredirect: search by message; the table is merged, so no parent walk
 void* elena_bsredirect(void* self, word message, void* argframe, char* found)
 {
-   (void)self; (void)message; (void)argframe;
+   struct vmt_entry* table = vmt_of(self);
+   if (table) {
+      for (struct vmt_entry* at = table ; at->message != (word)-1 ; at++) {
+         if (at->message == message) {
+            *found = 1;
+            return at->fn(self, message, argframe);
+         }
+      }
+   }
    *found = 0;
-   elena_unimplemented("elena_bsredirect");
+   if (getenv("ELENA_TRACE")) {
+      fprintf(stderr, "bsredirect miss: message %lX, table:", (unsigned long)message);
+      struct vmt_entry* at = vmt_of(self);
+      for (int i = 0 ; at && at->message != (word)-1 && i < 8 ; at++, i++)
+         fprintf(stderr, " %lX", (unsigned long)at->message);
+      fprintf(stderr, "\n");
+   }
    return NULL;
 }
 
@@ -148,9 +186,12 @@ word elena_mindex(void* target, word message)
 word elena_trylock(void* object)  { (void)object; return 1; }
 void elena_freelock(void* object) { (void)object; }
 
-word elena_external_stub(void)
+// callextr reaches this until typed FFI (plan 18 / phase P4) lands: the
+// import name travels with the call so a missing capability names itself
+word elena_external_stub(const char* name)
 {
-   elena_unimplemented("external call (typed FFI is phase P4)");
+   fprintf(stderr, "elena runtime: external '%s' needs the typed FFI (P4)\n", name);
+   abort();
    return 0;
 }
 

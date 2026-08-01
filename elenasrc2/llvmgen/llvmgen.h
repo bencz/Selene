@@ -96,6 +96,20 @@ public:
    bool translateProcedure(const char* name, const unsigned char* code,
       size_t length, unsigned int entryMessage, TranslateStats& stats, GenError& error);
 
+   // Emits a class dispatch table, already MERGED down the parent chain
+   // and sorted ascending by interned message. Layout below the public
+   // symbol: [-3] entry count, [-2] flags, [-1] class-class table; the
+   // symbol itself points at the entries ({word message, ptr function}...,
+   // terminated by an all-ones message). Must run BEFORE code translation
+   // so references bind to the table, not to a placeholder.
+   bool emitVMT(const char* className, const char* classClassName,
+      unsigned long long flags, unsigned int count,
+      const unsigned int* messages, const char** functions, GenError& error);
+
+   // Emits the class's constant instance: a zero-field object whose VMT is
+   // the class table -- what a stateless class reference evaluates to.
+   bool emitClassConstant(const char* className, GenError& error);
+
    // Defines elena_program: the fixed entry thunk the runtime's main()
    // calls; it evaluates the given (already resolved) program symbol.
    bool emitEntry(const char* symbolName, GenError& error);

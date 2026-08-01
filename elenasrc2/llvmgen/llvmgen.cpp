@@ -321,15 +321,31 @@ struct Translator
          case 0xBF: case 0x92:                                  // reserve / restore (unmanaged)
             delta = 0; return true;
          case 0xA2: case 0x39: {                                // acallvi / acallvd
-            if (in.staticE < 0) return false;
-            int count = (int)(in.staticE & 0x0F);
-            if (count >= 0x0C) return false;                    // open arg list
-            delta = -sendConsumption(in, count);
+            int floor_ = (in.fpBase >= 0) ? in.fpBase + 1 : 1;
+            if (in.staticE < 0 || (int)(in.staticE & 0x0F) >= 0x0C) {
+               // a dispatcher-style send: the message is dynamic (or an
+               // open list), so the callee runs against the CALLER's
+               // argument cells. That is provable exactly when this
+               // procedure has nothing of its own above the floor.
+               if (in.depth == floor_) {
+                  delta = 0;
+                  return true;
+               }
+               return false;
+            }
+            delta = -sendConsumption(in, (int)(in.staticE & 0x0F));
             return true;
          }
          case 0xFE: {                                           // xcallrm r, m
             int count = (int)(ins.extra & 0x0F);
-            if (count >= 0x0C) return false;
+            if (count >= 0x0C) {
+               int floor_ = (in.fpBase >= 0) ? in.fpBase + 1 : 1;
+               if (in.depth == floor_) {
+                  delta = 0;
+                  return true;
+               }
+               return false;
+            }
             delta = -sendConsumption(in, count);
             return true;
          }
@@ -474,6 +490,36 @@ struct Translator
       }
    }
 
+   // true when the block starting at 'target' reaches a terminator or an
+   // unconditional jump touching only cell-free operations -- registers,
+   // globals, payloads, plain jumps. Such a tail cannot observe a depth
+   // difference, so merging paths of different depths into it is sound in
+   // this model (cells are function-local storage, returns ignore them).
+   bool cellFreeTail(size_t target)
+   {
+      std::map<size_t, size_t>::iterator at = byOffset.find(target);
+      if (at == byOffset.end())
+         return false;
+      for (size_t index = at->second ; index < stream.size() ; index++) {
+         unsigned char op = stream[index].opcode;
+         if (isTerminator(op) || op == 0xA0)
+            return true;
+         switch (op) {
+            case 0x00: case 0x01: case 0x04: case 0x26:         // nops
+            case 0x0C: case 0x12: case 0x20: case 0x21:         // register moves
+            case 0x90: case 0x91: case 0x9E: case 0x9A:         // dcopy ecopy acopyr bcopyr
+            case 0x93: case 0xCC:                               // aloadr asaver
+            case 0xCD: case 0xCE:                               // aloadai aloadbi
+            case 0x36:                                          // class
+            case 0x28:                                          // freelock
+               continue;
+            default:
+               return false;                                    // anything cell-touching
+         }
+      }
+      return true;
+   }
+
    bool propagate(size_t target, const BlockState& state, std::vector<size_t>& worklist)
    {
       std::map<size_t, BlockState>::iterator existing = blocks.find(target);
@@ -485,6 +531,16 @@ struct Translator
       }
       BlockState& present = existing->second;
       if (present.depth != state.depth || present.fpBase != state.fpBase) {
+         if (present.fpBase == state.fpBase && cellFreeTail(target)) {
+            // keep the smaller depth; the tail cannot tell the difference
+            if (state.depth < present.depth) {
+               present.depth = state.depth;
+               worklist.push_back(target);
+            }
+            if (present.staticE != state.staticE)
+               present.staticE = -1;
+            return true;
+         }
          char buffer[120];
          snprintf(buffer, sizeof(buffer),
             "conflicting depth at +%04X (%d/%d vs %d/%d)",
@@ -656,12 +712,10 @@ struct Translator
          symbol += buffer;
       }
 
-      llvm::GlobalVariable* global = impl.module->getGlobalVariable(symbol, true);
-      if (!global) {
-         global = new llvm::GlobalVariable(*impl.module, wordTy, false,
-            llvm::GlobalValue::ExternalLinkage, nullptr, symbol);
-      }
-      return global;
+      if (llvm::GlobalValue* known = impl.module->getNamedValue(symbol))
+         return known;
+      return new llvm::GlobalVariable(*impl.module, wordTy, false,
+         llvm::GlobalValue::ExternalLinkage, nullptr, symbol);
    }
 
    static std::string sanitized(const char* name)
@@ -771,6 +825,15 @@ struct Translator
    }
 
    llvm::Value* regF;   // the x87-style floating register (rload/rsave/dcopyr)
+
+   // messages cross module boundaries: every message OPERAND is re-encoded
+   // into the global id space before it reaches emitted code
+   long long interned(long long message)
+   {
+      if (impl.callbacks.internMessage)
+         return impl.callbacks.internMessage(impl.callbacks.context, (unsigned int)message);
+      return message;
+   }
 
    llvm::Value* libmUnary(const char* name, llvm::Value* v)
    {
@@ -1017,6 +1080,7 @@ struct Translator
          case 0xC7: { int c = top - (int)ins.arg; llvm::Value* t = loadCell(c); storeCell(c, loadD()); storeD(t); break; }               // dswapsi
 
          // -- D/E arithmetic
+         case 0x09: storeD(b.CreateOr(loadD(), loadE())); break;           // or
          case 0x1E: storeD(b.CreateAdd(loadD(), loadE())); break;          // add
          case 0x16: storeD(b.CreateSub(loadD(), loadE())); break;          // sub
          case 0x1A: storeD(b.CreateAdd(loadD(), wordC(1))); break;         // inc
@@ -1048,8 +1112,8 @@ struct Translator
          case 0xFC: branchOn(b.CreateICmpEQ(loadD(), wordC(ins.extra)), ins.target, ins.next); closed = true; break; // ifn
          case 0xFD: branchOn(b.CreateICmpNE(loadD(), wordC(ins.extra)), ins.target, ins.next); closed = true; break; // elsen
          case 0xF7: branchOn(b.CreateICmpSLT(loadD(), wordC(ins.extra)), ins.target, ins.next); closed = true; break; // lessn
-         case 0xF8: branchOn(b.CreateICmpEQ(loadE(), wordC(ins.extra)), ins.target, ins.next); closed = true; break;  // ifm
-         case 0xF9: branchOn(b.CreateICmpNE(loadE(), wordC(ins.extra)), ins.target, ins.next); closed = true; break;  // elsem
+         case 0xF8: branchOn(b.CreateICmpEQ(loadE(), wordC(interned(ins.extra))), ins.target, ins.next); closed = true; break;  // ifm
+         case 0xF9: branchOn(b.CreateICmpNE(loadE(), wordC(interned(ins.extra))), ins.target, ins.next); closed = true; break;  // elsem
          case 0xFA: case 0xFB: {                                // ifr / elser
             llvm::Value* rhs = (ins.extra == 0)
                ? llvm::Constant::getNullValue(ptrTy) : referenceValue(ins.extra);
@@ -1139,7 +1203,7 @@ struct Translator
             target += buffer;
             llvm::FunctionCallee callee = impl.module->getOrInsertFunction(target, methodType());
             llvm::Value* frame = cellAddress(depth);
-            llvm::Value* r = b.CreateCall(callee, { loadA(), wordC(ins.extra), frame });
+            llvm::Value* r = b.CreateCall(callee, { loadA(), wordC(interned(ins.extra)), frame });
             if (ins.opcode == 0xF5) {
                b.CreateRet(r);
                closed = true;
@@ -1151,15 +1215,34 @@ struct Translator
             const char* procName = impl.callbacks.referenceName
                ? impl.callbacks.referenceName(impl.callbacks.context, (unsigned int)ins.arg & 0x00FFFFFF)
                : NULL;
-            std::string target = "elena.p.";
+            unsigned int mask = (unsigned int)ins.arg & 0xFF000000;
+            bool isSymbol = (mask == 0x12000000 || mask == 0x32000000);
+            std::string target = isSymbol ? "elena.sym." : "elena.p.";
             target += procName ? sanitized(procName) : "unknown";
             llvm::FunctionCallee callee = impl.module->getOrInsertFunction(target, methodType());
             storeA(b.CreateCall(callee, { loadA(), loadE(), cellAddress(depth) }));
             break;
          }
-         case 0xA5:                                             // callextr (typed FFI later)
-            storeD(b.CreateCall(externStub, {}));
+         case 0x38: {                                           // call [A]
+            llvm::Value* code = b.CreateLoad(ptrTy, loadA());
+            storeA(b.CreateCall(methodType(), code,
+               { loadA(), loadE(), cellAddress(depth) }));
             break;
+         }
+         case 0xA5: {                                           // callextr
+            // typed FFI (plan 18 / P4) emits the real per-signature call;
+            // until then the runtime reports which external was reached
+            const char* importName = impl.callbacks.referenceName
+               ? impl.callbacks.referenceName(impl.callbacks.context,
+                    (unsigned int)ins.arg & 0x00FFFFFF)
+               : NULL;
+            llvm::Value* name = b.CreateGlobalString(importName ? importName : "?");
+            llvm::FunctionCallee stub = impl.module->getOrInsertFunction(
+               "elena_external_stub",
+               llvm::FunctionType::get(wordTy, { ptrTy }, false));
+            storeD(b.CreateCall(stub, { name }));
+            break;
+         }
          case 0x0E: {                                           // bsredirect
             llvm::Value* r = b.CreateCall(resend,
                { loadA(), loadE(), cellAddress(depth), foundFlag });
@@ -1285,7 +1368,7 @@ struct Translator
                { loadA(), loadB() }); break;                    // copyb
          case 0x27: storeD(b.CreateCall(trylockFn, { loadA() })); break;  // trylock
          case 0x28: b.CreateCall(freelockFn, { loadA() }); break;         // freelock
-         case 0x9F: storeE(wordC(ins.arg)); break;                        // copym
+         case 0x9F: storeE(wordC(interned(ins.arg))); break;              // copym
          case 0x96: {                                           // ifheap
             llvm::Value* c = b.CreateCall(impl.module->getOrInsertFunction("elena_isheap",
                llvm::FunctionType::get(wordTy, { ptrTy }, false)), { loadA() });
@@ -1358,6 +1441,151 @@ bool LLVMGenerator :: translateProcedure(const char* name, const unsigned char* 
    }
 
    stats.translated++;
+
+   return true;
+}
+
+static std::string sanitizedName(const char* name)
+{
+   std::string out(name);
+   for (size_t i = 0 ; i < out.size() ; i++)
+      if (out[i] == '\'' || out[i] == ':' || out[i] == '#') out[i] = '.';
+   return out;
+}
+
+bool LLVMGenerator :: emitVMT(const char* className, const char* classClassName,
+   unsigned long long flags, unsigned int count,
+   const unsigned int* messages, const char** functions, GenError& error)
+{
+   Impl* self = impl(_impl);
+   if (!self->machine) { error.copy("generator is not initialized"); return false; }
+
+   llvm::LLVMContext& ctx = self->context;
+   llvm::IntegerType* wordTy = self->wordType();
+   llvm::PointerType* ptrTy = llvm::PointerType::get(ctx, 0);
+   llvm::FunctionType* methodTy =
+      llvm::FunctionType::get(ptrTy, { ptrTy, wordTy, ptrTy }, false);
+   llvm::StructType* entryTy = llvm::StructType::get(ctx, { wordTy, ptrTy });
+
+   std::string symbol = "elena.vmt." + sanitizedName(className);
+   if (llvm::GlobalValue* present = self->module->getNamedValue(symbol)) {
+      if (!present->isDeclaration())
+         return true;
+   }
+
+   llvm::Constant* classClass = llvm::Constant::getNullValue(ptrTy);
+   if (classClassName && classClassName[0]) {
+      std::string ccSymbol = "elena.vmt." + sanitizedName(classClassName);
+      llvm::GlobalValue* cc = self->module->getNamedValue(ccSymbol);
+      if (!cc)
+         cc = new llvm::GlobalVariable(*self->module, wordTy, false,
+            llvm::GlobalValue::ExternalLinkage, nullptr, ccSymbol);
+      classClass = cc;
+   }
+
+   std::string ownPrefix = "elena.m." + sanitizedName(className) + ".";
+
+   std::vector<llvm::Constant*> entries;
+   for (unsigned int i = 0 ; i < count ; i++) {
+      llvm::FunctionCallee fn = self->module->getOrInsertFunction(functions[i], methodTy);
+      entries.push_back(llvm::ConstantStruct::get(entryTy,
+         { llvm::ConstantInt::get(wordTy, messages[i]),
+           llvm::cast<llvm::Constant>(fn.getCallee()) }));
+
+      // an inherited entry is also reachable by a DIRECT resolved call
+      // against THIS class (xcallrm) -- provide the name as a tail-call
+      // thunk to the defining ancestor's body
+      char hex[12];
+      snprintf(hex, sizeof(hex), "%X", messages[i]);
+      std::string direct = ownPrefix + hex;
+      if (direct != functions[i] && !self->module->getFunction(direct)) {
+         llvm::Function* thunk = llvm::Function::Create(methodTy,
+            llvm::Function::ExternalLinkage, direct, self->module.get());
+         llvm::IRBuilder<> b(llvm::BasicBlock::Create(ctx, "entry", thunk));
+         llvm::Function::arg_iterator args = thunk->arg_begin();
+         llvm::Value* a0 = &*args++;
+         llvm::Value* a1 = &*args++;
+         llvm::Value* a2 = &*args;
+         llvm::CallInst* call = b.CreateCall(fn, { a0, a1, a2 });
+         call->setTailCall(true);
+         b.CreateRet(call);
+      }
+   }
+   entries.push_back(llvm::ConstantStruct::get(entryTy,
+      { llvm::Constant::getAllOnesValue(wordTy), llvm::Constant::getNullValue(ptrTy) }));
+
+   llvm::ArrayType* tableTy = llvm::ArrayType::get(entryTy, entries.size());
+   llvm::StructType* imageTy = llvm::StructType::get(ctx,
+      { wordTy, wordTy, ptrTy, tableTy });
+   llvm::GlobalVariable* image = new llvm::GlobalVariable(*self->module, imageTy,
+      false, llvm::GlobalValue::PrivateLinkage,
+      llvm::ConstantStruct::get(imageTy, {
+         llvm::ConstantInt::get(wordTy, count),
+         llvm::ConstantInt::get(wordTy, flags),
+         classClass,
+         llvm::ConstantArray::get(tableTy, entries) }),
+      symbol + ".image");
+
+   llvm::Constant* indexes[2] = {
+      llvm::ConstantInt::get(llvm::Type::getInt32Ty(ctx), 0),
+      llvm::ConstantInt::get(llvm::Type::getInt32Ty(ctx), 3) };
+   llvm::Constant* at = llvm::ConstantExpr::getInBoundsGetElementPtr(
+      imageTy, image, llvm::ArrayRef<llvm::Constant*>(indexes, 2));
+
+   if (llvm::GlobalValue* placeholder = self->module->getNamedValue(symbol)) {
+      llvm::GlobalAlias* alias = llvm::GlobalAlias::create(tableTy, 0,
+         llvm::GlobalValue::ExternalLinkage, symbol + ".table", at, self->module.get());
+      placeholder->replaceAllUsesWith(alias);
+      placeholder->eraseFromParent();
+      alias->setName(symbol);
+   }
+   else llvm::GlobalAlias::create(tableTy, 0,
+      llvm::GlobalValue::ExternalLinkage, symbol, at, self->module.get());
+
+   return true;
+}
+
+bool LLVMGenerator :: emitClassConstant(const char* className, GenError& error)
+{
+   Impl* self = impl(_impl);
+   if (!self->machine) { error.copy("generator is not initialized"); return false; }
+
+   llvm::LLVMContext& ctx = self->context;
+   llvm::IntegerType* wordTy = self->wordType();
+   llvm::PointerType* ptrTy = llvm::PointerType::get(ctx, 0);
+
+   std::string symbol = "elena.const." + sanitizedName(className);
+   if (llvm::GlobalValue* present = self->module->getNamedValue(symbol)) {
+      if (!present->isDeclaration())
+         return true;
+   }
+
+   std::string vmtSymbol = "elena.vmt." + sanitizedName(className);
+   llvm::GlobalValue* vmt = self->module->getNamedValue(vmtSymbol);
+   if (!vmt)
+      vmt = new llvm::GlobalVariable(*self->module, wordTy, false,
+         llvm::GlobalValue::ExternalLinkage, nullptr, vmtSymbol);
+
+   llvm::StructType* imageTy = llvm::StructType::get(ctx, { wordTy, ptrTy });
+   llvm::GlobalVariable* image = new llvm::GlobalVariable(*self->module, imageTy,
+      false, llvm::GlobalValue::PrivateLinkage,
+      llvm::ConstantStruct::get(imageTy,
+         { llvm::ConstantInt::get(wordTy, 0), vmt }),
+      symbol + ".image");
+
+   llvm::Constant* offset = llvm::ConstantInt::get(wordTy, 2 * (self->target->pointerBits / 8));
+   llvm::Constant* at = llvm::ConstantExpr::getGetElementPtr(
+      llvm::Type::getInt8Ty(ctx), image, offset);
+
+   if (llvm::GlobalValue* placeholder = self->module->getNamedValue(symbol)) {
+      llvm::GlobalAlias* alias = llvm::GlobalAlias::create(imageTy, 0,
+         llvm::GlobalValue::ExternalLinkage, symbol + ".obj", at, self->module.get());
+      placeholder->replaceAllUsesWith(alias);
+      placeholder->eraseFromParent();
+      alias->setName(symbol);
+   }
+   else llvm::GlobalAlias::create(imageTy, 0,
+      llvm::GlobalValue::ExternalLinkage, symbol, at, self->module.get());
 
    return true;
 }

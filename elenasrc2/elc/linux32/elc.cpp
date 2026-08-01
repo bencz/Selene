@@ -389,8 +389,12 @@ static void llvmTranslateBody(_ELENA_::LLVMGenerator& generator, const char* nam
    // a procedure is serialized as [u32 byte length][e-code]
    unsigned int size = 0;
    section->read(offset, &size, 4);
-   if (size == 0 || size == 0xFFFFFFFF || offset + 4 + size > section->Length())
+   if (size == 0 || size == 0xFFFFFFFF || offset + 4 + size > section->Length()) {
+      if (getenv("ELENA_LLVM_TRACE"))
+         printf("  skipped %s: offset %X size %X section %X\n", name,
+            (unsigned int)offset, size, (unsigned int)section->Length());
       return;   // inherited/abstract entry or trailing metadata
+   }
 
    _ELENA_::GenError error;
    if (!generator.translateProcedure(name, (const unsigned char*)section->get(offset + 4),
@@ -577,16 +581,129 @@ static void loadTargetConfig(_ELC_::Project& project)
 }
 
 // --- llvmBuildProgram ---
+//
+// The link half the 2009/2015 system buried inside the JIT, redone as
+// name-based emission: one global subject-id space per link unit, class
+// tables merged down the parent chain at build time, everything else
+// resolved by symbol name.
+
+// common/tools.h defines min/max as macros; they poison the std headers
+#undef min
+#undef max
+
+#include <map>
+#include <string>
+#include <vector>
+
+namespace
+{
+
+struct BuildClosure
+{
+   std::vector<_ELENA_::Module*>       modules;
+   std::map<std::string, unsigned int> subjects;
+   _ELENA_::Module*                    current;
+
+   BuildClosure() : current(NULL) {}
+
+   unsigned int internSubject(const char* name)
+   {
+      std::map<std::string, unsigned int>::iterator it = subjects.find(name);
+      if (it != subjects.end())
+         return it->second;
+      unsigned int id = (unsigned int)subjects.size() + 1;
+      subjects[name] = id;
+      return id;
+   }
+
+   unsigned int internMessage(_ELENA_::Module* module, unsigned int message)
+   {
+      unsigned int sign = (message & 0x00FFFFF0) >> 4;
+      if (sign == 0)
+         return message;
+      const char* name = module->resolveSubject(sign);
+      if (!name)
+         return message;
+      return (message & 0xFF00000F) | (internSubject(name) << 4);
+   }
+};
+
+struct OwnMethod
+{
+   unsigned int message;      // interned
+   unsigned int address;      // offset in the class code section
+};
+
+struct ClassData
+{
+   _ELENA_::Module*       module;
+   std::string            name;
+   std::string            parent;
+   std::string            classClass;
+   unsigned long long     flags;
+   std::vector<OwnMethod> own;
+
+   ClassData() : module(NULL), flags(0) {}
+};
+
+}
+
+static const char* closureReferenceName(void* context, unsigned int reference)
+{
+   BuildClosure* closure = (BuildClosure*)context;
+   return closure->current->resolveReference(reference);
+}
+
+static const char* closureConstantValue(void* context, unsigned int reference)
+{
+   BuildClosure* closure = (BuildClosure*)context;
+   return closure->current->resolveConstant(reference);
+}
+
+static unsigned int closureInternMessage(void* context, unsigned int message)
+{
+   BuildClosure* closure = (BuildClosure*)context;
+   return closure->internMessage(closure->current, message);
+}
+
+static _ELENA_::Module* loadBuildModule(const char* path)
+{
+   _ELENA_::Path modulePath(path);
+   _ELENA_::FileReader reader(modulePath, _ELENA_::feRaw, false);
+   _ELENA_::Module* module = new _ELENA_::Module();
+   if (module->load(reader) != _ELENA_::lrSuccessful) {
+      delete module;
+      return NULL;
+   }
+   return module;
+}
 
 static int llvmBuildProgram(_ELC_::Project& project, const char* modulePath,
-   const char* programSymbol, const char* output)
+   const char* programSymbol, const char* output, const char* libPath)
 {
-   _ELENA_::Path path(modulePath);
-   _ELENA_::FileReader reader(path, _ELENA_::feRaw, false);
-   _ELENA_::Module module;
-   if (module.load(reader) != _ELENA_::lrSuccessful) {
+   BuildClosure closure;
+
+   _ELENA_::Module* program = loadBuildModule(modulePath);
+   if (!program) {
       printf("cannot load the module %s\n", modulePath);
       return -1;
+   }
+   closure.modules.push_back(program);
+
+   // the library closure: coarse for now -- system + its submodules
+   if (libPath) {
+      static const char* names[] = {
+         "system.nl", "system/collections.nl", "system/text.nl", "system/io.nl",
+         "system/routines.nl", "system/dynamic.nl", "system/calendar.nl",
+         "system/math.nl", "system/core_routines.nl", "extensions.nl", NULL };
+      for (int i = 0 ; names[i] ; i++) {
+         _ELENA_::String<char, 512> path(libPath);
+         path.append("/");
+         path.append(names[i]);
+         if (_ELENA_::Module* library = loadBuildModule(path))
+            closure.modules.push_back(library);
+      }
+      printf("closure: %d modules\n", (int)closure.modules.size());
    }
 
    _ELENA_::LLVMGenerator generator;
@@ -597,25 +714,42 @@ static int llvmBuildProgram(_ELC_::Project& project, const char* modulePath,
    }
 
    _ELENA_::TranslateCallbacks callbacks;
-   callbacks.context = &module;
-   callbacks.referenceName = llvmReferenceName;
-   callbacks.constantValue = llvmConstantValue;
-   callbacks.internMessage = llvmInternMessage;
+   callbacks.context = &closure;
+   callbacks.referenceName = closureReferenceName;
+   callbacks.constantValue = closureConstantValue;
+   callbacks.internMessage = closureInternMessage;
    generator.setCallbacks(callbacks);
 
-   _ELENA_::TranslateStats stats;
-   for (_ELENA_::ReferenceMap::Iterator it = module.References() ; !it.Eof() ; it++) {
-      _ELENA_::ref_t reference = *it & ~_ELENA_::mskAnyRef;
+   // -- collect every class of the closure (own methods, interned)
+   std::map<std::string, ClassData> classes;
+   for (size_t m = 0 ; m < closure.modules.size() ; m++) {
+      _ELENA_::Module* module = closure.modules[m];
+      for (_ELENA_::ReferenceMap::Iterator it = module->References() ; !it.Eof() ; it++) {
+         _ELENA_::ref_t reference = *it & ~_ELENA_::mskAnyRef;
+         _ELENA_::_Memory* vmt = module->mapSection(reference | _ELENA_::mskVMTRef, true);
+         if (!vmt)
+            continue;
 
-      _ELENA_::_Memory* symbol = module.mapSection(reference | _ELENA_::mskSymbolRef, true);
-      if (symbol)
-         llvmTranslateBody(generator, it.key(), symbol, 0, 0, stats);
+         ClassData data;
+         data.module = module;
+         data.name = it.key();
 
-      _ELENA_::_Memory* vmt = module.mapSection(reference | _ELENA_::mskVMTRef, true);
-      _ELENA_::_Memory* body = module.mapSection(reference | _ELENA_::mskClassRef, true);
-      if (vmt && body) {
-         unsigned int size = 0;
+         unsigned int size = 0, classClassRef = 0;
          vmt->read(0, &size, 4);
+         vmt->read(4, &classClassRef, 4);
+
+         _ELENA_::ClassHeader header;
+         vmt->read(8, &header, sizeof(header));
+         data.flags = header.flags;
+         if (header.parentRef) {
+            const char* parent = module->resolveReference(header.parentRef & 0x00FFFFFF);
+            if (parent) data.parent = parent;
+         }
+         if (classClassRef) {
+            const char* metaName = module->resolveReference(classClassRef & 0x00FFFFFF);
+            if (metaName) data.classClass = metaName;
+         }
+
          size_t position = 8 + sizeof(_ELENA_::ClassHeader);
          size_t end = 4 + size;
          while (position + 8 <= end) {
@@ -623,20 +757,110 @@ static int llvmBuildProgram(_ELC_::Project& project, const char* modulePath,
             vmt->read(position, &message, 4);
             vmt->read(position + 4, &address, 4);
             position += 8;
+            if (address != 0xFFFFFFFF) {
+               OwnMethod method;
+               method.message = closure.internMessage(module, message);
+               method.address = address;
+               data.own.push_back(method);
+            }
+         }
+         if (getenv("ELENA_LLVM_TRACE") && strstr(it.key(), "greeter")) {
+            printf("  class %s parent='%s' cc='%s' own:", it.key(),
+               data.parent.c_str(), data.classClass.c_str());
+            for (size_t o = 0 ; o < data.own.size() ; o++)
+               printf(" %X@%X", data.own[o].message, data.own[o].address);
+            printf("\n");
+         }
+         classes[data.name] = data;
+      }
+   }
+   printf("closure: %d classes, %d interned subjects\n",
+      (int)classes.size(), (int)closure.subjects.size());
 
-            _ELENA_::String<char, 300> name(it.key());
-            name.append('.');
-            name.appendHex(message);
-            if (address != 0xFFFFFFFF)
-               llvmTranslateBody(generator, name, body, address, message, stats);
+   // -- emit every class table, merged down the parent chain
+   for (std::map<std::string, ClassData>::iterator it = classes.begin() ;
+        it != classes.end() ; it++)
+   {
+      // ancestors first, self last: children override
+      std::vector<const ClassData*> chain;
+      const ClassData* at = &it->second;
+      while (at) {
+         chain.push_back(at);
+         if (at->parent.empty())
+            break;
+         std::map<std::string, ClassData>::iterator parentIt = classes.find(at->parent);
+         at = (parentIt != classes.end()) ? &parentIt->second : NULL;
+      }
+
+      std::map<unsigned int, std::string> merged;
+      for (size_t c = chain.size() ; c > 0 ; c--) {
+         const ClassData* link = chain[c - 1];
+         std::string base = "elena.m.";
+         base += link->name;
+         base += ".";
+         for (size_t o = 0 ; o < link->own.size() ; o++) {
+            char hex[12];
+            snprintf(hex, sizeof(hex), "%X", link->own[o].message);
+            std::string fn = base + hex;
+            for (size_t ch = 0 ; ch < fn.size() ; ch++)
+               if (fn[ch] == '\'' || fn[ch] == ':' || fn[ch] == '#') fn[ch] = '.';
+            merged[link->own[o].message] = fn;
+         }
+      }
+
+      std::vector<unsigned int> messages;
+      std::vector<const char*> functions;
+      std::vector<std::string> storage;
+      storage.reserve(merged.size());
+      for (std::map<unsigned int, std::string>::iterator entry = merged.begin() ;
+           entry != merged.end() ; entry++)
+      {
+         messages.push_back(entry->first);
+         storage.push_back(entry->second);
+      }
+      for (size_t s = 0 ; s < storage.size() ; s++)
+         functions.push_back(storage[s].c_str());
+
+      generator.emitVMT(it->first.c_str(),
+         it->second.classClass.empty() ? NULL : it->second.classClass.c_str(),
+         it->second.flags, (unsigned int)messages.size(),
+         messages.empty() ? NULL : &messages[0],
+         functions.empty() ? NULL : &functions[0], error);
+      generator.emitClassConstant(it->first.c_str(), error);
+   }
+
+   // -- translate every procedure of every module
+   _ELENA_::TranslateStats stats;
+   for (size_t m = 0 ; m < closure.modules.size() ; m++) {
+      _ELENA_::Module* module = closure.modules[m];
+      closure.current = module;
+
+      for (_ELENA_::ReferenceMap::Iterator it = module->References() ; !it.Eof() ; it++) {
+         _ELENA_::ref_t reference = *it & ~_ELENA_::mskAnyRef;
+
+         _ELENA_::_Memory* symbol = module->mapSection(reference | _ELENA_::mskSymbolRef, true);
+         if (symbol)
+            llvmTranslateBody(generator, it.key(), symbol, 0, 0, stats);
+
+         std::map<std::string, ClassData>::iterator classIt = classes.find(it.key());
+         if (classIt != classes.end() && classIt->second.module == module) {
+            _ELENA_::_Memory* body = module->mapSection(reference | _ELENA_::mskClassRef, true);
+            if (!body)
+               continue;
+            for (size_t o = 0 ; o < classIt->second.own.size() ; o++) {
+               _ELENA_::String<char, 300> name(it.key());
+               name.append('.');
+               name.appendHex(classIt->second.own[o].message);
+               llvmTranslateBody(generator, name, body,
+                  classIt->second.own[o].address,
+                  classIt->second.own[o].message, stats);
+            }
          }
       }
    }
    printf("translated %u/%u procedures\n", stats.translated, stats.procedures);
-   if (stats.failed) {
-      printf("aborting: %u procedures failed\n", stats.failed);
-      return -1;
-   }
+   if (stats.failed)
+      printf("continuing with %u untranslated procedures (stubs)\n", stats.failed);
 
    if (!generator.emitEntry(programSymbol, error)) {
       printf("ENTRY: %s\n", (const char*)error);
@@ -710,8 +934,6 @@ static int llvmBuildProgram(_ELC_::Project& project, const char* modulePath,
    printf("%s\n", (const char*)command);
    int status = system(command);
    if (status != 0) {
-      // a missing cross toolchain or runtime archive is not a translation
-      // failure: the object is valid, the link can be finished by hand
       printf("link failed (%d); the object is kept at %s\n", status,
          (const char*)objectPath);
       return -3;
@@ -760,7 +982,7 @@ int main(int argc, char* argv[])
       // arguments before the ordinary option loop runs
       {
          const char* verb = NULL;
-         const char* positional[3] = { NULL, NULL, NULL };
+         const char* positional[4] = { NULL, NULL, NULL, NULL };
          int found = 0;
          for (int i = 1 ; i < argc ; i++) {
             if (strncmp(argv[i], "--target=", 9) == 0)
@@ -768,7 +990,7 @@ int main(int argc, char* argv[])
             if (strncmp(argv[i], "--llvm-", 7) == 0) {
                verb = argv[i];
             }
-            else if (verb && found < 3)
+            else if (verb && found < 4)
                positional[found++] = argv[i];
          }
 
@@ -789,10 +1011,11 @@ int main(int argc, char* argv[])
          // runtime and produce a runnable executable
          if (verb && strcmp(verb, "--llvm-build") == 0) {
             if (found < 3) {
-               printf("usage: elc [--target=<t>] --llvm-build <module.nl> <program symbol> <output>\n");
+               printf("usage: elc [--target=<t>] --llvm-build <module.nl> <program symbol> <output> [<libpath>]\n");
                return -3;
             }
-            return llvmBuildProgram(project, positional[0], positional[1], positional[2]);
+            return llvmBuildProgram(project, positional[0], positional[1], positional[2],
+               positional[3]);
          }
       }
 
