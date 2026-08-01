@@ -1,0 +1,13 @@
+[project]
+executable=ffi-struct.exe
+entry='entry
+template=console
+projecttype=1
+debuginfo=-1
+warn:unresolved=0
+
+[files]
+ffi-struct.sel
+
+[forwards]
+'program=ffi-struct'program

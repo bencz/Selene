@@ -1,0 +1,34 @@
+// --- FFI: a struct OUT-parameter, today ---
+//
+// uname(2) fills a `struct utsname` through the pointer it receives; its
+// first member (sysname, 65 bytes) starts at offset 0 and holds "Linux".
+// The buffer here is a literal used as scratch: identical literals intern
+// to ONE object, so the second reference below IS the same 390 bytes the
+// call just filled -- and write() prints its first five: "Linux".
+//
+// This is the by-POINTER struct story, which covers most of the POSIX and
+// Win32 API surface (GetSystemTime, sockaddr, stat...): `ptr` passes the
+// object's payload, `str` passes a literal's bytes. Structs BY VALUE and
+// struct RETURNS need #struct type descriptions so LLVM can lower each
+// target's C ABI faithfully -- staged work, docs/plan/18-ffi-design.md
+// section 4. A dedicated byte-buffer class replaces this literal trick once
+// the standard natives land.
+//
+// Linux-only by nature: uname does not exist in msvcrt. Platform-specific
+// declarations belong in platform modules, selected by forwards.
+
+#define[external, lib:c, sym:uname, args:str, ret:i32]             uname = posix'uname.
+#define[external, lib:c, sym:write, args:i32'str'usize, ret:isize] write = c'write.
+#define[external, lib:c, sym:exit, args:i32]                       exit  = c'exit.
+
+#symbol Program =
+{
+    proceed
+    [
+        #external posix'uname("                                                                                                                                                                                                                                                                                                                                                                                                      ").
+
+        #external c'write(1, "                                                                                                                                                                                                                                                                                                                                                                                                      ", 5).
+
+        #external c'exit(0).
+    ]
+}.

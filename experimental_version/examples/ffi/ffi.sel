@@ -1,0 +1,26 @@
+// --- Typed FFI, declared IN the language ---
+//
+// The #define[external, ...] hints below ARE the foreign function interface:
+// each one types a C entry point, and the #external calls compile into
+// direct, marshalled calls under the target's C ABI -- the syscall layer as
+// metadata, no native stubs, no assembly (docs/plan/18-ffi-design.md).
+//
+// The apostrophes in args:i32'str'usize stand in for commas, which the hint
+// grammar reserves as its separator.
+//
+// exit(42) doubles as proof the i32 really crossed: the process exit code is
+// observable from the shell. `write`/`exit` exist on POSIX libc and in
+// Windows' msvcrt alike, so this one source builds for both targets.
+
+#define[external, lib:c, sym:write, args:i32'str'usize, ret:isize] write = c'write.
+#define[external, lib:c, sym:exit, args:i32]                       exit  = c'exit.
+
+#symbol Program =
+{
+    proceed
+    [
+        #external c'write(1, "FFI: write() da libc, tipado.", 29).
+
+        #external c'exit(42).
+    ]
+}.

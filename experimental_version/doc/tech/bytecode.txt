@@ -1,0 +1,189 @@
+
+ELENA Virtual Machine Byte code commands:
+-----------------------------------------
+
+Registers:  
+  sp   - stack pointer
+  fsp  - frame stack pointer
+  self - object ptr;
+         could be either normal (in pure stack machine could be located 
+         between procedure stack frames)
+
+Prefixes:
+
+  i - integer   operand
+  r - reference operand
+  o - current object in the stack
+  s - self object ptr
+  f - stack frame
+
+Meta Command Labels:
+   begin      <hint>
+   end        <hint>
+   ending
+
+Meta Operands:
+   scope-level
+
+Commands:
+
+  prepredir                - save the last frame and open the new frame
+                             saving info about message and parameter
+
+  redirect                 - tries to send current message to the
+                             current object; if it was successful returns
+                             the method result and exists the procedure
+
+  rredirect <ref>          - tries to send current message to the   
+                             provided vmt reference; if it was successful returns
+                             the method result and exists the procedure
+
+  ocast                    - broadcasts the current message for every
+                             object member
+
+  oswitch                  - tries to send the current message to onw of
+                             the current object members; if it was successful 
+                             returns the method result and exists the procedure
+
+  iocall(n) msg, else      - [sp] -> temp;
+                             scan in [sp] vmt for the msg mapped method starting
+                             with n position; 
+                             if no mapping found goes to else label
+                             initialize temp2 either with the current object or
+                             with its extension;
+                             if mapping found calls the method;
+                             if the method result is zero goes to else label
+                             x86: parameter in EBX, EAX - self ptr;
+                             on return EAX contains the method result
+
+  ircall(n) msg, else, ref - [sp] -> temp;
+                             scan in vmt specified in ref for the msg mapped method 
+                             starting with n position; 
+                             if no mapping found goes to else label
+                             initialize temp2 either with the current object or
+                             with its extension;
+                             if mapping found calls the method;
+                             if the method result is zero goes to else label
+                             x86: parameter in EBX, EAX - self ptr;
+                             on return EAX contains the method result
+
+  rcall ref, else          - calls the procedure;
+                             if the procedure result is zero goes to else label
+                             x86: EAX contains the procedure result
+ 
+  prep                     - fsp => and sp -> fsp;
+                             save the last frame and open the new frame
+
+  sprepparam               - self =>, temp2 -> self, fsp => , sp ->fsp , temp =>;
+                             intialize self, save the last frame, open the new frame 
+                             and save temp
+
+  sprep                    - self =>, temp2 -> self, fsp => , sp ->fsp;
+                             intialize self, save the last frame, open the new frame
+
+  ifpush offset            - if offset > 0, fsp:(-offset) =>;
+                             if positive load the item at offset position in the 
+                             current frame (from the start) and save it in the stack
+                             if offset < 0, fsp:(offset + prev-sp) =>; 
+                             if negative load the item from the previous stack frame
+                             at offset position (from the top) and save it in the stack 
+
+  spush                    - self =>; save the self in the stack
+
+  ispush offset            - self+offset =>; load the current object field and save it
+                             in the stack
+
+  ipush int                - int=>; save the integer in the stack
+ 
+  rpush reference          - ref =>; save the object reference in the stack
+
+  rpushptr ref             - [ref] =>; save the item refered by the command
+                             argument
+
+  return                   - [sp] -> fsp:(1+prev-sp) ; fsp -> sp ; => fsp
+                             copies the item to the previous frame top; restore
+                             the previous frame;
+                             the procedure result is the returned item
+                             x86: EAX contains the returned object  
+
+  rreturnif ref            - if [sp] == ref, [sp] -> fsp:(1+prev-sp) , fsp -> sp, => fsp, 
+                             if current item equals to the object reference, 
+                             copies the item to the previous frame top; restore
+                             the previous frame;
+                             the procedure result is the returned item
+                             x86: EAX contains the returned object  
+
+  pop                     -  [sp] =>; remove the item from the stack
+
+  rmoveptr ref            - [sp] -> [ref]; copies the current item to the one 
+                            refered by the command argument
+
+  iomove offset
+
+  ifmove offset           - if offset > 0, [st] -> fsp:(-offset);
+                            if positive copies the item to the stack at offset 
+                            position in the  current frame (from the start)
+                            if offset < 0, [st] -> fsp:(offset + prev-sp); 
+                            if negative load copies item to the previous stack frame
+                            at offset position (from the top)
+
+  ismove offset           - [sp] -> self:offset =>; copies the current item to
+                            the current object field 
+
+  iomoveptr offs1, offs2  - [sp] -> (sp:(-offs1)):offs2
+                            copies the current item to the field of the object
+                            in stack 
+
+  ocreate size, vmtref    - new =>;
+                            creates a new object with provided size and
+                            with specified vmt;
+                            save the newly created object in the stack                         
+
+  sexit                   - fsp -> sp ; => fsp ; => self;
+                            restore the previous frame and previous self register;
+                            the procedure result is always non zero
+
+  sreturn                 - [sp] -> fsp:(1+prev-sp) ; fsp -> sp ; => fsp ;
+                            => self;
+                            copies the item to the previous frame top; restore
+                            the previous frame and self register;
+                            the procedure result is the returned item
+                            x86: EAX contains the returned object  
+
+  exitredir               - restore the previous frame and previous self register;
+                            exits the procedure; 
+                            the procedure result is always zero
+                            x86: EAX is zero
+
+  ioswap n                - [sp] <-> [sp-n]
+
+Example 1:
+
+#method message [ a message:(b message:c) | message:c. ]
+
+proc-begin:
+  sprep
+  ifpush a
+  branch-begin:
+    ifpush a
+    ifpush b
+    ifpush c
+    iocall message, branch-failing
+    iocall message, branch-failing
+    jump branch-end
+  branch-failing
+    ifset  branch-level
+    ifpush a
+    ifpush c
+    iocall message, branch-failing
+    jump branch-end
+  branch-failing:
+    jump proc-failing
+  branch-end:  
+    ifset  branch-level
+    pop
+    exit
+ proc-failing
+    ipush 0
+    sreturn
+ proc-end

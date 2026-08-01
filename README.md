@@ -1,120 +1,84 @@
-# Selene
+ELENA Language Project V. 2.0, (C)2005-2015  By Alex Rakov
+====
+ELENA is a general-purpose, object-oriented language with late binding. The package includes compiler, IDE, ELENA libraries and samples.
+Currently Win32-x86 and Linux-I386 platforms are supported.
 
-A pure message-passing object-oriented language in the Smalltalk lineage, and a
-modern implementation of it.
+Features
+---
+- Pure polymorphic object oriented language
+- Dynamic "class mutation"
+- Message dispatching
+- Virtual machine
+- Command line 32-bit compiler
+- GUI IDE & Debugger
+- Unicode support (utf-8)
+- Complete source code
+- Number of samples
+- Script Engine / Interpreter
+- Virtual Machine Terminal
 
-Selene is a divergent rewrite of **ELENA Language 1.5.0.0** (2009, Alex Rakov,
-Apache 2.0) — a language whose ideas aged remarkably well, wrapped in an
-implementation that could only ever run on Windows and x86-32. The language is
-kept. The implementation is being rebuilt around LLVM, portable C, and a
-multi-architecture, multi-OS target set.
+Minimum requirements
+---
+ - Windows 7/8 x86
+ - Linux I386
 
-> The original project is still actively developed by its author as
-> [`elena-lang`](https://github.com/ELENA-LANG/elena-lang). Selene is not a
-> continuation of it and does not track it. Original copyright headers are
-> preserved throughout.
+ELENA Language modules and programs
+---
+The complete source code of ELENA Standard library could be found
+in the folder &lt;app root&gt;\src30.
 
+The source code of ELENA samples could be found
+in the folder &lt;app root&gt;\examples.
+
+License
+---
+The compiler and executables distributed in this package fall under The Apache 
+License V2.0e, for more information read the file LICENSE.TXT.
+
+ELENA Installation / Run
 ---
 
-## The language in thirty seconds
+######Windows:
 
-Everything is an object; everything is a message send; a send either **succeeds
-with a value** or **fails** — and failure is the control-flow mechanism, not an
-error mechanism.
+To install just unzip all the files into a directory you want.
 
-```elena
-#symbol Program =
-{
-    proceed
-    [
-        'program'output << "Hello World!!%n".
-    ]
-}.
-```
+You may need to add a path to BIN folder to system environment (e.g. &lt;app root&gt;\bin).
 
-Two features are unusual enough to be worth naming:
+Otherwise you may use setup executable.
 
-- **Roles ("shift")** — an object can rewrite its own VMT pointer at run time
-  and change which methods answer. It is how the standard library expresses
-  sentinels, state machines and lazy initialization without null checks or enums.
-- **Annex / cast** — an object can delegate everything it does not understand to
-  another object, installed as an any-message handler. Composition of protocols
-  without inheritance.
+To open, compile or debug the programs and libraries use ELENA GUI IDE 
+(&lt;app root&gt;\bin\elide.exe) or ELENA Command Line Compiler 
+(&lt;app root&gt;\bin\elc.exe).
 
-A full reference for the dialect is in
-[`docs/language/10-elena-language-reference.md`](docs/language/10-elena-language-reference.md).
-None existed before; it was reconstructed from the grammar, the compiler and the
-library sources.
+In ELENA IDE you may select File-Open-Open Project option and open an 
+appropriate project file (*.prj). Then select Project-Compile option to 
+compile the project and Project-Debug to debug it.
 
-## Status
+######Linux:
 
-**Early. The compiler builds and runs on Linux; it does not link yet.**
+To install just unzip all the files into a directory you want and execute 
+install.script.
 
-| | |
-|---|---|
-| Compiler (`elc`) on Linux | ✅ compiles sources to `.sem` bytecode modules |
-| Syntax generator (`sg`) | ✅ |
-| Standard library | ✅ 28 modules compile |
-| Character model | ✅ UTF-8 |
-| Module format | ✅ v2, with a versioned header |
-| **Linking / executables** | ❌ waiting on the LLVM backend |
-| Windows, macOS | ❌ not yet built |
-| 64-bit | ❌ blocked on module format v2 payload |
+To compile the program types : ./bin/elc2 -c&lt;path to .project file&gt;
 
-Linking is deliberately absent rather than unfinished: the 2009 linker emits
-PE/COFF only and the code generator emits Win32-hosted x86, so neither can
-produce anything runnable off Windows. Both are replaced by LLVM, not ported.
+Get started!
+---
+* [ELENA Specification](http://github.com/ELENA-LANG/elena-lang/wiki/ELENA-Programming-Language)
+* [Hello World Sample](http://elenalang.blogspot.de/2013/08/elena-20-hello-world-tutorial.html)
+* [Sum of Two Numbers Tutorial ](http://elenalang.blogspot.de/2013/09/elena-20-sum-two-numbers-tutorial.html)
+* [Add a variable to a class instance at run-time](http://elenalang.blogspot.de/2013/10/elena-20-tutorial-add-variable-to-class.html)
+* [Literal as an array of characters ](http://elenalang.blogspot.de/2015/04/tutorial-literal-as-array-of-characters.html)
+* [ELENA 2.x: messages, types, dispatching...](http://elenalang.blogspot.de/2015/02/elena-2x-messages-types-dispatching.html)
+* [Stack allocated variables in ELENA](http://elenalang.blogspot.de/2015/08/stack-allocated-variables-in-elena.html)
 
-## Build
+Contribute!
+---
+ELENA Project looks for programmers interested in learning the language and providing feedback.
 
-Requires CMake, a C++17 compiler, and a 32-bit toolchain
-(`glibc-devel.i686`, `libstdc++-devel.i686` on Fedora).
+Some of the best ways to contribute are to try things out, file bugs, and join in design conversations. 
 
-```bash
-cmake -S . -B build
-cmake --build build -j
+You may try to implementing some of Rosetta code tasks : http://rosettacode.org/wiki/Category:Elena
 
-mkdir -p lib
-build/bin/elc -lstd -olib src/elena.sel
-build/bin/elc -p$PWD/lib -csrc/std/std.prj      # then sys, ext, gui, win32, socket
-```
-
-Full instructions, including the two things that are easy to get wrong, are in
-[`docs/build/21-building-on-linux.md`](docs/build/21-building-on-linux.md).
-
-## Where this is going
-
-| Phase | |
-|---|---|
-| 1 | ✅ Build on Linux — CMake, UTF-8, versioned module header |
-| 2 | Module format v2 payload — canonical little-endian, slot indices instead of byte offsets. **Critical path** |
-| 3 | LLVM IR backend, differential-tested against the legacy x86 path |
-| 4 | Runtime rewritten in C11; `src/asm/` deleted |
-| 5 | Threading (MTA/STA) and a garbage collector that supports both |
-| 6 | A cross-platform IDE with debugging and completion |
-| 7 | An operating system written in Selene |
-
-Target set: **Linux, Windows, macOS** × **x86-64, arm64, ppc64, ppc64le, ppc32,
-s390x** — including big-endian, which is why byte order is treated explicitly
-everywhere rather than assumed.
-
-## Documentation
-
-[`docs/`](docs/README.md) — around 17,000 lines, in two parts:
-
-- **What the system is.** The complete 40-opcode bytecode reference with the
-  x86 each one emits, the object and VMT layout, the garbage collector
-  algorithm, the module file format, the language reference, the standard
-  library catalogue, and a tree-wide platform audit.
-- **Where it is going.** Design proposals for the LLVM backend and
-  multi-architecture support, the C runtime, the FFI, syntax evolution, and what
-  writing an operating system in this language actually requires.
-
-Start with [`docs/plan/15-modernization-roadmap.md`](docs/plan/15-modernization-roadmap.md)
-for the synthesis: what is hard, in what order, and why.
-
-## License
-
-Apache License 2.0, inherited from ELENA. See [`license.txt`](license.txt).
-
-Original work © 2005-2009 Alex Rakov.
+Questions?
+---
+Feel free to ask any question in one of our forums: http://www.elcdev.smffy.com/ .

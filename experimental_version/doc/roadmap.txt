@@ -1,0 +1,41 @@
+Ultimate goals
+--------------
+- creating systems capable to be modified during run-time
+- completely open architecture
+- maximally reusable code
+
+Version 1.5.x
+-------------
+- Linux support (elc + elide)
+- Just in Time Compiler
+- localization to russian / any other languages
+- support of "Active code" concept / reflection
+- IDE features supporting "Active code" concept
+- DLL support
+- Any package must be compiled as DLL
+- x64 platform support
+- optimized output code
+- optimized GC
+- a lot of samples
+- ELENA paradigm specified (best practices, guide lines)
+- Enhanced manual + number of articles about programming with ELENA
+- enhanced IDE
+- ELENA library: Smalltalk basic level 
+- make possible to external link obj files (c++ compiler)
+- multy-thread support
+- ELENA library: level of SmallTalk
+
+Version 1.6.x
+-------------
+- Second public release
+- CPU oriented optmization (at least for pentium 4)
+- standard library code optimization
+
+Version 2.0.x
+-------------
+- ELENA library: state of art standard libraries, database support
+- state of art IDE
+- two major projects implemented with ELENA: upndown (graphics, ai) and
+  jafm (ide, open architecture)
+- Third public release
+

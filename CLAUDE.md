@@ -1,17 +1,27 @@
-# Selene
+# Selene (v2)
 
-A modernization of **ELENA Language 1.5.0.0** (2009, Alex Rakov, Apache 2.0) — a
-pure message-passing object-oriented language in the Smalltalk lineage.
+A modernization of **ELENA Language 1.9.23 / 2.0** (2015, Alex Rakov,
+Apache 2.0) — a pure message-passing object-oriented language in the
+Smalltalk lineage, at its most mature pre-rewrite state: register-based
+e-code, generational GC, threading variant, script engine, ~150 opcodes.
 
-The original was Windows-only, x86-32, with a hand-written code generator and a
-runtime written in x86 assembly. Selene rebuilds the implementation around
-LLVM, portable C, and multiple architectures. The 2009 toolchain (asm2binx,
-the PE linker, the x86 JIT, the assembly runtime) has been **deleted**: byte
-code goes through `llvmgen` and the system linker on every platform.
+**Round 1** — the same modernization applied to ELENA 1.5.0.0 (2009) —
+was completed as an experiment and lives whole in `experimental_version/`
+(LLVM backend, C11 runtime, CMake, Linux+Windows, FFI). It is reference
+material: its `docs/plan/*` argue the design decisions Selene v2 inherits.
 
-> The upstream project (`elena-lang`) is still actively developed by its author.
-> Selene is a divergent rewrite of the implementation, not a continuation of it.
-> Original copyright headers must be preserved.
+Selene v2 rebuilds the 1.9.23 implementation the same way: the VM
+(`elenavm`), the x86 JIT, the hand-written PE32/ELF32 writers, the x86
+assembly runtime (`src30/asm/x32/`) and the e-code assembly layer (`.esm`)
+are all **deleted**; codegen goes through the **LLVM C++ API in-process**
+(no textual IR in the compile path) and the system linker; the runtime
+(GC, dispatch, object model — MTA-first) is **C11**. elc keeps emitting
+ELENA object modules (`.nl`/`.dnl`) per namespace; the translator consumes
+the module closure.
+
+> The upstream project (`elena-lang`) is still actively developed by its
+> author. Selene is a divergent rewrite of the implementation, not a
+> continuation. Original copyright headers must be preserved.
 
 ---
 
@@ -19,113 +29,80 @@ code goes through `llvmgen` and the system linker on every platform.
 
 | Path | Contents |
 |---|---|
-| `docs/` | **The reference.** ~17,000 lines documenting the system as it is, plus the design proposals. Read `docs/README.md` first |
-| `elenasrc/` | C++ toolchain: `common/`, `engine/`, `elc/`, `llvmgen/`, `semdump/`, `sg/` |
-| `runtime/` | The C runtime: object model, dispatch, GC, natives; `posix/` and `win32/` platform bindings |
-| `src/` | Selene standard library (`.sel`), including `posix/` and `win32/` console bindings |
-| `examples/` | Sample programs |
-| `bin/` | `elc.cfg`, project templates, `targets/<os>.cfg` platform forwards — source data, not artifacts |
+| `docs/` | **Read first.** `01-codebase-map.md` (the system as it is), `02-modernization-plan.md` (goals, phases P0–P6, deletion order) |
+| `elenasrc2/` | The 2015 C++ toolchain: `common/`, `engine/`, `elc/`, `elenavm/`, `elenasm/`, `elenart/`, `tools/{asm2bin,ecv,elt,og,sg}`, `ide/`+`gui/` (not ported) |
+| `src30/` | Standard library in ELENA (`system`, `extensions`, `forms`, `net`, `sqlite`), `asm/` (esm + x86 — dies), `cpuvm/` (sample program) |
+| `dat/sg/`, `dat/og/` | Grammar (→ `syntax.dat`) and peephole rules (→ `rules.dat`) |
+| `bin/` | `elc.cfg`/`elc.config`, `templates/*.cfg` link templates, `scripts/*.es`, prebuilt `x32/*.bin` |
+| `doc/` | Original author docs (partly stale; `docs/` supersedes) |
+| `experimental_version/` | Round 1, complete and frozen. Pull code/docs from here when useful |
 
-## Build and use
+## Build (current state)
 
-```bash
-cmake -S . -B build-64 -DELENA_32BIT=OFF
-cmake --build build-64 -j
-```
-
-Produces `build-64/bin/{sg,elc,semdump}` and `build-64/libselene.a`. LLVM
-(llvm-devel) is REQUIRED — elc *is* the LLVM compiler; there is no fallback
-mode. Then, to build the library and a program:
-
-```bash
-mkdir -p lib
-build-64/bin/elc --target=x64 -lstd -olib src/elena.sel
-build-64/bin/elc --target=x64 -p$PWD/lib -csrc/std/std.prj     # then sys, ext, posix, gui, win32 (2 rounds)
-
-build-64/bin/elc --target=x64 -p$PWD/lib -cexamples/helloworld/helloworld.prj
-examples/helloworld/helloworld          # compiles, links and runs
-```
-
-`--target=x64-win` produces a Windows executable the same way (needs
-`libselene-<target>.a` next to `libselene.a`, built with mingw). The
-`--llvm-translate` flag is a debugging tool exposing the same machinery
-without a project.
+Phase P0 in progress: root `CMakeLists.txt` builds the portable toolchain
+subset (`common`, `engine` minus JIT, `elc` front end, `sg`, `og`, `ecv`,
+`asm2bin`) on Linux x86-64, C++17. The JIT, PE/ELF writers, VM, script
+engine and IDE are excluded, not ported. LLVM (llvm-devel) is required for
+the llvmgen phase (P2).
 
 ## Invariants — do not violate these
 
-**1. No platform conditionals in shared code.**
-`#ifdef _WIN32` in a file that both platforms compile is a defect. Use a
-per-platform source directory (`elc/posix/`, `runtime/posix/`,
-`runtime/win32/`) or add an entry to `Platform::` in
-`common/<platform>/platform.h`. The build system selects the file; the code
-never asks where it is running. See `docs/architecture/22-platform-layer.md`.
+**1. No platform conditionals in shared code.** Use per-platform source
+directories; the build system selects the file. See
+`experimental_version/docs/architecture/22-platform-layer.md`.
 
-**2. UTF-8 is the character model — compiler AND runtime.**
-All runtime text is UTF-8; a literal's payload is `[u32 byte length][UTF-8
-bytes][NUL]`. Conversion happens only at an OS boundary, inside that
-platform's runtime directory (Windows sets the console code pages to UTF-8 at
-startup and converts nowhere by default). See
-`docs/plan/19-runtime-in-c.md` §8.1. Never assume a character width.
+**2. UTF-8 is the character model — compiler AND runtime.** Literal payload
+`[u32 byte length][UTF-8 bytes][NUL]`. Conversion only at an OS boundary,
+inside that platform's directory. Never assume a character width.
 
-**3. Character values are indexed unsigned.**
-`TCHAR` is signed. Any byte above 127 arrives negative; table lookups must
-mask to the actual width first (see `dfaColumn` in `elc/dfa.h`).
+**3. Target properties never derive from the host.** Widths, byte order,
+alignment come from `TargetInfo` (port from
+`experimental_version/elenasrc/elc/targetinfo.*`). Cross-compilation must
+be byte-identical from any host. Sole exception: `getDefaultTarget()`.
 
-**4. Target properties never derive from the host.**
-Slot sizes, byte order, pointer width come from `TargetInfo` — never
-`sizeof(void*)`. The single exception is `getDefaultTarget()`.
+**4. Serialization is explicit.** Module format v2: fixed-width scalars,
+little-endian on disk, versioned magic that records its properties; never
+`sizeof()`-dump a struct, never read 4 bytes into a `size_t`. A format
+mismatch is a rejection, not a reinterpretation.
 
-**5. `.cfg` and `.prj` files keep Windows path separators.**
-Those same strings feed `pathToName()` to derive module names, so rewriting
-them breaks module naming. Separators are normalized where a path becomes a
+**5. The failure result is ONE packed word** — value with the ok flag in
+bit 0. Never a two-field struct (Microsoft x64 ABI breaks it silently),
+never unwinding. See `experimental_version/docs/plan/23-failure-abi.md`.
+
+**6. The VMT load at a send site must never be `!invariant.load` or
+hoisted.** ELENA mutates a live object's class by design.
+
+**7. Runtime entry points are named symbols, never numbers.** A missing
+name is a link error; a wrong number is a silent wrong call.
+
+**8. `.cfg`/`.prj`/`.project` path strings feed `pathToName()` to derive
+module names.** Separators are normalized only where a path becomes a
 syscall.
 
-**6. The VMT load at a send site must never be `!invariant.load` or hoisted.**
-`#shift` rewrites a live object's VMT at run time; an object's class is not a
-compile-time fact.
+## Design decisions already taken (do not reopen)
 
-**7. The failure result is ONE packed word.**
-`selene_result` = value with the ok flag in bit 0 (objects are slot-aligned).
-A two-field struct silently breaks the Microsoft x64 ABI. The packing lives
-in exactly four helpers in `runtime/selene.h` and four in `llvmgen.cpp`.
-See `docs/plan/23-failure-abi.md` §4.
+LLVM in-process + system linker; runtime in C11 (static, LTO,
+freestanding-capable); name-based linking `selene.<tag>.<name>` with
+`'` `:` `#` → `.`; message interning into one global id space per link
+unit; forwards (`targets/<os>.cfg`) as the platform seam; IDE replaced by
+LSP+DAP later. Argued in `experimental_version/docs/plan/{17,18,19,20,23}`.
 
-## Design decisions already taken
+## Where the project is going (phases, see docs/02 §5)
 
-| Decision | Where it is argued |
-|---|---|
-| LLVM backend + system linker; `elc -c<prj>` compiles, translates and links | `docs/plan/17-llvm-backend-and-targets.md` |
-| Runtime in **C11** (freestanding-capable), static, LTO | `docs/plan/19-runtime-in-c.md` |
-| Failure ABI: `{value, ok}` packed in one word, never unwind | `docs/plan/23-failure-abi.md` |
-| Name-based linking: `selene.<tag>.<resolved name>`, `'` `:` `#` become dots | `elenasrc/llvmgen/llvmgen.h` header comment |
-| Messages intern into one global id space per link unit | `elc/posix/elc.cpp` (link pipeline) |
-| FFI: typed declarations, per-target via LLVM, platform selection by forwards | `docs/plan/18-ffi-design.md` |
-| OS selection by forwards at link (`targets/<os>.cfg`); posix'io / win32'console | `docs/plan/20-os-development.md` |
-| IDE is not ported; LSP + DAP instead | `docs/architecture/08-ide-debugger.md` |
-
-## Where the project is going
-
-1. ✅ Linux build, CMake, UTF-8, module format v2
-2. ✅ LLVM backend: exact CFG stack-depth analysis, executes correctly
-3. ✅ Name-based cross-module linking; one-command `elc -c<prj>` pipeline;
-   same source runs on Linux and Windows (validated under Wine)
-4. ✅ Legacy toolchain deleted
-5. Typed FFI (plan 18) — then the io natives migrate into Selene source and
-   the runtime shrinks toward GC + dispatch + object model
-6. Real C bodies for the `standard'*` value natives; lazy initialisation for
-   non-computable constant symbols
-7. Threading (MTA/STA), shadow stack, a real collector
-8. Long term: an operating system written in Selene
-
-Targets: Linux, Windows, macOS × x86-64, arm64, ppc64/ppc64le, ppc32, s390x —
-including **big-endian**, which is why byte order is treated explicitly.
+- **P0** toolchain compiles on Linux x86-64 (CMake) — in progress
+- **P1** module format v2; 64-bit-clean `.nl` emission; `ecv` as oracle
+- **P2** `llvmgen` (LLVM C++ API) + C11 runtime; the 252 `core_routines`
+  esm procedures become C functions / intrinsics; helloworld runs native
+- **P3** stdlib bring-up (POSIX first, then mingw+Wine for Windows)
+- **P4** typed FFI (returns, structs, callbacks; plan 18 adapted)
+- **P5** MTA + the real generational GC (the `core.asm` design, in C)
+- **P6** target matrix: ppc64le, s390x (big-endian), ppc32/ppc64, x86-32
 
 ## Working notes
 
-- `doc/` (singular) is the original 2009 documentation and is partly wrong;
-  `docs/` (plural) supersedes it. Known 2009 defects are catalogued in
-  `docs/plan/15-modernization-roadmap.md` §6.
-- The 32-bit build (`ELENA_32BIT=ON`) survives only for byte-compare tests of
-  the module format; it builds no elc.
-- Reply to the user in **Portuguese**; write code, comments and documentation
-  in **English**.
+- Reply to the user in **Portuguese**; write code, comments and
+  documentation in **English**.
+- `src30/cpuvm` is a sample program, not toolchain.
+- The two READMEs at the root describe the same package (1.9.23 ≈ "2.0").
+- Known 2015-era latent bugs are listed at the end of
+  `docs/01-codebase-map.md` §10.

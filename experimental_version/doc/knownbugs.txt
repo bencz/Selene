@@ -1,0 +1,58 @@
+Samples:
+-------
+
+ELC:
+----
+#00007: "super" variable in inline class is incorrect
+
+#00024: gc bug (maybe with saved message) happens time to time
+#00030: std'prototypes'magnitude#const is included practically in every
+        system though the object never used itself
+#00031: u_helloworld does not work correctly if in stdoutout use identifier
+        instead of reference (wrong constant symbol)
+#00034: not possible to declare #annex in role:
+          #class Variable // !! new
+          {
+             #field theValue.
+
+             #role Assigned
+             {
+                 #method new = self::fail.
+
+                 #annex theValue.
+             }
+ 
+             #method new : aValue
+             [
+                #if('nil!=aValue)?
+                [
+                   theValue := aValue.
+                   #shift Assigned.
+                ].
+            ]
+         }
+#00041: words lists some invalid literal constants (due to gc?) on the big
+        number of results
+
+Samples:
+--------
+#00042: replace sample somtimes work incorrectly (displays invalid resulting string)
+#00044: invalid conversion from float to literal if the real number in sientific
+        notation
+
+IDE:                                
+----
+#00022: ide crashed after the long period of work (maybe TextHistory?), check for the 
+        small page size / history buffer
+#00039: sometimes the ELENA programs crashed (on pressing F8), next time everything 
+        is ok (or press F4)
+#00040: self / $self variable in autowatch could contain incorrect data due to
+        code optimization
+
+#00043: the number of created handlers increased after each run on one
+
+Tools: 
+-----
+#00017: ASM2BINX: warn on unresolved labels
+
+(next=#00045)

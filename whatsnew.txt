@@ -1,7 +1,1475 @@
-
+﻿
                                 ELENA Language 
 
-                                Version 1.5.0
+                                Version 1.9.23
+ 
+******************************************************************************
+                             What's New in 1.9.23
+******************************************************************************
+
+[ELENA]
+[!] binary incompatible due to major change in the heap structure
+[+] new project template : guix
+
+[ELC]
+[-] issue #150 fixed
+[*] issue #42 implemented
+[*] issue #145 implemented : source level call optimization
+[+] new option "xo1-" : turning off compiler source level optimization
+[+] new method hint "suppress" : turning off compiler warnings for the method
+
+[LIB]
+[-] issue #174 fixed: bizarre return value in toLiteral&base:16
+[-] issue #169 fixed: An error in literalOp.trimRight[1]
+[+] new extension : object.toChar
+
+[IDE]
+[-] issue #75 fixed : call stack window is not properly refreshed
+[-] issue #185 fixed : stack allocated structures are not correctly displayed
+
+[Samples]
+[+] rosetta code sample : simple windowed app
+[+] rosetta code sample : gui component interaction
+
+******************************************************************************
+                             What's New in 1.9.22
+******************************************************************************
+
+[ELENA]
+[+] new statement: #try (<expr>) [<final-block>] | <optional-catch-expression>
+[+] new statement: #lock (<expr>) [<critical-section-code>]
+[+] new hint : arrayof
+[+] issue #123 implemented : fixed size array field
+[*] #143 issue : #import statement will be used for namespace importing
+[+] issue #10 : initializing stack allocated object without creating a dynamic 
+    one
+[+] issue #48 : A proper method should have a precedence over an extension one
+[!] static symbols are stack-safe
+
+[ELC]
+[*] output code optimization
+[-] issue #8 fixed
+
+[IDE]
+[+] issue #13 implemented : Project View
+[-] issue #142 fixed
+
+[LIB]
+[*] some house keeping
+[+] culture'Locale
+[+] new package net / system'net (issue #33)
+[+] system'net :  Socket, AddrInfo, AddrInfoReader
+[+] linux: support calendar routines
+
+[Samples]
+[+]linux : datetime sample migrated
+
+[Misc]
+[*]rearranging examples
+                                                                                                  
+******************************************************************************
+                             What's New in 1.9.21
+******************************************************************************
+
+[ELENA]
+[+] new "variable" hint
+[+] "ByRef" parameters are supported
+[+] project template console_mt (corex) is operational once again
+
+[ELC]
+[-] issue #47 fixed
+[-] issue #22 fixed
+[-] issue #68 fixed
+[-] issue #67 fixed
+
+[LIB]
+[+] system'collections: Stack, Queue
+[+] system'dynamic: CastOver
+[+] bool inline if : iif[2]
+[+] forms : Combobox
+[*] system'dynamic'DynamicStruct is renamed into system'dynamic'Dynamic
+
+[Samples]
+[+] rosetta code sample : 100 doors
+[+] rosetta code sample : 24 game
+[*] calc is using script engine now
+
+[IDE]
+[-] issue #7 fixed
+[-] issue #74 fixed
+
+******************************************************************************
+                             What's New in 1.9.20
+******************************************************************************
+
+[ELC]
+[-] issue #15
+
+[LIB]
+[+] sqlite: supports float and blob fields
+[+] extensions'dynamic : scriptEngine
+[*] system'text'UT8Encoding : toLiteral&int&int&bytearray
+
+[ElenaScript]
+[!] script engine is again operational
+[*] refactored / syntax modified
+[+] local variables are supported
+[+] structures are supported
+[+] functions are supported
+[*] EvaluateFile / InterpretFile: "~" indicates relative to elena bin folder
+
+[Samples]
+[+] calc
+[+] sqlite_test - a first ELENA database example
+[*] rosetta samples ackermann, addfield, accumulator are migrated to Linux
+
+******************************************************************************
+                    What's New in 1.9.19 (pre release)
+******************************************************************************
+
+[ELENA]
+[!] binary incompatible due to changes in the compiler code
+[!] a strong type cannot be used as a custom verb 
+[!] ~ operator is no longer supported
+[!] is 100% UTF-8 internally
+[*] operator redesign : \ - alternative message call, || - or operator
+[*] stripping CORE from OS dependant code and moving it into CORE_LNX and CORE_WIN
+[-] out prefix is no longer supported, variable should be used instead
+[*] gui platform is reintroduced
+[+] built-in $nil symbol
+[+] a class hint "stringof" supports type argument as well (e.g. stringof:int)
+[+] coreapi : loading subject by name, returning the subject name
+[+] new method hint : stacksafe
+
+[ELC]
+[*] two passes compiling: at first declare, at second - implement
+[+] -wX / -wX- options turning on / off warnings
+[*] optimization : a simple resend operation
+[+] linux ELF linker
+[*] both external call modes supported: winapi / c
+[-] bug with outer field type fixed
+[-] bug with redirect to an outer field fixed
+[-] issue #45
+[+] compiler option: ds - enabling subject serialization in stand-alone program
+[!] by default c call convention (cdecl) is used
+
+[LIB]
+[!] literal type, LiteralValue, String are UTF-8, CharValue is Unicode (UTF-32)
+[+] WideLiteralValue and WideString
+[+] linux: support basic i/o operations (console, files)
+[+] system'winforms module implementing basic WIN32 GUI functionality
+[+] forms: SDIForm, SDIDialog, ChildForm, Edit, Label, Button, ImageBox, ImageList
+[+] forms: Menu, DockingBox
+[+] system'dynamic'classOp : read&mssg_mask&index&mssgarray&vint[4]
+[+] system: MessageArray, IntMatrix, ReadArray, RealMatrix
+[+] system'Signature: constructor new&literal$[1], new&wide$[1]
+[+] system'dynamic: subjectROp
+[*] system'dynamic: classOp -> classROp
+[*] reflection routines work for stand-alone version as well
+[+] extensions'text: encoderOp
+[+] system'io: File
+[+] new package: sqlite
+[+] new modules: system'drawing
+[*] system'io: Stream, BinaryReader, BinaryWriter, FileStream
+[*] system'console: clear
+[+] system'collections: ArrayList
+[*] refactored to simplify the code
+                                                                                                
+Samples:
+[+] agenda, graphs, c_a_g
+[+] notepad
+
+[IDE]
+[*] binaray arrays are displayed in the debug watch correctly
+[*] debugger behaviour reimplemented to improve UX
+
+******************************************************************************
+                    What's New in 1.9.18 (pre release)
+******************************************************************************
+
+[ELENA]
+[!] binary incompatible due to changes in debugger / exception support / typecasting
+[-] dn files are no longer produced, debug info is inside an executable
+[+] new shared library : elenart - run-time helper for stand-alone applications
+[+] constructor may have redirecting and initializing parts
+[+] vmpath is no longer used, shared path used instead (for both elenavm and elenart)
+[*] type routine overhaul
+[*] syntax : extending operator renamed - "::" should be used
+[*] syntax : class syntax changed - "::" should be used to provide the class parent
+[+] new hint : type can be provided for the method result
+[-] direct dispatching no longer supported
+[-] statement terminator can be omitted only in lazy expression
+[+] character constant (e.g. "a" is CharValue rather than LiteralValue)
+[-] escape sequence is no longer supported (e.g. "Hello%n" => "Hello"#10 )
+[*] 0r, 1.0e2r constants are correctly recognized
+[*] ? and ! operators require an object now (e.g. a == b ? [ .. ]  is no longer possible, correct syntax is (a==b) ? [ ... ])
+
+[ELC]
+[*] codebase refactored
+[*] output code optimized
+[-] compiler option is no longer supported : -xembed-
+
+[IDE]
+[+] Project - View - Call stack
+[-] Project - Options - Debug Mode : Enabled for VM Client is no longer supported
+[-] Project - Options - VM Path is no longer supported / required (SHARED path is used)
+
+[LIB]
+[*] system : ByteNumber, ShortNumber, IntNumber, LongNumber, RealNumber, Integer, Long, Real, CharValue
+[*] system : intConvertor, literalConvertor, longConvertor, realConvertor, FunctionX, IndexFunctionX
+[*] system : Object#class.new, Exception::theCallStack, Exception.get&literal$
+[*] system : ByteArray, ShortArray, LiteralValue, Array
+[*] system'control => extensions'control
+[*] system'collections : List, Dictionary
+[*] system'routines : literalOp
+[*] system'math : intOp, realOp
+[*] system'calendar : Date, TimeSpan
+[*] system'text : TextBuffer, Encoder, ansiEncoder
+[*] system'io : BinaryReader, StreamReader, BinaryWriter, StreamWriter, FileStream, TextReader, TextWriter
+[*] extensions: inputOp, outputOp, convetor
+[+] system : CallStack, IntArray, byteConvertor, shortConvertor, CharArray
+[+] extensions'dynamic: scriptEngine, ScriptEngineException
+[+] system'math : byteOp, shortOp, longOp, Matrix
+
+[ElenaScript]
+[*] refactored / syntax modified
+    
+[Misc]
+[+] installation package is introduced
+[*] ELENA API documentation (see doc\api) is up to date now
+[*] Visual Studio Projects are migrated to Visual Studio Community 2013
+
+******************************************************************************
+                    What's New in 1.9.17 (pre release)
+******************************************************************************
+
+ELENA:
+[*] some bug fixes
+[+] generic methods
+                                                  
+[LIB]
+[*] some bug fixes
+[+] system'dynamic: Group, Extension, classOp, DynamicStruct
+[+] system'io: TextReader, StreamReader, StreamWriter, BinaryReader, BinaryWriter
+[-] system'text: TextReader (refactored to be a base class and moved to system'io, system'io'StreamReader should be used instead)
+[+] extensions'calendar: dateOp
+[+] extensions'dynamic: scriptEngine
+[+] extensions'text: StringReader
+
+ElenaScript:
+[*] script engine redesigned
+
+******************************************************************************
+                    What's New in 1.9.16 (pre release)
+******************************************************************************
+ELENA:
+[!] compiler code overhaul & optimized (vm command set, typecasting, method code), 
+[!] binary incompatible due to changes in the compiler
+[*] changes in exception handling routines
+[+] new operator setAt (e.g. a@2 := b <=> a setAt:2:b)
+[+] new ecodes: bloadfi, mresetsubj
+
+ELC:
+[-] fixed: #var(type:long)n := 2
+[*] output code : some refactoring, binary incompatible due to changes in method
+    calling code / stack frame structure
+[!] project configuration modified to support multiply platforms
+[+] new platform: console_mt (early alpha)
+[-] private message implementation fixed
+[*] ecode optimization: idle labels are removed
+                                                  
+[LIB]
+[*] some code refactoring
+[+] system'threading: Thread, threadControl
+[*] new functionality: system'intOp, system'mathOp
+[*] new functionality: system'dynamic'Tape (supports methods)
+
+Tools:
+[*] asm2binx: fixed ecode compiler
+
+******************************************************************************
+                    What's New in 1.9.14 (pre release)
+******************************************************************************
+
+ELENA:
+[*] operator implemenation refactored
+[+] new statement : #use
+[+] new method hint : extension
+[+] new ecodes: loadclass, indexofmsg, wseval
+
+ELC:
+[*] codebase refactored
+[*] some native-code optimization   
+[-] fixed ecode: lrndnext
+
+IDE:
+[*] "step over line"/"step over" implementations are improved
+
+[LIB]
+[+] system'dynamic: Symbol
+[+] new functionality:system'dynamic'classOp
+[-] fixed bug:system'primitive.toLiteral&int&index (e.g. binary sample with 1234567)
+[-] fixed bug:system'text'TextBuffer.write&literal (e.g. matrix sample, identity matrix with size >= 18)
+
+******************************************************************************
+                    What's New in 1.9.12 (pre release)
+******************************************************************************
+                                   
+ELENA:
+[+] new ecodes: sqrt, cos, sin, pi, arctan, iaxloadfi, iaxloadsi, iaxloadbi
+
+ELC:
+[*] heap size is tuned
+[-] bug fix: length boxing, long static array implementation, break statement, wscopyreal,
+             object constructor implementation
+[-] byte code optimization routine fixed
+
+IDE:
+[+] debugger watch: open argument list
+
+[LIB]
+[+] new package: forms
+[+] system: intOp
+
+******************************************************************************
+                    What's New in 1.9.11 (pre release)
+******************************************************************************
+
+ELENA:
+[+] new ecodes: unbox, mreset
+[+] it is possible to use generic arguments with an open argument list
+[*] operations with stack allocated objects refactored
+
+ELC:
+[!] fixed critical bug in external call routine
+[*] configuration / project  files are UTF8 now
+[*] some native-code optimization   
+[*] some byte-code optimization
+[-] fixed bug with external operation error handling
+[-] fixed bug with exception handling sub code
+[-] fixed bug with control&do&until virtual implementation
+
+[LIB]
+[!] ELENA API refactored and simplified
+
+ELENAVM:
+[-] fixed bug with stack allocated object boxing
+
+Samples:
+[+] rosseta code: bullscows, calendar
+
+Tools:
+[*] asm2binx: fixed ModR/M and SIB encoding bug
+
+******************************************************************************
+                    What's New in 1.9.10 (pre release)
+******************************************************************************
+
+ELENA:
+[!] binary incompatible due to changes in ecodes
+[!] ecodes overhaul
+[!] indexer operator syntax modified
+[-] multi-select operator implementation fixed
+
+ELC:
+[+] new compiler options: optimization on/off
+
+[LIB]
+[-] CRITICAL BUG: fixed bug in GC algorithm
+[!] primitive operation overhaul
+[+] system'dynamic: Class, Struct, tapeControl
+[*] new modules: system'calendar, system'routines
+
+Samples:
+[+] rosseta code: median, smavg, caesar, charmatch, arithmeval, combinator
+
+Misc:
+[+] Hyperactive ELENA API documentation (see doc\api) is up to date now
+
+******************************************************************************
+                    What's New in 1.9.9.11 (pre release)
+******************************************************************************
+
+ELENA:
+[!] Exception handling syntax modified
+[*] long, real and bytearray variable can be declared as a stack allocated one
+[*] get / set opcodes: index range verification added
+
+[LIB]
+[!] ELENA API refactored
+[*] index operations raise an exception if out of range
+[+] extensions'patterns: CombinatorWithRepetition
+
+Samples:
+[*] matrix: determinant code fixed
+
+IDE:
+[-] debugger watch: fixed bug with unrefreshed stack allocated variables
+[-] menu option shortcut fixed:upper / lower case
+[-] menu option fixed:project clean up
+[*] settings: font size can be changed
+
+******************************************************************************
+                    What's New in 1.9.9.10 (beta)
+******************************************************************************
+
+ELENA:
+[!] binary incompatible due to critical bug fixes / new ecodes
+[+] open argument list
+[+] stack allocated local variable
+[+] multy-select branching
+
+ELC:
+[*] some output code optimization
+[*] CRITICAL BUG: dynamic array initializing                                               
+
+[LIB]
+[-] CRITICAL BUG: fixed bug in GC algorithm
+[+] extensions'math
+[+] system'dynamic: SelectorTape
+[*] fixed bug: LiteralValue.equal&type'widestr[1]
+
+Samples:
+[+] console: datetime, matrix, textdb, translit
+[+] rosseta code: ackermann, anagram, arithmeticint, arithmmean, arrayconcat,
+    arraymode, associatearrays, bestshuffle, binary, brackets
+
+ElenaScript:
+[*] script modified to support basic operations
+[*] opencalc: inline / default scripts
+
+******************************************************************************
+                    What's New in 1.9.9.9 (beta)
+******************************************************************************
+
+ELENA:
+[+] new short form: %prop ( 2 ) == { prop'get = 2)
+[!] the method parameter order is reversed
+[+] new ecodes: mccelseacci, mccthenacci
+
+ELC:
+[!] binary incompatible due to changes in the implementation / opcodes
+[-] CRITICAL BUG: fixed bug in jump opcode implementation
+[-] CRITICAL BUG: fixed bug in mccquit opcode implementation
+
+[LIB]
+[+] system'dynamic:GetProperty
+[+] system'text:ELiteralOp
+
+Samples:
+[+] rosseta code: arrays, applycallback, aplusb, anonymrec, addfield
+
+******************************************************************************
+                    What's New in 1.9.9.8 (beta)
+******************************************************************************
+
+ELENA:
+[+] new ecode: acccopyfpi
+[+] new class hint: sealed
+
+ELC:
+[!] binary incompatible due to changes in ecodes / critical bug fix
+[-] CRITICAL BUG: fixed bug in GC algorithm
+[*] more user friendly syntax errors
+[*] optimization:idle frames
+[-] fixed bug with default vm client exception handler
+[-] fixed bug with direct method call implementation
+[-] method has duplicate parameter names
+[+] clean up code reimplemented
+[-] bug in branching implementation (^ operator works incorrectly)
+
+[LIB]
+[*] some code refactoring
+[*] exception handler interface modified: the reference to exception is passed
+
+******************************************************************************
+                    What's New in 1.9.9.7 (beta)
+******************************************************************************
+
+ELC:
+[!] binary incompatible due to changes in ecodes/API
+[-] exception handling routine is modified to fix the bug with stack allocated objects
+[-] fixed critical error in code generation (jump ecodes)
+[*] more user friendly syntax errors
+[*] optimization:virtual branching
+[*] resend expression syntax modified
+
+[LIB]
+[+] system'dynamic:Wrap,Pair,EReflector
+[+] system'collections'Dictionary
+[+] extensions'dynamic:ETextSerializer, Globals
+[+] extensions'text:presenter
+[*] system: Date, TimeSpan, Variable
+[*] system'text: Bookmark
+[-] fixed critical error in LiteralValue.equal implementation
+
+IDE:
+[-] debugger watch: fixed bug with stack allocated objects
+
+Samples:
+[+] console: replace, goods
+[+] rosseta code: accumulator
+
+******************************************************************************
+                    What's New in 1.9.9.5 (beta)
+******************************************************************************
+
+ELENA:
+[!] external code call routine is modified
+
+ELC:
+[!] binary incompatible due to changes in ecodes/procedure enter/leave 
+    implementation
+[-] fixed boxing routine
+
+IDE:
+[*] debugger watch supports stack allocated variables
+
+[LIB]
+[+] extensions'text:EIntPresenter, EIntFormatter, IntPresenter, IntFormatter, EListPresenter
+[+] extensions'io:consoleHelper
+
+Samples:
+[*] binary sample is migrated
+
+******************************************************************************
+                    What's New in 1.9.9.4 (first beta)
+******************************************************************************
+
+ELENA:
+[-] default subject param is no loger supported
+[+] method / constructor dispatch body
+[*] primitive operation overhaul, stack allocated primitives introduced
+
+ELC:
+[*] bsredirect is optimized
+[*] some bytecode optimization
+[*] some code refactoring
+[-] fixed "duplicate constant" issue
+
+[LIB]
+[+] system'io'File, system'io'TextReader
+
+IDE:
+[*] "step over line" implementation is improved
+[*] file's full path is displayed as a tab hint
+
+Samples:
+[*] textfile sample is migrated
+
+******************************************************************************
+                    What's New in 1.9.9.3 (late alpha)
+******************************************************************************
+
+ELENA:
+[*] unnamed argument list
+
+ELC: 
+[-] fixed several critical bugs
+
+LIB:
+[*] properties start with a capital letter
+[+] date / time basic support
+[*] some bug fixes
+
+Samples:
+[*] pi sample is migrated
+[*] bsort sample is migrated
+
+
+******************************************************************************
+                    What's New in 1.9.9.2 (second alpha)
+******************************************************************************
+
+ELENA:
+[+] horizontal inheritance
+
+ELC: 
+[-] fixed several critical bugs
+
+LIB:
+[+] new package: extensions
+[+] new modules: system'collections, system'text
+
+Samples:
+[*] words sample is migrated
+
+******************************************************************************
+                    What's New in 1.9.9.1 (alpha)
+******************************************************************************
+
+ELENA:
+[!] deep language redesign [ELENA2]
+
+ELC: 
+[!] deep compiler redesign
+
+LIB:
+[!] deep API redesign
+
+IDE:
+[!] some modification to support ELENA2 changes
+
+Samples:
+[*] helloworld, u_helloworld, intsum and real sum are migrated
+
+******************************************************************************
+                    What's New in 1.7.17
+******************************************************************************
+
+ELC: 
+[*] some code refactoring to be ready for Linux migration 
+    (all _T macros are removed)
+[*] new elena code optimization rules
+[-] fixed several critical bugs (branching, jump optimization)
+
+Samples:
+[*] gui samples migrated to lib27
+
+LIB:
+[*] migration to lib27
+
+******************************************************************************
+                    What's New in 1.7.16
+******************************************************************************
+
+ELENA: 
+[*] language deep overhaul
+[*] message constants: %subject'verb
+[*] subject constants: %subject
+[-] no longer supported: __wrapbatch
+[+] new: __wraps, __expr
+
+IDE:
+[-] fixed bug with indent / outdent operation on the last line
+
+Samples:
+[*] migration to lib27
+
+LIB:
+[*] migration to lib27
+
+SCRIPT:
+[*] migration to lib27
+
+******************************************************************************
+                    What's New in 1.7.15 [ELENA 2012 beta]
+******************************************************************************
+
+ELC:
+[*] argument list routine redesigned, arg, sign hints are no longer supported
+[*] dispatching mechanism is redesigned
+[-] __prop is no longer supported, __args should be used instead
+[+] new external role __args
+[*] binary incompatible due to change in ecodes / argument list implementation
+[-] #try, #role are no longer supported
+[-] sign, subj, arg hints are no longer supported
+[+] argument list extender
+[+] argument list disptacher
+
+Samples:
+[*] some samples migrated to lib27
+
+LIB:
+[+] part of the codebase migrated to lib27
+
+******************************************************************************
+                    What's New in 1.7.14
+******************************************************************************
+ELC:
+[*] optimization: unreachable code, idle jumps
+[-] fixed bug with #sync
+
+Tools:
+[*] ecv: literal constant value is displayed
+[*] asm2binx: fixed bug with compiling cmpxchg opcode
+
+Samples:
+[*] fixed matrix sample
+
+******************************************************************************
+                    What's New in 1.7.13
+******************************************************************************
+
+ELENA:
+[*] code base refactored to support UTF16 & UTF8
+[*] __classreference and __symbolreference should be used instead of
+    $classreference and $symbolreference
+[*] __symbolreference can be now used to dynamically load a symbol (in VM mode)
+[+] new dynamic group object: __succ
+
+ELENAVM:
+[*] VM API is refactored
+
+Samples:
+[*] upndown migrated to LIB26
+[*] most of samples are migrated to LIB26 (except notepad)
+
+LIB:
+[*] fixed a critical error with int64 arithmetic operations (multiplication)
+[+] ext'serialization'TextSerialized
+[*] ext'routines'CombinatorWithRepetition and ext'routines'Combinator refactored
+
+******************************************************************************
+                    What's New in 1.7.12
+******************************************************************************
+
+ELENA:
+[+] new keyword: #sync (to acquire an object exclusive access)
+[+] new group objects: __symbol
+[-] obsolete group object: __action (__symbol should be used instead)
+[*] batch group handler is redesigned
+
+ELC:
+[*] some code refactoring (get rid of TCHAR)
+
+IDE:
+[*] some code refactoring (get rid of TCHAR)
+[*] fixed bug with step over parametrized symbol
+
+Tools:
+[*] some code refactoring (get rid of TCHAR)
+[*] elt is refactored
+
+Samples:
+[*] some rosetta samples migrated to LIB26
+
+SCRIPT:
+[*] elenasm is refactored to support several layer grammar rules
+[!] script syntax modified
+[*] action dynamic group is renamed into symbol
+
+******************************************************************************
+                    What's New in 1.7.11
+******************************************************************************
+
+LIB:
+[+] std'routines'arrays'reverted
+
+IDE:
+[-] debug watch:the content is refreshed automatically when the item is expanded
+
+Samples:
+[*] some rosetta samples migrated to LIB26
+[*] upndown: score table displayed
+
+******************************************************************************
+                    What's New in 1.7.10
+******************************************************************************
+
+ELENA:
+[*] #loop is obsolete, #while should be used instead
+[*] fixed wrapgroup: group of group
+
+ELC:
+[*] code base: some refactoring (bcwriter)
+[+] new byte code optimization rules
+[+] new ecodes: sptrylock and accfreelock
+
+LIB:
+[*] lib26: ELENA API is refactored
+[+] new module: ext'serialization
+
+Samples:
+[*] samples migrated to LIB26
+[!] rosetta samples are not migrated to LIB26
+
+******************************************************************************
+                    What's New in 1.7.8
+******************************************************************************
+
+ELC:
+[*] optimization: a back:b => b
+
+LIB:
+[+] ext'routines: Combinator, CombinatorWithRepetition
+
+******************************************************************************
+                    What's New in 1.7.7
+******************************************************************************
+
+ELC:
+[*] coret: synchronization routine is overhauled
+[*] project templates reorganized
+
+******************************************************************************
+                    What's New in 1.7.6
+******************************************************************************
+
+ELC:
+[*] jit compiler & linker refactored to get rid of explicit use of 
+    object & vmt offsets
+[*] core & coret have different object offset constants
+
+LIB:
+[+] sys'dynamics: castvariable
+
+SCRIPT:
+[*] default: new rules to describe group objects
+
+******************************************************************************
+                    What's New in 1.7.5
+******************************************************************************
+
+ELC:
+[+] new compiler option: lstdx
+[-] fixed bug with invokevmt and "any" handler
+
+ELENAVM:
+[+] new function: LoadClassName
+
+LIB:
+[+] sys'vm'engine: Controller::class_name'refer
+[+] sys'vm'routines'classname
+[*] std'memory'bytearrayreader refactored
+
+IDE:
+[-] debug autowatch:self and $self variables are now displayed correctly
+
+Samples:
+[+] new rosetta sample: combinations
+
+Tools:
+[-] elt: cannot display VM error
+
+******************************************************************************
+                    What's New in 1.7.4
+******************************************************************************
+
+ELENA:
+[+] new initializing argument list syntax:Loop &&from:1 &to:5
+[*] it is now possible to debug built-in group types
+
+ELC:
+[*] optimization: numeric and literal constant methods are called directly
+[-] fixed: negative floating number constant
+
+LIB:
+[+] win32'localization'strings
+[-] fixed: minus is lost when converting a real64 to a string
+
+IDE:
+[-] fixed: go to source
+[-] fixed: symbol parameter is not shown in auto watch
+[-] fixed: cannot find lib25 source files (wrong libpath & srcpath)
+
+Tools:
+[*] ecv: it is possible to provide path to the viewing module
+
+Samples:
+[+] new rosetta sample: charmatch
+
+******************************************************************************
+                    What's New in 1.7.3
+******************************************************************************
+
+ELC:
+[*] optimization: a role method is invoked directly
+[-] fixed generic handler
+
+IDE:
+[-] fixed bugs with auto compilation mode
+[-] fixed: if the breakpoint is at the first visible line, it is not shown
+
+LIB:
+[+] win32'threading'api'threadhandle.wait
+[+] std'basic'widechar: + / -
+[+] sys'dynamics: batch
+[-] gui controls events: onenter / onleave
+[-] fixed: timespan::milliseconds'get
+
+Samples:
+[+] new rosetta sample: caesar
+[*] calc: some rules are migrated to the script
+
+******************************************************************************
+                    What's New in 1.7.2
+******************************************************************************
+
+ELENA:
+[-] #type is no longer supported, use $classreference instead
+[+] new meta symbols : $symbolreference and $classreference
+
+SCRIPT:
+[+] new inline command: $symbolreference - to create a type symbol
+
+LIB:
+[*] std'routines'arrays:fixed bug
+[+] win32'io: directoryfactory
+
+ELC:
+[+] simple byte command type optimization (popn pop => popn)
+
+Tools:
+[*] ecv: displays command references
+
+Samples:
+[+] new rosetta sample: binary
+
+******************************************************************************
+                    What's New in 1.7.1
+******************************************************************************
+
+ELENA:
+[*] external roles can inherit another roles now
+
+ELC:
+[*] warns if included module doesn't exist
+[+] new method hint: sync
+[+] new ecodes to support critical sections: trylock / freelock
+[*] bytecode optimization overhaul [in development]
+
+LIB:
+[*] sys'dates:fixed several bugs
+[+] std'routines: elist (should be used instead of eitem), earray
+
+Samples:
+[+]new rosetta sample: bullscows
+
+Tools:
+[*] elt: fixed bug with minus parsing
+[*] ecv: displays labels properly
+[*] ecv: new command: -o (to save the code listing into the file)
+[+] og: new tool to generate optimization rules [in development]
+
+******************************************************************************
+                    What's New in 1.7.0
+******************************************************************************
+
+ELC:
+[*] binary incompatible due to change in ecodes / primitives
+
+LIB:
+[+] new module: ext'utils
+[+] std'basic'factory: newwideliteral
+
+Samples:
+[+] new rosetta stone sample:brackets, bestshufffle
+
+IDE:
+[+] tools - debugger options: lib path, src path
+[+] project - options: vm path
+
+******************************************************************************
+                    What's New in 1.6.18
+******************************************************************************
+
+ELENA:
+[+] new verb: invoke (used only for dynamic programming)
+
+LIB:
+[+] new group object: __action, __bcast
+[*] verb role implementation changed
+[*] __cast routine was modified (the old functionality is implemented in __bcast)
+[*] fixed bug in the property group handler: $self should be used instead of self
+    to deal with the case when the property is a part of the group
+[*] fixed bugs in std'routines'strings'eops role
+
+SCRIPT:
+[+] new inline command ^^ verb: use external role object
+[+] new supported group type: cast
+[*] interpreter script migrated to LIB25 / OA paradigm
+
+IDE:
+[+] new setting - debugtape - to debug vm tape
+[*] fixed bug with the debugger:stayed twice on the same step
+
+Tools:
+[*] ecv: could view symbol code as well
+
+******************************************************************************
+                    What's New in 1.6.16
+******************************************************************************
+
+ELC:
+[*] some code refactoring / cleaning
+
+LIB:
+[*] ext'gui migrated to lib25
+
+SCRIPT:
+[!] VM Tape command overhaul; it supports stack variables now
+[*] fixed bug with the role implementation
+
+IDE:
+[*] VM Client debugger overhauled
+[+] it is now possible to debug vm script
+[-] fixed #00063: step over / into does not work when starting vm client
+
+Tools:
+[+] ECV (ELENA Code viewer): ELENA byte code decoder
+
+******************************************************************************
+                    What's New in 1.6.13
+******************************************************************************
+
+ELENA:
+[+] new built-in verb roles
+[*] built-in group class aliases can be used in #type expression
+
+ELC:
+[-] fixed #00062: cannot parse 2-3 expression
+[-] fixed bug with external role $self variable
+[-] fixed critical error in arithmetic routines
+[!] parsing order changed: tilde expression is now part of the operation
+    rather than the object
+
+LIB:
+[*] "then" subject is moved to external role std'patterns'econtrol
+[+] std'patterns: etryget<prop> template
+[+] ext'patterns: meanaction
+
+SCRIPT:
+[-] embedded action is no longer supported
+
+******************************************************************************
+                    What's New in 1.6.12
+******************************************************************************
+
+ELENA:
+[-] #wrap, #group, #cast and #union are no longer used, built-in classes should be
+    used instead
+[-] subject adapter hint is no longer supported
+[+] new method handler - #generic
+[+] new verb: replace
+
+LIB:
+[+] LIB25: the language API was overhauled
+[+] LIB25: new built-in group classes: __prop, __wrap, __group, __cast, __union, 
+   __wrapgroup
+
+SCRIPT:
+[+] supports new group objects: &prop and &wrap
+
+******************************************************************************
+                    What's New in 1.6.11
+******************************************************************************
+
+ELENA:
+[!] core / command primitives refactored
+[+] ecodes set extended
+[+] new built-in variable $next
+[+] new group type: switch
+[-] role enext is no longer supported, use $next instead
+[+] new group type: wrap
+
+LIB:
+[+] sys'assembly'egetprop
+
+SCRIPT:
+[*] disptaching implementation refactored
+[+] it is possible to use external roles
+[+] new script engine keyword: $role
+
+******************************************************************************
+                    What's New in 1.6.10
+******************************************************************************
+
+ELENA:
+[!] syntax overhaul
+[!] compiler class refactored
+
+Samples:
+[*] samples changed to follow new syntax
+
+******************************************************************************
+                    What's New in 1.6.9
+******************************************************************************
+
+ELENA:
+[-] fixied critical errors in GCX/GCXT
+[+] new ecode: shiftacc
+[*] it is possible to switch roles inside the inline sub class
+[*] gui vm client displays errors on start now
+
+LIB:
+[+] std'routines'summing, std'routines'counting, std'patterns'it
+
+Samples:
+[+] rosettacode: bitwise
+
+IDE:
+[-] several small bugs  
+
+******************************************************************************
+                    What's New in 1.6.8
+******************************************************************************
+
+ELENA:
+[*] gcxt: pre-alpha
+
+LIB:
+[*] sys'entries redesigned
+[+] sys'vm'scriptengine
+[+] new module: std'math'vectors, sys'threading, win32'api'threading
+
+Samples:
+[*] vmconsole, notepad, timer
+[+] rosettacode:smavg, arrayconcat, arraymode
+
+IDE:
+[*] migrated to elenasrc2 branch
+[+] search history in search / replace dialogs
+
+******************************************************************************
+                    What's New in 1.6.7
+******************************************************************************
+
+ELENA:
+[+] project config forwards section: supports wildcards
+[-] fixed critical error in GC_REALLOC
+[-] fixed critical error in merger ecode
+[-] fixed critical error in elenavm with forward symbols
+
+LIB:
+[+] new gui dialogs: opendialog and savedialog
+[+] new control: gui'controls'Timer
+[+] sys'dates'Date: it is possible to set / add / subtract date members
+[+] new symbol sts'dates'NewDate
+[+] new role std'routines'EArrayOp: array concatenation
+[-] fixed error in win32'dates'DateConvertor
+
+SCRIPT:
+[*] script engine redesigned: simplify inline command syntax, there may
+    be several grammar rule sets
+[+] bf interpreter script
+
+Samples:
+[+] new sample:timer
+
+IDE:
+[-] fixed bug with 'step over' the symbol with a parameter
+
+******************************************************************************
+                    What's New in 1.6.6
+******************************************************************************
+
+ELENA:
+[*] it is possible now to provide a full subject reference
+
+LIB:
+[*] migration to LIB2 completed
+[+] new std classes:listindexer
+[+] new std roles:esort, estrop
+
+SCRIPT:
+[*] multi-dispatching is supported
+[-] role support is dropped
+
+Samples:
+[*] upndown migrated to LIB2
+[*] vmconsole sample: first working prototype of using script engine in ELENA
+    program
+
+******************************************************************************
+                    What's New in 1.6.5
+******************************************************************************
+
+ELENA:
+[-] GC retired
+[*] ELENAVM client support redesigned
+[!] critical bug fixed: local variables with the same name
+
+LIB:
+[*] lib2 redesigned
+[+] new module: sys'vm
+
+SCRIPT:
+[!] script engine refactored: inline script can be used to configurate and start VM
+
+Tools:
+[*] elt: several critical bugs fixed
+[!] elt refactored: vl3 script type is no longer supported
+
+******************************************************************************
+                    What's New in 1.6.4
+******************************************************************************
+
+ELENA:
+[*] GCX: stable beta
+
+LIB:
+[*] console2 & gui2 templates are switched to X platform
+[-] fixed bug in win32'io'console implementation
+
+IDE:
+[*] IDE code is migrated to elenasrc2 branch
+
+******************************************************************************
+                    What's New in 1.6.3
+******************************************************************************
+
+ELENA:
+[!] @ operator parsing order is changed
+[+] #define import subjects as well
+[+] argument list is now possible to use with symbol parameter as well
+[+] new opcode: break2else, savesacc
+[-] nil subject is no longer supported, use nillable
+
+SCRIPT:
+[!] script engine refactored
+
+ELC:
+[!] binary incompatible with the previous versions
+[!] subject implementation overhaul
+[!] elenavm InterpretLVMEx is redesigned
+[*] gcx: beta
+[-] -ffriend-injection mingw compiler option was removed
+[-] fixed bug with using #try and assigning expression
+[-] fixed bug in group_next primitive function
+[-] fixed bug in nullable option implementation
+
+Samples:
+[*] bf interpreter: script version
+[*] gui samples migrated to lib2
+
+Tools:
+[!] elt refactored
+[-] fixed bug in asm2binx: __arg1 is not recognized as a reference for SUB
+
+******************************************************************************
+                    What's New in 1.6.2
+******************************************************************************
+
+ELENA:
+[+] it is possible now to switch to another role inside another one
+[+] new ecode: snop
+[+] run-time multi-dispatching
+[+] new argument option: nullable
+[!] obsolete argument option: norecc
+[+] ecodes are simplified, several big commands are split
+[!] #continue is no longer supported
+[+] new statement: #try
+
+SCRIPT:
+[+] it is possible to map forward references (#map 'forward reference;)
+[+] it is possible to set package path (#package [<ns>] "path";)
+
+ELC:
+[+] new compiler option - g0
+[*] some basic byte code optimization rules
+[+] new option to turn on / off optimization
+[+] optimization: direct method call for constants and external roles
+[-] fixed bug with inline class argument hint
+[*] elenavm is refactored to be ready for script engine
+
+LIB:
+[*] code refactoring
+
+Samples:
+[*] console samples are migrated to lib2
+[*] rosetta stone samples are migrated to lib2
+
+Tools:
+[+] vm terminal
+[+] script engine
+
+******************************************************************************
+                    What's New in 1.6.1
+******************************************************************************
+
+ELENA:
+[+] alpha multi-threading support: GC is now thread-safe
+[+] new simplified syntax to create a group
+[+] it is possible to include the other module references without aliases
+[*] several big commands are split, highly specialized commands - dispatch,
+[*] new simplify syntax to specify compiler options
+[!] #hint keyword is no longer supported
+[+] new ecode - popn
+[*] expression syntax simplified
+
+ELC:
+[-] fixed critical bug in memory management
+[-] fixed #group statement bug for x platform
+[-] fixed critical error - cannot compile class with roles in the release mode
+[-] fixed #00058: duplicate subjects
+[-] fixed #00059: win32_gui_vm_client and win32_console_vm_client applications do not work
+[-] fixed #00060: #var a := a verb:b should not be possible
+
+LIB:
+[+] new classes: ext'patterns'MultiEnumerator, std'patterns'args
+
+Samples:
+[*] hellowworld_u migrated to lib2
+[-] upndown bug fixed:player plays with a joker as a biggest one
+
+IDE:
+[+] IDE debugger supports multy-threading applications
+[-] 64bit integer numbers are displayed correctly in the debugger watch window
+
+******************************************************************************
+                    What's New in 1.6.0
+******************************************************************************
+
+ELENA:
+[-] $next is no longer supported, use #continue
+[-] the following verbs are no longer supported:shift, of, create, enum
+[+] new simplified method argument syntax
+[!] api code is significantly refactored
+[+] dynamic symbol loading
+[!] operators now have a verb synonyms
+[+] add possibility to import subjects on the level of the module
+[!] changed inline class implementation
+
+ELC
+[-] critical bug with nested conditional statements
+[-] critical bug with GC
+[+] new project template - guivm
+[-] critical bug with GC (full collect is not invoked if there is no enough memory after 
+    partial collection)
+[-] critical bug in bcFillR implementation code
+[-] fixed critical bug with long number constant
+[-] fixed: disabled debug mode crashes executable file
+
+LIB:
+[!] source code is completely rewritten
+[-] bool protocol is dropped
+[-] fixed int64 operations
+[-] critical bug with the win32 control reference pool
+[+] new symbol sys'vm'loader
+
+Samples:
+[-] fixed the issue with the focus in upndown sample
+[-] fixed matrix sample
+[+] basic up'n'down game version
+
+******************************************************************************
+                    What's New in 1.5.6
+******************************************************************************
+
+ELENA:
+[*] x86 JIT Compiler was optimized
+[*] native code support overhaul
+[*] method call overhaul
+[*] ecodes: exitannex renamed to breakannex
+[*] new verb: takeout
+[*] 64bit integer constants
+
+LIB:
+[+] std'math'MatrixEnumerator, std'math'MatrixEnum, std'math'MatrixType
+[+] std'math'dictionary module
+[+] gui'dialogs'errorbox
+[+] gui'controls'Menu
+[*] compile libary overhaul to adapt new method calling syntax
+[*] several small enhancements
+[+] new control: gui'controls'Checkbox
+[-] fixed a bug in 'program'output char'get
+[+] sys'io: BinaryFile, NewBinaryFile
+[+] ext'text: HexAdapter, EIntFormatter, ELiteralFormatter
+[*] nil'ifnot is no longer supported - nil'is should be used
+
+ELC:
+[+] new project sections: sforwards
+[+] miltidispatching mechanism: some optimizations
+[-] drop support of sdef hint
+[*] migrated to gcc4
+
+IDE:
+[-] fixed #00054: after changing encoding to unicode project template list is empty 
+
+Samples:
+[+] new sample: Matrix
+[+] new sample: Dices
+[+] new sample: eldoc
+[+] upndown: it is now possible to play with a chaotic (random) compiler player
+[-] fixed #00053: elenavm: helloworld doesn't work
+
+Misc:
+
+******************************************************************************
+                    What's New in 1.5.5
+******************************************************************************
+
+ELENA:
+[!] 'evaluate' message name should be used instead of 'proceed' one
+[!] 'do' message name should be used instead of 'continue' one
+[!] 'nil'ifnot' should be used instead of ifnotnil
+[!] new #hint keyword to introduce new style class attributes / shortcuts
+[!] old style hints are no longer support, #hint should be used
+[!] elena byte codes (ecodes) are redesigned
+[!] elena syntax:argument list introduced
+[+] new keyword: #union
+
+LIB:
+[+] new package: ext'gui
+[+] new class: ext'text'LineInput
+[-] fixed #00051: printing long string
+[*] ELENA library is refactored to support new language features
+[-] context'get is no more supported, use instead enum'content'get or 
+    indexer'content'get
+
+ELC:
+[-] fixed #00050: empty role
+[-] fixed #00052: The compiler has a problem with paths where the NAME of a folder has space
+[-] fixed compilation of the following code: #if Test::2 ...
+[-] fixed #00045: now the number of warning is limited to 100
+[-] fixed #00046: too long quote
+[-] references implemented in the next module are no longer considered as 
+    unresolved
+[-] action expression bug is fixed
+[-] fixed loop implementation bug
+
+IDE:
+
+Samples:
+[*] Samples are refactored to support new language features
+
+Misc:
+
+******************************************************************************
+                    What's New in 1.5.4
+******************************************************************************
+
+ELENA:
+[+] new built-in variable $next to work with group objects
+[+] multiple dispatching implementation for several messages
+[!] Message namespace implementation overhauled
+[!] keyword #subject should be used instead of #scope
+[*] project system/type option is not supported anymore
+
+LIB:
+[*] ELENA library is refactored
+
+ELC:
+[+] a simple virtual machine support (elenavm)
+[-] fixed a major bug with inline symbol
+[-] fixed a critical bug with circular reference
+[-] fixed #00048: sending new message to group raises the exception
+[!] ELENA byte code refactored
+
+IDE:
+[*] Project option page is simplified
+
+Samples:
+[+] new sample: DateTime Calculator (examples\datetime)
+[+] new sample: TextDB
+
+Misc:
+[*] project file format modified
+
+******************************************************************************
+                    What's New in 1.5.1
+******************************************************************************
+
+ELENA:
+[!] Message namespace implementation overhauled
+[-] $invoke special message is no more supported
+[+] keyword #scope added
+
+LIB:
+[*] ELENA library is refactored
+[+] new component: gui'controls'Memo
+
+ELC:
+[*] Compiler code is refactored to be ready for ElenaVM
+
+IDE:
+[*] debugger implementation impoved
+[*] russian localization
+
+Samples:
+[+] new sample c_a_g (thanks to Alexandre Bencz)
+[*] Samples are refactored to support latest language changes
 
 ******************************************************************************
                     What's New in 1.5.0
@@ -16,7 +1484,8 @@ LIB:
 
 ELC:
 [!] ELC generates byte code modules instead of native ones
-[-] fixed several resource leaking
+[*] Linker speeded up
+[-] fixed critical bug: resource leaking in debug mode
 
 IDE:
 [+] new setting : Project - Options - Additional options 
@@ -27,7 +1496,7 @@ IDE:
 [-] fixed bug:the row numbers starting with 2
 
 Samples:
-[+] new sample: Agenda (thanks to Alexandre Bencz)
+[+] new samples: Agenda, pi, binary (thanks to Alexandre Bencz)
 
 ******************************************************************************
                     What's New in 1.4.6
@@ -562,8 +2031,6 @@ ELENA:
 [*] some minor optimization of output code
 [-] bug with inheriting VMT flags (elStructureRole)
 
-STD:
-
 WIN32:
 [-] some major bugs fixed
 [+] bitmap loading /drawing routines
@@ -818,3 +2285,5 @@ Misc:
 [+] readme & whatsnew files introduced
 [+] getting started manual introduced
 [*] API help is up to date
+
+
