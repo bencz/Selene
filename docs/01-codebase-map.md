@@ -31,7 +31,7 @@ Linux-i386 (alpha, console only).
 | `dat/sg/syntax.txt` | The grammar (LL(1) BNF with numeric ids) → compiled to `syntax.dat` | 650 |
 | `dat/og/rules.txt` | Peephole rewrite rules over bytecode → compiled to `rules.dat` | 30 |
 | `bin/` | Configs (`elc.cfg`/`elc.config`), link templates (`templates/*.cfg`), script grammars (`scripts/*.es`), prebuilt `x32/*.bin` cores | — |
-| `experimental_version/` | The completed ELENA 1.5 → Selene experiment (LLVM backend, C runtime). Reference material; see `docs/02-modernization-plan.md` §2 | — |
+| `experimental_version/` | The completed ELENA 1.5 modernization experiment (codename Selene) (LLVM backend, C runtime). Reference material; see `docs/02-modernization-plan.md` §2 | — |
 
 ## 2. The official build pipeline (`rebuild.bat`)
 
@@ -267,7 +267,7 @@ dlopen/dlsym at startup and writes byte-at-a-time via `putchar`
 
 ## 9. Tools inventory and verdicts
 
-| Tool | What it does | Verdict for Selene v2 |
+| Tool | What it does | Verdict |
 |---|---|---|
 | `sg` | `syntax.txt` → LL(1) `syntax.dat`. Required by elc at startup | **Keep** (orthogonal to codegen) |
 | `og` | `rules.txt` → peephole trie `rules.dat` used by elc `-l0` | Delete once LLVM owns optimization (verify the 2 frame-collapsing rules are subsumed) |

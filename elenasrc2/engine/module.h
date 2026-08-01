@@ -85,7 +85,7 @@ public:
       }
 
    public:
-      virtual size_t Length() const { return *(size_t*)_buffer; }
+      virtual size_t Length() const { return *(unsigned int*)_buffer; }
 
       virtual void* get(size_t position) const { return (void*)(_buffer + position + 4); }
 

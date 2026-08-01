@@ -84,5 +84,5 @@ void Section :: fixupReferences(void* param, ref_t(realloc)(ref_t, ref_t, ref_t,
 
 size_t _ELENA_::indexReference(size_t reference)
 {
-   return ((reference && ~mskAnyRef) >> 2);
+   return ((reference & ~mskAnyRef) >> 2);
 }

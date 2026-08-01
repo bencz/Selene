@@ -174,8 +174,10 @@ LoadResult Module :: load(StreamReader& reader)
    // load signature...
    char signature[12];
    reader.read(signature, strlen(MODULE_SIGNATURE));
-   if (strncmp(signature, ELENA_SIGNITURE, strlen(ELENA_SIGNITURE)) != 0) {
-      return (strncmp(signature, ELENA_SIGNITURE, 6) == 0) ? lrWrongVersion : lrWrongStructure;
+   if (strncmp(signature, MODULE_SIGNATURE, strlen(MODULE_SIGNATURE)) != 0) {
+      // a recognizable but different stamp is a version mismatch, anything
+      // else is not a module
+      return (strncmp(signature, "ELENA.", 6) == 0) ? lrWrongVersion : lrWrongStructure;
    }
 
    // load name...
@@ -235,8 +237,8 @@ ROModule :: ROModule(StreamReader& reader, LoadResult& result)
    // load signature...
    char signature[12];
    reader.read(signature, strlen(MODULE_SIGNATURE));
-   if (strncmp(signature, ELENA_SIGNITURE, strlen(ELENA_SIGNITURE)) != 0) {
-      result = (strncmp(signature, ELENA_SIGNITURE, 6) == 0) ? lrWrongVersion : lrWrongStructure;
+   if (strncmp(signature, MODULE_SIGNATURE, strlen(MODULE_SIGNATURE)) != 0) {
+      result = (strncmp(signature, "ELENA.", 6) == 0) ? lrWrongVersion : lrWrongStructure;
       return;
    }
 
@@ -277,7 +279,8 @@ void ROModule :: loadSections(StreamReader& reader)
       // skip section + section size field
       position += _sectionDump[position] + 4;
       // skip section relocation map + relocation map count field
-      position += (_sectionDump[position] << 3) + 4;
+      // (an entry is a 4-byte key followed by a ref_t position)
+      position += _sectionDump[position] * (4 + (int)sizeof(ref_t)) + 4;
    }
 }
 

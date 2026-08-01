@@ -1,6 +1,6 @@
-# Selene v2 — Modernization Plan for ELENA 1.9.23/2.0
+# ELENA Modernization — Plan for the 1.9.23/2.0 base
 
-*Round 2. Round 1 (ELENA 1.5.0.0 → Selene, now archived in
+*Round 2. Round 1 (the ELENA 1.5.0.0 experiment, archived in
 `experimental_version/`) proved the whole approach end to end: LLVM backend
 linked in-process, C11 runtime, one-command compile→translate→link, same
 source running on Linux and Windows. This plan re-applies it to the far
@@ -33,7 +33,7 @@ richer 1.9.23/2.0 base described in `01-codebase-map.md`.*
 | LLVM linked in-process; system linker produces executables | `docs/plan/17-llvm-backend-and-targets.md`, `elenasrc/llvmgen/llvmgen.h` header |
 | Runtime in C11, freestanding-capable, **static** lib, LTO-friendly | `docs/plan/19-runtime-in-c.md` |
 | Failure ABI: ONE packed word, ok flag in bit 0, never unwind | `docs/plan/23-failure-abi.md` (the MS x64 ABI post-mortem) |
-| Name-based linking `selene.<tag>.<name>`; `'` `:` `#` → `.` | `llvmgen.h:27-50` |
+| Name-based linking `elena.<tag>.<name>`; `'` `:` `#` → `.` (round 1 spelled the prefix `selene.`; the scheme is identical) | `llvmgen.h:27-50` |
 | Named symbols for runtime entry points, never numbers | plan 19 §3.1 |
 | Message interning: one dense global id space per link unit | `elc/posix/elc.cpp:148-168` |
 | UTF-8 end to end; conversion only at OS boundaries, per-platform dir | plan 19 §8.1 |
@@ -72,7 +72,8 @@ The 2.0 base is richer in exactly the places round 1 was thin:
    `rcallemb` blobs; 2.0's are honest `.esm` procedures spliced via
    `system'internal'*`. Migration: each of the 252 `core_routines`
    procedures becomes either (a) a C function in the runtime with its
-   mangled name (the `SELENE_NATIVE` trick), or (b) a translator intrinsic
+   mangled name (round 1's `SELENE_NATIVE` `__asm__`-symbol trick, renamed
+   `ELENA_NATIVE`), or (b) a translator intrinsic
    (the hot arithmetic/copy ones). The `'$import` splice mechanism in the
    compiler is retired; `=> system'internal'X` compiles to a direct call.
 5. **FFI is half-done already**: `system'external'ALIAS Func &subject:arg`

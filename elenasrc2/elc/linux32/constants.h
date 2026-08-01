@@ -10,7 +10,7 @@
 #ifndef constantsH
 #define constantsH 1
 
-#define DEFAULT_CONFIG              "/etc/elena/elc.config"
-#define DATA_PATH                   "/usr/share/elena"
+// resolved against the directory containing the elc executable
+#define DEFAULT_CONFIG              "elc.config"
 
 #endif

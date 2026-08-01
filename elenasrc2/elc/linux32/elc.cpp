@@ -17,6 +17,29 @@
 #include "x86jitcompiler.h"
 
 #include <stdarg.h>
+#include <unistd.h>
+#include <limits.h>
+
+// --- getAppPath ---
+
+// the directory containing the running executable: configuration, the parser
+// table and the rule table are resolved against it, never against hardcoded
+// system locations
+static void getAppPath(_ELENA_::Path& path)
+{
+   char buffer[PATH_MAX];
+   ssize_t length = readlink("/proc/self/exe", buffer, PATH_MAX - 1);
+   if (length > 0) {
+      buffer[length] = 0;
+
+      char* separator = strrchr(buffer, '/');
+      if (separator)
+         *separator = 0;
+
+      path.copy(buffer);
+   }
+   else path.copy(".");
+}
 
 // --- ImageHelper ---
 
@@ -69,9 +92,7 @@ void print(const char* msg, ...)
 
 _ELC_::Project :: Project()
 {
-   appPath.copy(DATA_PATH);
-
-//   getAppPath(appPath);
+   getAppPath(appPath);
    _settings.add(_ELENA_::opAppPath, _ELENA_::StringHelper::clone(appPath));
    _settings.add(_ELENA_::opNamespace, _ELENA_::StringHelper::clone("unnamed"));
 
@@ -335,7 +356,8 @@ _ELENA_::_JITCompiler* _ELC_::Project :: createJITCompiler()
 void setCompilerOptions(_ELC_::Project& project, _ELENA_::Compiler& compiler)
 {
    if (project.IntSetting(_ELENA_::opL0, -1) != 0) {
-      _ELENA_::Path rulesPath(RULES_FILE);
+      _ELENA_::Path rulesPath(project.appPath);
+      rulesPath.combine(RULES_FILE);
       _ELENA_::FileReader rulesFile(rulesPath, _ELENA_::feRaw, false);
       if (!rulesFile.isOpened()) {
          project.raiseWarning(errInvalidFile, rulesPath);
@@ -375,7 +397,9 @@ int main(int argc, char* argv[])
       }
 
       // Initializing..
-      project.loadConfig(_ELENA_::Path(/*project.appPath, */DEFAULT_CONFIG), true, false);
+      _ELENA_::Path configPath(project.appPath);
+      configPath.combine(DEFAULT_CONFIG);
+      project.loadConfig(configPath, true, false);
 
       // Initializing..
       for (int i = 1 ; i < argc ; i++) {
@@ -399,7 +423,8 @@ int main(int argc, char* argv[])
       // Compiling..
       print(ELC_COMPILING);
 
-      _ELENA_::Path syntaxPath(SYNTAX_FILE);
+      _ELENA_::Path syntaxPath(project.appPath);
+      syntaxPath.combine(SYNTAX_FILE);
       _ELENA_::FileReader syntaxFile(syntaxPath, _ELENA_::feRaw, false);
       if (!syntaxFile.isOpened())
          project.raiseError(errInvalidFile, syntaxPath);

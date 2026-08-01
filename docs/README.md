@@ -1,10 +1,10 @@
-# Selene documentation
+# ELENA modernization — documentation
 
-Selene v2: modernization of **ELENA 1.9.23 / 2.0** (2015, Alex Rakov).
+Modernization of **ELENA 1.9.23 / 2.0** (2015, Alex Rakov).
 Round 1 — the ELENA 1.5.0.0 experiment — lives complete in
 `experimental_version/`, including its own ~17k lines of docs
 (`experimental_version/docs/`), which remain the authoritative argument for
-the design decisions Selene carries forward.
+the design decisions this project carries forward.
 
 | Doc | Contents |
 |---|---|

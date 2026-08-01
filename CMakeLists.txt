@@ -1,4 +1,4 @@
-# Selene v2 — phase P0 build.
+# ELENA modernization — phase P0 build.
 #
 # Builds the 2015 toolchain on modern Linux, 64-bit, as-is plus the minimal
 # mechanical fixes: common, engine, elc, and the tools that survive the
@@ -13,7 +13,7 @@
 # when llvmgen lands (P2).
 
 cmake_minimum_required(VERSION 3.16)
-project(selene VERSION 2.0.0 LANGUAGES C CXX)
+project(elena VERSION 2.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,14 +46,14 @@ add_compile_options(
 
 # --- libraries -------------------------------------------------------------
 
-add_library(selene_common STATIC
+add_library(elena_common STATIC
    ${SRC}/common/altstrings.cpp
    ${SRC}/common/config.cpp
    ${SRC}/common/dump.cpp
    ${SRC}/common/files.cpp
 )
 
-add_library(selene_engine STATIC
+add_library(elena_engine STATIC
    ${SRC}/engine/bytecode.cpp
    ${SRC}/engine/jitcompiler.cpp
    ${SRC}/engine/jitlinker.cpp
@@ -67,7 +67,7 @@ add_library(selene_engine STATIC
    ${SRC}/engine/x86helper.cpp
    ${SRC}/engine/x86jitcompiler.cpp
 )
-target_link_libraries(selene_engine PUBLIC selene_common)
+target_link_libraries(elena_engine PUBLIC elena_common)
 
 # --- tools -----------------------------------------------------------------
 
@@ -75,17 +75,17 @@ add_executable(sg
    ${SRC}/tools/sg/sg.cpp
 )
 target_include_directories(sg PRIVATE ${SRC}/tools/sg/linux32)
-target_link_libraries(sg PRIVATE selene_engine)
+target_link_libraries(sg PRIVATE elena_engine)
 
 add_executable(og
    ${SRC}/tools/og/og.cpp
 )
-target_link_libraries(og PRIVATE selene_engine)
+target_link_libraries(og PRIVATE elena_engine)
 
 add_executable(ecv
    ${SRC}/tools/ecv/ecv.cpp
 )
-target_link_libraries(ecv PRIVATE selene_engine)
+target_link_libraries(ecv PRIVATE elena_engine)
 
 add_executable(asm2bin
    ${SRC}/tools/asm2bin/asm2binx.cpp
@@ -95,7 +95,7 @@ add_executable(asm2bin
    ${SRC}/elc/source.cpp
 )
 target_include_directories(asm2bin PRIVATE ${SRC}/elc)
-target_link_libraries(asm2bin PRIVATE selene_engine)
+target_link_libraries(asm2bin PRIVATE elena_engine)
 
 # --- the compiler ----------------------------------------------------------
 
@@ -112,4 +112,36 @@ add_executable(elc
    ${SRC}/elc/linux32/linker.cpp
 )
 target_include_directories(elc PRIVATE ${SRC}/elc)
-target_link_libraries(elc PRIVATE selene_engine)
+target_link_libraries(elc PRIVATE elena_engine)
+
+# --- staged compiler data --------------------------------------------------
+# elc resolves syntax.dat, rules.dat and elc.config against its own
+# directory; generate the tables with the freshly built sg/og and stage the
+# configuration next to the binaries. The source dat/ and bin/ trees are
+# never written to.
+
+set(BIN ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+add_custom_command(OUTPUT ${BIN}/syntax.dat
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/dat
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/dat/sg/syntax.txt ${CMAKE_BINARY_DIR}/dat/syntax.txt
+   COMMAND $<TARGET_FILE:sg> ${CMAKE_BINARY_DIR}/dat/syntax.txt
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/dat/syntax.dat ${BIN}/syntax.dat
+   DEPENDS sg ${CMAKE_SOURCE_DIR}/dat/sg/syntax.txt
+   COMMENT "Generating parser table (syntax.dat)")
+
+add_custom_command(OUTPUT ${BIN}/rules.dat
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/dat
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/dat/og/rules.txt ${CMAKE_BINARY_DIR}/dat/rules.txt
+   COMMAND $<TARGET_FILE:og> ${CMAKE_BINARY_DIR}/dat/rules.txt
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/dat/rules.dat ${BIN}/rules.dat
+   DEPENDS og ${CMAKE_SOURCE_DIR}/dat/og/rules.txt
+   COMMENT "Generating rule table (rules.dat)")
+
+add_custom_target(compiler_data ALL DEPENDS ${BIN}/syntax.dat ${BIN}/rules.dat)
+
+add_custom_target(compiler_config ALL
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/bin/elc.linux.config ${BIN}/elc.config
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${BIN}/templates
+   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/bin/templates/lib.config ${BIN}/templates
+   COMMENT "Staging elc configuration")

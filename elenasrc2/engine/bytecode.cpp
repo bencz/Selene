@@ -95,17 +95,17 @@ void CommandTape :: write(ByteCode code)
    write(ByteCommand(code));
 }
 
-void CommandTape :: write(ByteCode code, int argument)
+void CommandTape :: write(ByteCode code, intptr_t argument)
 {
    write(ByteCommand(code, argument));
 }
 
-void CommandTape :: write(ByteCode code, int argument, int additional)
+void CommandTape :: write(ByteCode code, intptr_t argument, intptr_t additional)
 {
    write(ByteCommand(code, argument, additional));
 }
 
-void CommandTape :: write(ByteCode code, TapeStructure argument, int additional)
+void CommandTape :: write(ByteCode code, TapeStructure argument, intptr_t additional)
 {
    write(ByteCommand(code, argument, additional));
 }
@@ -144,17 +144,17 @@ void CommandTape :: write(ByteCode code, PseudoArg argument)
    write(ByteCommand(code, resolvePseudoArg(argument)));
 }
 
-void CommandTape :: write(ByteCode code, PseudoArg argument, int additional)
+void CommandTape :: write(ByteCode code, PseudoArg argument, intptr_t additional)
 {
    write(ByteCommand(code, resolvePseudoArg(argument), additional));
 }
 
-void CommandTape :: write(ByteCode code, int argument, Predicate predicate)
+void CommandTape :: write(ByteCode code, intptr_t argument, Predicate predicate)
 {
    write(ByteCommand(code, argument, 0, predicate));
 }
 
-void CommandTape :: write(ByteCode code, int argument, int additional, Predicate predicate)
+void CommandTape :: write(ByteCode code, intptr_t argument, intptr_t additional, Predicate predicate)
 {
    write(ByteCommand(code, argument, additional, predicate));
 }

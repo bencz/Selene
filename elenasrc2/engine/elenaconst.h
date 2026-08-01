@@ -337,7 +337,10 @@ namespace _ELENA_
    #define ELENA_SIGNITURE          "ELENA.9."       // the stand alone image
    #define ELENACLIENT_SIGNITURE    "VM.ELENA.9."    // the ELENAVM client
 
-   #define MODULE_SIGNATURE         "ELENA.9.02"     // the module version
+   // Modernized module container: 64-bit-clean serialization of the 1.9.23
+   // layout (reference maps and relocation tables carry native-width items).
+   // A different signature is a rejection, never a reinterpretation.
+   #define MODULE_SIGNATURE         "ELENA.2.001"    // the module version
    #define DEBUG_MODULE_SIGNATURE   "ED!1.4"
 
   // --- ELENA core module names ---

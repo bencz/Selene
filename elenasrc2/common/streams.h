@@ -97,7 +97,12 @@ public:
 
    bool readDWord(size_t& dword)
    {
-      return read((void*)&dword, 4);
+      // on-disk dwords are always 4 bytes; zero-extend into the wider type
+      unsigned int value = 0;
+      bool result = read((void*)&value, 4);
+      dword = value;
+
+      return result;
    }
 
    bool readByte(unsigned char& ch)

@@ -17,17 +17,9 @@
 #define ELC_REVISION_NUMBER             0x0028
 
 // --- ELC default file names ---
-#ifdef _WIN32
-
+// resolved against the directory containing the elc executable
 #define SYNTAX_FILE                 "syntax.dat"
 #define RULES_FILE                  "rules.dat"
-
-#else
-
-#define SYNTAX_FILE                 "/usr/share/elena/syntax.dat"
-#define RULES_FILE                  "/usr/share/elena/rules.dat"
-
-#endif
 
 // --- ELC command-line parameters ---
 #define ELC_PRM_CONFIG              'c'

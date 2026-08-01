@@ -1820,7 +1820,8 @@ public:
          // save stored key: patch the item's key field (pointer-width, at its
          // real struct offset) with the key's buffer offset
          size_t storedKey = (size_t)storeKey(position, key);
-         _buffer.write(position + offsetof(Item, key), &storedKey, sizeof(storedKey));
+         size_t keyOffset = (size_t)((char*)&item.key - (char*)&item);
+         _buffer.write(position + keyOffset, &storedKey, sizeof(storedKey));
       }
 
       size_t beginning = (size_t)_buffer.get(0);
@@ -2570,9 +2571,11 @@ public:
 
       _buffer.write(tale, &item, sizeof(item));
       if (KeyStored) {
-         // save stored key
-         ref_t storedKey = (ref_t)storeKey(tale, key);
-         _buffer.writeDWord(tale + 4, storedKey);
+         // save stored key: patch the item's key field (pointer-width, at its
+         // real struct offset) with the key's buffer offset
+         size_t storedKey = (size_t)storeKey(tale, key);
+         size_t keyOffset = (size_t)((char*)&item.key - (char*)&item);
+         _buffer.write(tale + keyOffset, &storedKey, sizeof(storedKey));
       }
 
       size_t beginning = (size_t)_buffer.get(0);
@@ -2825,20 +2828,22 @@ public:
 
       T& operator*() const { return *(T*)(_array + _position + 4); }
 
-      size_t key() const { return *(size_t*)(_array + _position); }
+      size_t key() const { return *(unsigned int*)(_array + _position); }
 
       Iterator(void* buffer)
       {
          _array = (char*)buffer;
          _position = 4;
-         _end = (*(int*)_array) << 3;  // _array starts with the number of items
+         // _array starts with the number of items; entry = 4-byte key + value
+         _end = 4 + (*(int*)_array) * (int)(4 + sizeof(T));
       }
 
       Iterator(char* buffer, int position)
       {
          _array = buffer;
          _position = position;
-         _end = (*(int*)_array) << 3;  // _array starts with the number of items
+         // _array starts with the number of items; entry = 4-byte key + value
+         _end = 4 + (*(int*)_array) * (int)(4 + sizeof(T));
       }
    };
 
@@ -2940,7 +2945,7 @@ public:
       _buffer.writeDWord(0, count);
 
       if (count > 0)
-         _buffer.load(reader, count << 3);
+         _buffer.load(reader, count * (4 + sizeof(T)));
    }
 
    void clear()

@@ -297,12 +297,15 @@ enum TapeStructure
 
 struct ByteCommand
 {
+   // arguments are pointer-width: real bytecode operands are 32-bit values,
+   // but the in-memory tape also carries debug pseudo-commands (bd*) whose
+   // argument is an ident_t; serialization truncates to the 32-bit wire form
    ByteCode  code;
-   int       argument;
-   int       additional;
+   intptr_t  argument;
+   intptr_t  additional;
    Predicate predicate;
 
-   int Argument() const { return argument; }
+   intptr_t Argument() const { return argument; }
 
    operator ByteCode() const { return code; }
 
@@ -320,21 +323,21 @@ struct ByteCommand
       this->additional = 0;
       this->predicate = bpNone;
    }
-   ByteCommand(ByteCode code, int argument)
+   ByteCommand(ByteCode code, intptr_t argument)
    {
       this->code = code;
       this->argument = argument;
       this->additional = 0;
       this->predicate = bpNone;
    }
-   ByteCommand(ByteCode code, int argument, int additional)
+   ByteCommand(ByteCode code, intptr_t argument, intptr_t additional)
    {
       this->code = code;
       this->argument = argument;
       this->additional = additional;
       this->predicate = bpNone;
    }
-   ByteCommand(ByteCode code, int argument, int additional, Predicate predicate)
+   ByteCommand(ByteCode code, intptr_t argument, intptr_t additional, Predicate predicate)
    {
       this->code = code;
       this->argument = argument;
@@ -346,10 +349,10 @@ struct ByteCommand
    {
       writer->writeByte((unsigned char)code);
       if (!commandOnly && (code > MAX_SINGLE_ECODE)) {
-         writer->writeDWord(argument);
+         writer->writeDWord((int)argument);
       }
       if (!commandOnly && (code > MAX_DOUBLE_ECODE)) {
-         writer->writeDWord(additional);
+         writer->writeDWord((int)additional);
       }
    }
 };
@@ -523,13 +526,13 @@ struct CommandTape
    int resolvePseudoArg(PseudoArg argument);
 
    void write(ByteCode code);
-   void write(ByteCode code, int argument);
+   void write(ByteCode code, intptr_t argument);
    void write(ByteCode code, PseudoArg argument);
-   void write(ByteCode code, int argument, int additional);
-   void write(ByteCode code, PseudoArg argument, int additional);
-   void write(ByteCode code, TapeStructure argument, int additional);
-   void write(ByteCode code, int argument, int additional, Predicate predicate);
-   void write(ByteCode code, int argument, Predicate predicate);
+   void write(ByteCode code, intptr_t argument, intptr_t additional);
+   void write(ByteCode code, PseudoArg argument, intptr_t additional);
+   void write(ByteCode code, TapeStructure argument, intptr_t additional);
+   void write(ByteCode code, intptr_t argument, intptr_t additional, Predicate predicate);
+   void write(ByteCode code, intptr_t argument, Predicate predicate);
    void write(ByteCommand command);
    void insert(ByteCodeIterator& it, ByteCommand command);
 

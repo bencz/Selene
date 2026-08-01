@@ -1,16 +1,18 @@
-# Selene (v2)
+# ELENA (modernization)
 
 A modernization of **ELENA Language 1.9.23 / 2.0** (2015, Alex Rakov,
 Apache 2.0) — a pure message-passing object-oriented language in the
 Smalltalk lineage, at its most mature pre-rewrite state: register-based
 e-code, generational GC, threading variant, script engine, ~150 opcodes.
+The project keeps the name **ELENA**; "Selene" was only the codename of
+round 1 (and survives in the repo directory name).
 
 **Round 1** — the same modernization applied to ELENA 1.5.0.0 (2009) —
 was completed as an experiment and lives whole in `experimental_version/`
 (LLVM backend, C11 runtime, CMake, Linux+Windows, FFI). It is reference
-material: its `docs/plan/*` argue the design decisions Selene v2 inherits.
+material: its `docs/plan/*` argue the design decisions round 2 inherits.
 
-Selene v2 rebuilds the 1.9.23 implementation the same way: the VM
+Round 2 rebuilds the 1.9.23 implementation the same way: the VM
 (`elenavm`), the x86 JIT, the hand-written PE32/ELF32 writers, the x86
 assembly runtime (`src30/asm/x32/`) and the e-code assembly layer (`.esm`)
 are all **deleted**; codegen goes through the **LLVM C++ API in-process**
@@ -20,7 +22,7 @@ ELENA object modules (`.nl`/`.dnl`) per namespace; the translator consumes
 the module closure.
 
 > The upstream project (`elena-lang`) is still actively developed by its
-> author. Selene is a divergent rewrite of the implementation, not a
+> author. This is a divergent rewrite of the implementation, not a
 > continuation. Original copyright headers must be preserved.
 
 ---
@@ -82,7 +84,7 @@ syscall.
 ## Design decisions already taken (do not reopen)
 
 LLVM in-process + system linker; runtime in C11 (static, LTO,
-freestanding-capable); name-based linking `selene.<tag>.<name>` with
+freestanding-capable); name-based linking `elena.<tag>.<name>` with
 `'` `:` `#` → `.`; message interning into one global id space per link
 unit; forwards (`targets/<os>.cfg`) as the platform seam; IDE replaced by
 LSP+DAP later. Argued in `experimental_version/docs/plan/{17,18,19,20,23}`.
