@@ -37,11 +37,17 @@ static selene_method lookup(selene_vmt_entry* vmt, selene_message message)
 
    const int32_t wanted = as_signed(message);
 
-   /* The table is terminated rather than counted, so find the end first. The
-    * scan is bounded by the terminator the compiler always emits. */
+   /* The table is terminated rather than counted, so find the end first.
+    *
+    * Bounded: an unterminated or bogus table would otherwise walk memory until
+    * it faulted. A dispatcher that cannot trust its input is worth more than a
+    * marginally shorter loop -- generated code reaching here with a stale or
+    * mis-derived receiver should fail the message, not crash the program. */
    size_t high = 0;
-   while (as_signed(vmt[high].message) != (int32_t)SELENE_MESSAGE_TERMINAL)
-      high++;
+   while (as_signed(vmt[high].message) != (int32_t)SELENE_MESSAGE_TERMINAL) {
+      if (++high > SELENE_MAX_VMT_ENTRIES)
+         return NULL;
+   }
 
    size_t low = 0;
    while (low < high) {
@@ -66,7 +72,13 @@ static inline selene_vmt_entry* parent_of(selene_vmt_entry* vmt)
    return vmt ? *((selene_vmt_entry**)vmt - 1) : NULL;
 }
 
-selene_result selene_send(void* receiver, selene_message message)
+/* The message currently being dispatched. Redirect methods re-send it to a
+ * different receiver; on x86 the prepredir prologue parked it in a frame slot,
+ * here it is dispatcher state. Plain static because the runtime is
+ * single-threaded until the MTA work lands. */
+static selene_message in_flight;
+
+selene_result selene_send(void* receiver, void* param, selene_message message)
 {
    if (!receiver)
       return selene_failed(NULL);
@@ -81,13 +93,15 @@ selene_result selene_send(void* receiver, selene_message message)
 
    while (vmt) {
       selene_method method = lookup(vmt, message);
-      if (method)
-         return method(receiver, NULL);
+      if (!method) {
+         /* Not found here: an any-message handler answers everything. */
+         method = lookup(vmt, SELENE_MESSAGE_ANY);
+      }
 
-      /* Not found here: try the any-message handler, then the parent. */
-      selene_method any = lookup(vmt, SELENE_MESSAGE_ANY);
-      if (any)
-         return any(receiver, NULL);
+      if (method) {
+         in_flight = message;
+         return method(receiver, param);
+      }
 
       vmt = parent_of(vmt);
    }
@@ -98,24 +112,32 @@ selene_result selene_send(void* receiver, selene_message message)
    return selene_failed(NULL);
 }
 
-selene_result selene_send_static(void* receiver, selene_message message, void* vmt)
+selene_result selene_send_static(void* receiver, void* param,
+                                 selene_message message, void* vmt)
 {
    /* Static dispatch: the class is known at the call site, so the search starts
     * from a named VMT instead of the receiver's own. This is how super sends
     * and directly-typed calls avoid re-resolving. */
    selene_method method = lookup((selene_vmt_entry*)vmt, message);
-   if (method)
-      return method(receiver, NULL);
+   if (method) {
+      in_flight = message;
+      return method(receiver, param);
+   }
 
    return selene_failed(NULL);
 }
 
-selene_result selene_redirect(void* receiver)
+selene_result selene_redirect(void* target, void* param)
 {
-   /* Forward the message currently in flight to another receiver. Needs the
-    * in-flight message, which the generated code does not yet pass; the byte
-    * code keeps it in a frame slot. Reported rather than guessed. */
-   (void)receiver;
+   /* Save before re-sending: the send below overwrites in_flight. */
+   selene_message message = in_flight;
 
-   return selene_failed(NULL);
+   return selene_send(target, param, message);
+}
+
+selene_result selene_redirect_super(void* target, void* param, void* vmt)
+{
+   selene_message message = in_flight;
+
+   return selene_send_static(target, param, message, vmt);
 }

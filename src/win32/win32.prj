@@ -6,6 +6,7 @@ warn:unresolved=-1
 debuginfo=-1
 
 [files]
+console.sel
 api\constants.sel
 api.sel
 io.sel

@@ -225,7 +225,7 @@ Unchanged in shape, but each step now produces C rather than a mix:
 |---|---|---:|---|---|
 | 1 | int32 / int64 / real64 arithmetic | 1,130 | C operators, `<math.h>` | Fixes 3 latent int64 bugs for free. Switches x87 → SSE/target FP |
 | 2 | `ftoa` / `atof` | 646 | `snprintf` / `strtod` | 10.5% of the runtime, deleted |
-| 3 | Strings, arrays, byte dumps | 900 | C | Decide UTF-8 here |
+| 3 | Strings, arrays, byte dumps | 900 | C | UTF-8, decided — see §8.1 |
 | 4 | **Win32 + Winsock syscall layer** | **1,785** | **`#external` declarations** | Becomes metadata, not code |
 | 5 | Object creation, roles, identity, frames | 267 | C, `always_inline` | |
 | 6 | Dispatch | 300 | C slow path + compiler-emitted inline cache | Binary search over the already-sorted VMT is a free win |
@@ -259,6 +259,42 @@ The user's observation that *"algumas coisas podem mudar"* is right. Concretely:
 
 None of these are optional under a multi-architecture, big-endian-capable target set. They
 are the price of the six targets, and choosing C pays most of it automatically.
+
+## 8.1 The text contract: UTF-8, decided
+
+The "Strings: UTF-16 → UTF-8" row above is now a contract, not an intention.
+**All runtime text is UTF-8.** Concretely:
+
+- A literal object's payload is `[u32 length in BYTES][UTF-8 bytes][NUL]`.
+  The length counts bytes, not characters. This is the layout the code
+  generator materialises for constants (`llvmgen.cpp`, `valueConstant`) and
+  the layout `runtime/natives.h` reads — the two must not drift.
+- A character value is a Unicode code point in 32 bits.
+- **No platform converts by default -- including Windows.** A POSIX
+  descriptor takes the bytes as they are (`runtime/posix/io.c` converts
+  nothing). On Windows the console renders UTF-8 directly once the code
+  pages say so -- `selene_platform_init` calls `SetConsoleOutputCP(CP_UTF8)`
+  / `SetConsoleCP(CP_UTF8)` exactly once -- and `WriteFile` then takes the
+  runtime's bytes unchanged; redirected output gets clean UTF-8 with no BOM.
+  This sets Selene's **Windows baseline at Windows 10 1903**. Converting to
+  UTF-16 is a per-call exception reserved for APIs that leave no choice (the
+  known case is console INPUT on builds where the -A read path is broken:
+  read through `ReadConsoleW` and convert -- decided when real line input
+  lands), and it lives inside `runtime/win32/`, nowhere else. No other
+  runtime code may mention an encoding.
+
+Why UTF-8 and not a fixed-width form: it is byte-oriented, so the layout is
+identical on the big-endian targets (s390x, ppc) — no byte-order rule, no
+BOM, nothing for module portability to record; it matches the compiler
+build's own character model (`ELENA_UTF8=ON`); and the C implementations of
+the string natives become plain byte code with no `wchar_t` width trap.
+
+**Deliberately still open:** the indexing semantics of the `standard'`
+string natives (`strgetchar` and friends). The 2009 code indexed fixed-width
+units; under UTF-8 the natural native is "code point at byte offset, plus
+the next offset", but whether the library's byte code does index arithmetic
+that assumes one-unit-per-character has to be read from the library sources,
+not guessed. Decide it in step 3 of §7, with the call sites in front of you.
 
 ---
 

@@ -1,0 +1,29 @@
+// --- Selene Windows console bindings ---
+//
+// The Windows twin of posix'io: the same two classes, the same protocol,
+// bound by targets/windows.cfg. Each talks straight to a named native
+// implemented in runtime/win32/io.c -- which is where the platform lives.
+// Text is UTF-8 end to end; the runtime sets the console code pages once at
+// startup. See docs/plan/19-runtime-in-c.md section 8.1.
+//
+// The 2009 win32'io module (TextWriter machinery over numbered natives)
+// remains for the GUI-era classes until the typed FFI rework retires it.
+
+#class StdOut
+{
+    #method << aLiteral
+    [
+        #external wincon'writelit(aLiteral).
+    ]
+}
+
+#class StdIn
+{
+    #method get
+    [
+        #external wincon'readkey(self).
+    ]
+}
+
+#symbol stdoutput = StdOut.
+#symbol stdinput = StdIn.

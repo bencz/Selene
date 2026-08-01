@@ -1,0 +1,28 @@
+// --- Selene POSIX console bindings ---
+//
+// The smallest possible stand-ins for 'program'output and 'program'input on
+// a POSIX host, bound by targets/linux.cfg. Deliberately free of the
+// TextWriter/adapter machinery: each class talks straight to a named native
+// implemented in runtime/natives.c, which is where the platform lives.
+//
+// The literal arrives raw, control sequences included; posix'writelit
+// expands %n while writing. See docs/plan/19-runtime-in-c.md.
+
+#class StdOut
+{
+    #method << aLiteral
+    [
+        #external posix'writelit(aLiteral).
+    ]
+}
+
+#class StdIn
+{
+    #method get
+    [
+        #external posix'readkey(self).
+    ]
+}
+
+#symbol stdoutput = StdOut.
+#symbol stdinput = StdIn.

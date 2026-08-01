@@ -252,7 +252,7 @@ evaluation stack). `S` = evaluation stack, top on the right.
 | 28 | `rredirect ref` | `0x81` | ref | ±0 | Same, but start the search in the VMT named by `ref` (super-send). |
 | 29 | `ioset n, vmt` | `0x93` | int, ref | 0 | `*(S[top] + n) := vmt` — store a VMT pointer into a field. |
 | 30 | `ifset n` | `0x9A` | int | resets | `esp := ebp − n*4` — unwind the evaluation stack to a scope level. |
-| 31 | `rreturnif ref` | `0xB1` | ref | −1/0 | If `S[top] == ref`, return it immediately; else leave the stack unchanged. |
+| 31 | `rreturnif ref` | `0xB1` | ref | −1/0 | If `S[top]` is **not** `ref`, return it immediately; if it still is, fall through with the stack unchanged. (The asm template in §2.5.31 is the authority: memoisation returns the cache once it is no longer nil.) |
 | 32 | `iocall(0) msg, else` | `0xC3` | msg, i32 | −1 | Message send, VMT scan starts at entry **0**. Used only for `new`. |
 | 33 | `iocall(1) msg, else` | `0xC7` | msg, i32 | −1 | Message send, VMT scan starts at entry **1**. All other messages. |
 | 34 | `ircall(0) msg, else, vmt` | `0xCB` | msg, i32, +ref | −1 | Like `iocall(0)` but scans the VMT given by `vmt` (super-send of `new`). |
@@ -264,13 +264,13 @@ evaluation stack). `S` = evaluation stack, top on the right.
 | 40 | `dbgbreak` | `0xFC` | — | 0 | Emit nothing; record a breakpoint address for the debugger. |
 | 41 | `shift n` | `0xFE` | int | 0 | Enter role `n`: replace `self`'s VMT pointer with role VMT `n`. |
 
-### 2.4 Pseudo-opcodes (tape-only, never serialised as opcodes)
+### 2.4 Pseudo-opcodes (tape-only in 2009; two are now serialised)
 
 | Mnemonic | Value | Handled at | Effect |
 |---|---|---|---|
 | `bcExtraParam` | `0x100` | `bccompiler.cpp:700` | Writes a bare dword (no opcode byte) — the trailing VMT reference of `ircall`. |
-| `bcAllocStack` | `0x101` | `bccompiler.cpp:640` | Compile-time bookkeeping: `stackLevel += n`. |
-| `bcFreeStack` | `0x102` | `bccompiler.cpp:643` | Compile-time bookkeeping: `stackLevel −= n`. |
+| `bcAllocStack` | `0x101` | `bccompiler.cpp:640` | `stackLevel += n`, **and serialised** as byte `0x01` + count. The x86 JIT skips it (family 0 → `compileNop`, argument consumed by the tape reader); the LLVM stack-to-SSA translation reads it as depth metadata. |
+| `bcFreeStack` | `0x102` | `bccompiler.cpp:643` | `stackLevel −= n`, **and serialised** as byte `0x02` + count. Directly after `rcallemb` it is load-bearing: the only record of how many slots an embedded blob consumes. |
 | `blBegin` | `0x110` | `bccompiler.cpp:646` | Open a scope; for `bltLoop` also emits a `nop` label. |
 | `blEnd` | `0x111` | `bccompiler.cpp:665` | Close a scope; for `bltBranch` resolves forward jumps and emits a `nop`. |
 | `blFailure` | `0x112` | `bccompiler.cpp:654` | Failure label; resolves pending branch/proc failure jumps, emits a `nop`. |

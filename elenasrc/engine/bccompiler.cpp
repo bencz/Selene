@@ -639,11 +639,28 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
    while (!it.Eof() && level > 0) {
       // save command
       switch (*it) {
+         // Stack depth metadata. The x86 JIT does not need it -- it uses the
+         // machine stack -- but a stack-to-SSA translation does, so it is
+         // serialised rather than dropped: ByteCommand::save truncates the
+         // code to bytes 0x01/0x02, which land in command family 0 where the
+         // JIT's decoder consumes the argument and emits nothing.
+         //
+         // freestack directly after rcallemb is the one load-bearing entry:
+         // it is the only place the byte code records how many stack slots an
+         // embedded blob consumes.
          case bcAllocStack:
             stackLevel += (*it).argument;
+            (*it).save(code);
             break;
          case bcFreeStack:
             stackLevel -= (*it).argument;
+            (*it).save(code);
+            break;
+         // The column/length continuation of a breakpoint. With debug info on
+         // it is consumed by writeBreakpoint; without a case of its own it
+         // fell through to the default and was serialised as byte 0x02 plus
+         // the source column -- indistinguishable from freestack.
+         case bdBreakCoord:
             break;
          case blBegin:
             stackLevels.push(stackLevel);
@@ -711,11 +728,18 @@ void ByteCodeCompiler :: saveProcedure(ByteCodeIterator& it, SectionWriter* code
          case bcIRCall1:
             (*it).save(code);
             // save alternative jump offset
+            //
+            // ircall's trailing VMT dword sits between the offset field and
+            // the next instruction, so its offsets are patched relative to a
+            // point 8 bytes past the placeholder, not 4. The 2009 code only
+            // said so on the bltProc path; a super-send inside a branch got
+            // its failure edge patched 4 bytes short, landing the jump in the
+            // middle of the instruction after the label.
             if ((*it).hint.type == bltProc) {
                jumpsToProcFail.push(JumpInfo(1, code->Position(), (*it == bcIRCall0 || *it == bcIRCall1)));
             }
             else if ((*it).hint.type == bltBranch) {
-               jumpsToFail.push(JumpInfo(level, code->Position()));
+               jumpsToFail.push(JumpInfo(level, code->Position(), (*it == bcIRCall0 || *it == bcIRCall1)));
             }
             // put jump offset place holder
             code->writeU32LE(0);
@@ -826,25 +850,47 @@ void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Modul
    // initialize vmt section writers
    SectionWriter vmtWriter(module->mapSection(reference | mskVMTRef, false));
 
-   vmtWriter.writeU32LE(0);                              // save size place holder
-   size_t classPosition = vmtWriter.Position();   
+   // A class tape can arrive in more than one part -- the front end reopens
+   // the class for its role/handler section -- and save() comes back in here
+   // for each blBegin. The section must remain ONE [size][header][entries]
+   // image: writing a second header in the middle of the table shifted every
+   // later entry by twelve bytes, which is how messages turned into code
+   // offsets and a reader found a "method" whose size word was really an
+   // allocstack instruction.
+   bool continuation = vmtWriter.Position() > 0;
+   size_t classPosition = 4;                             // payload of part one
 
    // copy class meta data header + vmt size
    DumpReader reader(module->mapSection(reference | mskMetaDataRef, true));
    ClassInfo info;
    info.load(&reader, false);
 
-   // Field by field, matching ClassInfo::save.
+   if (!continuation) {
+      vmtWriter.writeU32LE(0);                           // save size place holder
+      classPosition = vmtWriter.Position();
+
+      // Field by field, matching ClassInfo::save.
+      //
+      // This was a raw sizeof(ClassHeader) blit -- 12 bytes under ILP32 and 24
+      // under LP64, with the host's byte order. It is a SECOND copy of the class
+      // header, in the VMT section rather than the meta data section, and it was
+      // missed when ClassInfo was canonicalised. Anything parsing a VMT had to
+      // guess the header width to find the entries.
+      vmtWriter.writeU32LE((unsigned int)info.header.roleRef);
+      vmtWriter.writeU32LE((unsigned int)info.header.flags);
+      vmtWriter.writeU32LE((unsigned int)info.header.parentRef);
+      vmtWriter.writeU32LE((unsigned int)info.classSize);
+   }
+
+   // save class role table
    //
-   // This was a raw sizeof(ClassHeader) blit -- 12 bytes under ILP32 and 24
-   // under LP64, with the host's byte order. It is a SECOND copy of the class
-   // header, in the VMT section rather than the meta data section, and it was
-   // missed when ClassInfo was canonicalised. Anything parsing a VMT had to
-   // guess the header width to find the entries.
-   vmtWriter.writeU32LE((unsigned int)info.header.roleRef);
-   vmtWriter.writeU32LE((unsigned int)info.header.flags);
-   vmtWriter.writeU32LE((unsigned int)info.header.parentRef);
-   vmtWriter.writeU32LE((unsigned int)info.classSize);
+   // This has to happen with or without debug info: the table sits at the
+   // head of the tape, and leaving it unconsumed makes its blEnd terminate
+   // saveVMT before the first method.
+   if (*it == blBegin && (*it).Hint() == bltRole) {
+      saveRoleTable(it, info.header.roleRef, module);
+      it++;
+   }
 
    // create debug info if debugModule available
    if (debugModule) {
@@ -854,12 +900,6 @@ void ByteCodeCompiler :: saveClass(ref_t reference, ByteCodeIterator& it, _Modul
      // save class debug info
       openClassDebugInfo(debugModule, &debugWriter, &debugStringWriter, module->resolveReference(reference & ~mskAnyRef), info.header.flags);
       writeFieldDebugInfo(info.fields, &debugWriter, &debugStringWriter);
-
-     // save class role table
-      if (*it == blBegin && (*it).Hint() == bltRole) {
-         saveRoleTable(it, info.header.roleRef, module);
-         it++;
-      }
 
       saveVMT(classPosition, &vmtWriter, &codeWriter, it, &debugWriter, &debugStringWriter);
 

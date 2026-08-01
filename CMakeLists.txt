@@ -376,7 +376,18 @@ add_library(selene STATIC
     ${CMAKE_SOURCE_DIR}/runtime/dispatch.c
     ${CMAKE_SOURCE_DIR}/runtime/gc.c
     ${CMAKE_SOURCE_DIR}/runtime/hosted.c
+    ${CMAKE_SOURCE_DIR}/runtime/natives.c
+    ${CMAKE_SOURCE_DIR}/runtime/start.c
 )
+
+# Platform bindings: the build selects the directory, the code never asks
+# where it is running (invariant 1). Both speak UTF-8 end to end; the
+# Windows file's only extra duty is setting the console code pages.
+if(WIN32)
+    target_sources(selene PRIVATE ${CMAKE_SOURCE_DIR}/runtime/win32/io.c)
+else()
+    target_sources(selene PRIVATE ${CMAKE_SOURCE_DIR}/runtime/posix/io.c)
+endif()
 set_target_properties(selene PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
 target_include_directories(selene PUBLIC ${CMAKE_SOURCE_DIR}/runtime)
 target_compile_options(selene PRIVATE -Wall -Wextra)

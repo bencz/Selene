@@ -59,38 +59,50 @@ static void disassemble(Section* section)
 {
    DumpReader reader(section);
 
-   // A code section begins with its length, written by ByteCodeCompiler.
-   unsigned int codeSize = reader.getU32LE();
-   size_t endPos = reader.Position() + codeSize;
+   // A code section is a SEQUENCE of length-prefixed procedures: a symbol
+   // section holds one, a class section holds every method back to back
+   // (saveVMT calls saveProcedure per method). Stopping after the first
+   // procedure hid all but one method of every class.
+   while (reader.Position() + 4 <= section->Length()) {
+      unsigned int codeSize = reader.getU32LE();
+      size_t endPos = reader.Position() + codeSize;
 
-   printf("      code size: %u bytes\n", codeSize);
+      printf("      code size: %u bytes\n", codeSize);
 
-   if (endPos > section->Length()) {
-      printf("      !! declared size exceeds the section (%u > %u)\n",
-             (unsigned int)endPos, (unsigned int)section->Length());
-      return;
-   }
+      if (codeSize == 0 || endPos > section->Length()) {
+         printf("      !! declared size exceeds the section (%u > %u)\n",
+                (unsigned int)endPos, (unsigned int)section->Length());
+         return;
+      }
 
-   while (reader.Position() < endPos) {
-      size_t offset = reader.Position();
+      size_t base = reader.Position();
+      while (reader.Position() < endPos) {
+         size_t offset = reader.Position() - base;
 
-      unsigned char code = 0;
-      if (!reader.read(&code, 1))
-         break;
+         unsigned char code = 0;
+         if (!reader.read(&code, 1))
+            break;
 
-      const char* name = getByteCodeName(code);
-      int args = getByteCodeArgCount(code);
+         const char* name = getByteCodeName(code);
+         int args = getByteCodeArgCount(code);
 
-      printf("      %06X  %02X  %-12s", (unsigned int)offset, code,
-             name ? name : "???");
+         printf("      %06X  %02X  %-12s", (unsigned int)offset, code,
+                name ? name : "???");
 
-      if (args >= 1) printf(" %-11d", (int)reader.getU32LE());
-      if (args >= 2) printf(" %d", (int)reader.getU32LE());
+         if (args >= 1) printf(" %-11d", (int)reader.getU32LE());
+         if (args >= 2) printf(" %d", (int)reader.getU32LE());
 
-      if (!name)
-         printf("   <- unknown opcode");
+         // Static dispatch carries a third operand -- the VMT to search --
+         // that the argument-count rule does not describe. Skipping it here
+         // would misalign every byte after an ircall.
+         if (code == (unsigned char)bcIRCall0 || code == (unsigned char)bcIRCall1)
+            printf("  vmt:%08X", reader.getU32LE());
 
-      printf("\n");
+         if (!name)
+            printf("   <- unknown opcode");
+
+         printf("\n");
+      }
    }
 }
 
@@ -201,6 +213,29 @@ int main(int argc, char* argv[])
 
          if (withCode && (masks[m] == mskSymbolRef || masks[m] == mskClassRef))
             disassemble(section);
+
+         // [u32 size][roleRef][flags][parentRef][classSize][message, offset]*
+         if (withCode && masks[m] == mskVMTRef) {
+            DumpReader vmt(section);
+            vmt.getU32LE();
+            // Sequenced reads: as printf arguments their evaluation order is
+            // unspecified, and gcc's right-to-left scrambled every field.
+            unsigned int roleRef   = vmt.getU32LE();
+            unsigned int flags     = vmt.getU32LE();
+            unsigned int parentRef = vmt.getU32LE();
+            unsigned int classSize = vmt.getU32LE();
+            printf("      role %08X  flags %08X  parent %08X  size %u\n",
+                   roleRef, flags, parentRef, classSize);
+            while (vmt.Position() + 8 <= section->Length()) {
+               unsigned int message = vmt.getU32LE();
+               unsigned int offset  = vmt.getU32LE();
+               printf("      message %08X -> +%u%s\n", message, offset,
+                      message == 0 ? "  (any handler)" : "");
+            }
+            if (vmt.Position() != section->Length())
+               printf("      !! %u trailing bytes\n",
+                      (unsigned int)(section->Length() - vmt.Position()));
+         }
       }
    }
    printf("  (%d sections)\n", sectionCount);

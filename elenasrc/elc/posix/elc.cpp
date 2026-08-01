@@ -24,6 +24,11 @@
 #ifdef ELENA_WITH_LLVM
 #include "llvmgen.h"
 #include "module.h"
+
+#include <map>
+#include <string>
+#include <vector>
+#include <list>
 #endif
 
 #include <unistd.h>
@@ -131,23 +136,27 @@ int main(int argc, char* argv[])
 #endif
 
 #ifdef ELENA_WITH_LLVM
-   // Translates a compiled module's code sections to LLVM IR and emits both
-   // textual IR and an object file. The bridge between the two halves that now
-   // exist: the byte code reader and the code generator.
+   // Translates one or more compiled modules into a single object file:
+   //
+   //   elc --llvm-translate [-f'alias=name ...] <module.sem> [<module.sem> ...]
+   //
+   // Byte code references are MODULE-LOCAL indices, so nothing links until
+   // they become names: every reference resolves through its module's own
+   // tables (with the forward aliases applied), and messages intern into ONE
+   // global id space across everything being linked. This is the linker half
+   // the 2009 system buried inside the JIT.
    if (argc >= 3 && compstr(argv[1], "--llvm-translate")) {
-      LocalString<0x200> modulePath;
-      modulePath.copy(argv[2]);
-
-      FileReader file(modulePath, feRaw);
-      if (!file.isOpened()) {
-         printf("cannot open '%s'\n", argv[2]);
-         delete[] args; return -1;
-      }
-
-      Module module;
-      if (module.load(file) != lrSuccessful) {
-         printf("'%s' is not a loadable module\n", argv[2]);
-         delete[] args; return -1;
+      // --target applies here too. The general option pass runs after this
+      // branch returns -- too late for the generator -- so it runs early.
+      {
+         bool* consumedHere = new bool[argc];
+         int   targetExit   = 0;
+         bool  proceed = _ELC_::processTargetOptions(argc, args, consumedHere,
+                                                     targetExit);
+         delete[] consumedHere;
+         if (!proceed) {
+            delete[] args; return targetExit;
+         }
       }
 
       LLVMGenerator generator;
@@ -156,8 +165,142 @@ int main(int argc, char* argv[])
          printf("target setup failed: %s\n", error ? error : "?");
          delete[] args; return -1;
       }
+      printf("alvo: %s (%s)\n", getCurrentTarget()->name,
+             getCurrentTarget()->triple);
+
+      // The classes that give value constants their VMT and the nil symbol
+      // that seeds static memoisation cells. These mirror the [compiler]
+      // section of bin/elc.cfg; reading them from the config chain belongs to
+      // the future --llvm-link front end.
+      generator.setValueClasses("std'basic'literal", "std'basic'intnumber",
+                                "std'basic'realnumber", "$elena'$nil");
+
+      // -f'alias=full'name  -- the forward table, exactly the aliases the
+      // 2009 linker resolved from the project configuration.
+      std::map<std::string, std::string> forwards;
+      std::vector<const char*> modulePaths;
+      for (int a = 2 ; a < argc ; a++) {
+         if (strncmp(argv[a], "--target=", 9) == 0)
+            continue;                              // consumed above
+
+         if (argv[a][0] == '-' && argv[a][1] == 'f') {
+            const char* pair = argv[a] + 2;
+            const char* eq = strchr(pair, '=');
+            if (eq && eq != pair) {
+               forwards[std::string(pair, (size_t)(eq - pair))] = eq + 1;
+            }
+            else printf("aviso: forward invalido '%s'\n", argv[a]);
+         }
+         else modulePaths.push_back(argv[a]);
+      }
+
+      // One message id space for the whole link unit. Ids are dense from 1;
+      // predefined messages (high bit set) pass through unchanged, which
+      // keeps them first in the signed order the VMTs sort by.
+      std::map<std::string, unsigned int> messageIds;
+
+      struct Resolver
+      {
+         Module*                              module;
+         std::map<std::string, std::string>*  forwards;
+         std::map<std::string, unsigned int>* messageIds;
+         std::list<std::string>               storage;
+
+         const char* keep(const std::string& s)
+         {
+            storage.push_back(s);
+            return storage.back().c_str();
+         }
+
+         static std::string narrow(const TCHAR* raw)
+         {
+            std::string out;
+            for (size_t i = 0 ; raw[i] ; i++)
+               out += (char)raw[i];
+            return out;
+         }
+
+         const char* name(unsigned int naked)
+         {
+            const TCHAR* raw = module->resolveReference(naked);
+            if (!raw || !raw[0])
+               return NULL;
+
+            std::string full = narrow(raw);
+
+            // A leading quote is a forward alias, bound here -- at link time,
+            // same as 2009. An unbound alias keeps its name and surfaces as
+            // an undefined symbol, which is the truth.
+            if (full[0] == '\'') {
+               std::map<std::string, std::string>::iterator bound =
+                  forwards->find(full);
+               if (bound != forwards->end())
+                  full = bound->second;
+            }
+            return keep(full);
+         }
+
+         const char* spelling(unsigned int naked)
+         {
+            const TCHAR* raw = module->resolveConstant(naked);
+            if (!raw)
+               return NULL;
+
+            return keep(narrow(raw));
+         }
+
+         unsigned int message(unsigned int reference)
+         {
+            if (reference & 0x80000000u)          // predefined: already global
+               return reference;
+
+            const TCHAR* raw = module->resolveMessage(reference);
+            if (!raw || !raw[0])
+               return reference;
+
+            std::string name = narrow(raw);
+            std::map<std::string, unsigned int>::iterator known =
+               messageIds->find(name);
+            if (known != messageIds->end())
+               return known->second;
+
+            unsigned int id = (unsigned int)messageIds->size() + 1;
+            (*messageIds)[name] = id;
+            return id;
+         }
+      };
 
       int translated = 0, skipped = 0;
+
+      for (size_t pathAt = 0 ; pathAt < modulePaths.size() ; pathAt++) {
+      LocalString<0x200> modulePath;
+      modulePath.copy(modulePaths[pathAt]);
+
+      FileReader file(modulePath, feRaw);
+      if (!file.isOpened()) {
+         printf("cannot open '%s'\n", modulePaths[pathAt]);
+         delete[] args; return -1;
+      }
+
+      Module module;
+      if (module.load(file) != lrSuccessful) {
+         printf("'%s' is not a loadable module\n", modulePaths[pathAt]);
+         delete[] args; return -1;
+      }
+
+      Resolver resolver;
+      resolver.module     = &module;
+      resolver.forwards   = &forwards;
+      resolver.messageIds = &messageIds;
+
+      generator.setResolver(
+         [](void* ctx, unsigned int r) { return ((Resolver*)ctx)->name(r); },
+         [](void* ctx, unsigned int r) { return ((Resolver*)ctx)->spelling(r); },
+         [](void* ctx, unsigned int r) { return ((Resolver*)ctx)->message(r); },
+         &resolver);
+
+      printf("== %s\n", modulePaths[pathAt]);
+
       for (ref_t r = 1 ; r < 0x1000 ; r++) {
          const TCHAR* refName = module.resolveReference(r);
          if (!refName || !refName[0])
@@ -179,8 +322,13 @@ int main(int argc, char* argv[])
                const unsigned char* code =
                   (const unsigned char*)symbol->getArray() + reader.Position();
 
-               printf("  %-34s symbol %5u  ", plain, codeSize);
-               if (generator.translateProcedure(plain, code, codeSize, &error)) {
+               // The function carries the CANONICAL name rcall sites link
+               // against; named `plain` alone, every cross-module symbol call
+               // was an undefined reference.
+               std::string canonical = std::string("selene.sym:") + plain;
+
+               printf("  %-40s symbol %5u  ", plain, codeSize);
+               if (generator.translateProcedure(canonical.c_str(), code, codeSize, &error)) {
                   printf("ok\n"); translated++;
                }
                else { printf("%s\n", error ? error : "?"); skipped++; }
@@ -208,8 +356,8 @@ int main(int argc, char* argv[])
             // message 0 with implausible method sizes.
             vmtReader.getU32LE();                       // section size
             vmtReader.getU32LE();                       // roleRef
-            vmtReader.getU32LE();                       // flags
-            vmtReader.getU32LE();                       // parentRef
+            unsigned int classFlags = vmtReader.getU32LE();
+            unsigned int parentRef  = vmtReader.getU32LE();
             vmtReader.getU32LE();                       // classSize
 
             // Collect (message, offset), then sort by offset so each method's
@@ -272,53 +420,125 @@ int main(int argc, char* argv[])
 
                unsigned int end = start + size;
 
+               // Method names carry the GLOBAL message id: the VMT entry, the
+               // function and every other module agree on it by construction.
+               unsigned int globalMessage = resolver.message(entries[e].message);
+
                char name[320];
-               snprintf(name, sizeof(name), "%s#%08X", plain, entries[e].message);
+               snprintf(name, sizeof(name), "%s#%08X", plain, globalMessage);
 
                const unsigned char* code =
                   (const unsigned char*)classCode->getArray() + start;
 
-               printf("  %-34s method %5u  ", name, size);
+               printf("  %-40s method %5u  ", name, size);
                if (generator.translateProcedure(name, code, end - start, &error)) {
                   printf("ok\n"); translated++;
+
+                  if (emitted < 512) {
+                     vmtMessages[emitted] = globalMessage;
+                     snprintf(vmtNames[emitted], sizeof(vmtNames[emitted]), "%s", name);
+                     vmtMethods[emitted] = vmtNames[emitted];
+                     emitted++;
+                  }
                }
                else { printf("%s\n", error ? error : "?"); skipped++; }
+            }
+
+            // The VMT is emitted alongside its methods, pointing at the very
+            // functions just translated. Emitted even with ZERO own methods:
+            // an inherited-only class still needs its table -- the parent
+            // chain lives in its header, and its constant instance points at
+            // it.
+            {
+               std::string vmtName = std::string("selene.vmt:") + plain;
+
+               const char* parentPlain =
+                  parentRef ? resolver.name(parentRef) : NULL;
+               std::string parentName = parentPlain
+                  ? std::string("selene.vmt:") + parentPlain
+                  : std::string();
+
+               generator.emitVMT(vmtName.c_str(),
+                                 parentName.empty() ? NULL : parentName.c_str(),
+                                 classFlags, vmtMessages, vmtMethods,
+                                 (unsigned int)emitted, &error);
+            }
+         }
+
+         // --- data sections ---
+         {
+            Section* data = module.mapSection(r | mskDataRef, true);
+            if (data && data->Length() > 0) {
+               std::string dataName = std::string("selene.data:") + plain;
+               generator.emitData(dataName.c_str(),
+                                  (const unsigned char*)data->getArray(),
+                                  data->Length(), &error);
             }
          }
       }
 
-      // --- constants ---
+      // --- constant symbol instances ---
       //
-      // Integer, real and literal constants are NOT sections: they live in the
-      // module's constant table, keyed by reference, with the value held as its
-      // spelling. The linker used to materialise them; here they become
-      // globals so the same references resolve.
-      int constants = 0;
-      for (ref_t c = 1 ; c < 0x1000 ; c++) {
-         const TCHAR* spelling = module.resolveConstant(c);
-         if (!spelling || !spelling[0])
+      // A reference carrying mskConstantRef means "the singleton instance of
+      // this symbol". The 2009 linker produced it by EXECUTING the symbol at
+      // link time and freezing the result. Materialising it statically instead
+      // costs nothing at startup, has no initialisation-order problem, and
+      // keeps the object outside the heap so the collector never scans or moves
+      // it -- which matters because nil is referenced constantly.
+      //
+      // Symbols whose expression actually runs code cannot be handled this way
+      // and need lazy initialisation on first reference; they are not emitted
+      // here and will surface as unresolved.
+      int instances = 0;
+      for (ref_t r = 1 ; r < 0x1000 ; r++) {
+         const char* plain = resolver.name((unsigned int)r);
+         if (!plain)
             continue;
 
-         char text[256];
-         size_t j = 0;
-         for ( ; spelling[j] && j < sizeof(text) - 1 ; j++)
-            text[j] = (char)spelling[j];
-         text[j] = 0;
+         Section* vmt = module.mapSection(r | mskVMTRef, true);
+         if (!vmt || vmt->Length() < 20)
+            continue;
 
-         // The same reference id is used with different masks depending on the
-         // constant's kind, and the byte code carries the mask, so emit under
-         // each of them rather than guessing which one this constant is.
-         static const ref_t kinds[] =
-            { mskConstantRef, mskLiteralRef, mskInt32Ref, mskRealRef };
+         // classSize sits after the size word and the three header words.
+         DumpReader reader(vmt);
+         reader.getU32LE();                          // section size
+         reader.getU32LE();                          // roleRef
+         reader.getU32LE();                          // flags
+         reader.getU32LE();                          // parentRef
+         unsigned int classSize = reader.getU32LE();
 
-         for (size_t k = 0 ; k < sizeof(kinds)/sizeof(kinds[0]) ; k++) {
-            generator.emitData(c | kinds[k], (const unsigned char*)text, j + 1, &error);
-         }
-         constants++;
+         std::string constName = std::string("selene.const:") + plain;
+         std::string vmtName   = std::string("selene.vmt:") + plain;
+
+         generator.emitConstantObject(constName.c_str(), vmtName.c_str(),
+                                      classSize, &error);
+         instances++;
       }
-      printf("constantes emitidas: %d\n", constants);
+      printf("instancias constantes materializadas: %d\n", instances);
+      }                                              // next module
+
+      // The runtime startup calls the fixed name `selene.program`; the
+      // 'program forward says which symbol that is.
+      {
+         std::map<std::string, std::string>::iterator program =
+            forwards.find("'program");
+         if (program != forwards.end()) {
+            std::string entry = std::string("selene.sym:") + program->second;
+            generator.emitEntry(entry.c_str(), &error);
+            printf("entrada: selene.program -> %s\n", program->second.c_str());
+         }
+      }
 
       printf("\ntraduzidas: %d, nao traduzidas: %d\n", translated, skipped);
+
+      // The global message vocabulary this link unit settled on -- the ids a
+      // host program needs to send messages of its own.
+      printf("mensagens globais:\n");
+      for (std::map<std::string, unsigned int>::iterator m = messageIds.begin() ;
+           m != messageIds.end() ; ++m)
+      {
+         printf("  %6u  %s\n", m->second, m->first.c_str());
+      }
 
       if (!generator.verify(&error)) {
          printf("IR INVALIDO: %s\n", error ? error : "?");

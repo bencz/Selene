@@ -92,25 +92,40 @@ purpose the language does not otherwise need.
 
 ## 4. The convention
 
-Every Selene method compiles to:
+Logically every call yields `{value, ok}`. **Physically the pair is ONE target
+word**: objects are slot-aligned, so bit 0 carries the flag and the value
+lives in the bits above it.
 
 ```llvm
+; %selene.result = iN, N = the target word width
 define %selene.result @method(ptr %self, ptr %arg) {
 entry:
-  %r  = call %selene.result @callee(ptr %recv, ptr %param)
-  %ok = extractvalue %selene.result %r, 1
+  %r   = call %selene.result @callee(ptr %recv, ptr %param)
+  %bit = and iN %r, 1
+  %ok  = icmp ne iN %bit, 0
   br i1 %ok, label %continue, label %onfail
 
 continue:
-  %v  = extractvalue %selene.result %r, 0
+  %v = inttoptr (and iN %r, -2) to ptr
   ...
 }
 ```
 
-| Field | On success | On failure |
+| Bits | On success | On failure |
 |---|---|---|
-| `ptr` (field 0) | the result object | `null`, or the reason object once §5 lands |
-| `i1` (field 1) | `true` | `false` |
+| value (`raw & ~1`) | the result object | `0`, or the reason object once §5 lands |
+| flag (`raw & 1`) | `1` | `0` |
+
+Why packed and not a two-field aggregate, which §3.3 originally sketched: a
+16-byte struct **does not return in registers under the Microsoft x64 ABI** —
+it returns through a hidden pointer, while LLVM lowers its own aggregate
+returns to register pairs. The first Windows build shipped that mismatch and
+every C↔generated call read garbage. One word returns in a single register
+under every ABI in the target set — SysV, Microsoft, AIX/ELFv2, z/Linux —
+and is arithmetic, so byte order never enters. The C side (`selene_result`
+in `runtime/selene.h`) and `%selene.result` in the code generator are the
+two halves of this contract; `selene_ok`/`selene_failed`/`selene_value`/
+`selene_succeeded` are the only C spellings of the packing.
 
 Arity stays at one argument, matching the language. `self` is an explicit first
 parameter rather than a pinned register, so LLVM allocates it per target ABI

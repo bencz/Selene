@@ -62,25 +62,40 @@ typedef uint32_t selene_message;
  * Selene's primary conditional -- #if and #loop are built on it -- so it is a
  * flag to branch on, never an unwind.
  *
+ * LOGICALLY the result is {value, ok}. PHYSICALLY it is one machine word:
+ * objects are slot-aligned, so bit 0 is free to carry the flag, and a
+ * one-word result returns in a register under EVERY C ABI -- the Microsoft
+ * x64 convention returns two-word structs through a hidden pointer, which
+ * silently broke every call between C and generated code on Windows. When
+ * fail: gains an argument the reason travels in the value bits with the
+ * flag clear: nothing about this layout changes.
+ *
  * This must match %selene.result in the code generator exactly.
  *   docs/plan/23-failure-abi.md
  *--------------------------------------------------------------------------*/
 
-typedef struct {
-   void* value;
-   bool  ok;
-} selene_result;
+typedef selene_uword selene_result;
+
+static inline void* selene_value(selene_result result)
+{
+   return (void*)(result & ~(selene_uword)1);
+}
+
+static inline bool selene_succeeded(selene_result result)
+{
+   return (result & 1) != 0;
+}
 
 static inline selene_result selene_ok(void* value)
 {
-   return (selene_result){ value, true };
+   return (selene_uword)value | 1u;
 }
 
 static inline selene_result selene_failed(void* reason)
 {
-   /* `reason` is null today. When fail: gains an argument it carries it, with
-    * no change to this layout -- which is most of why {ptr, i1} was chosen. */
-   return (selene_result){ reason, false };
+   /* `reason` is null today; when fail: gains an argument it rides in the
+    * value bits, flag clear. */
+   return (selene_uword)reason;
 }
 
 /*---------------------------------------------------------------------------
@@ -94,7 +109,21 @@ static inline selene_result selene_failed(void* reason)
  *--------------------------------------------------------------------------*/
 
 #define SELENE_MESSAGE_TERMINAL ((selene_message)0x7FFFFFFF)
+
+/* The predefined message the startup sends to the program object. Predefined
+ * ids are global by construction -- they never pass through the per-link
+ * message interning. */
+#define SELENE_MESSAGE_PROCEED  ((selene_message)0x80000003u)
+
+/* Upper bound on a VMT scan. Not a real limit on class size -- it is a guard so
+ * a malformed or stale table fails the message instead of walking memory. */
+#define SELENE_MAX_VMT_ENTRIES  4096
 #define SELENE_MESSAGE_ANY      ((selene_message)0)
+
+/* VMT header flag: this table belongs to a role, and its parent slot names the
+ * owning class rather than a superclass. Value inherited from the 2009 layout
+ * (elRoleVMT, elenaconst.h). */
+#define SELENE_VMT_ROLE         ((selene_uword)0x10)
 
 typedef selene_result (*selene_method)(void* self, void* argument);
 
@@ -149,14 +178,35 @@ typedef struct {
 void  selene_runtime_init(const selene_region_source* source, size_t heap_bytes);
 void  selene_runtime_shutdown(void);
 
+/* One call before anything runs, implemented by the platform directory --
+ * where the console code page is set to UTF-8 on Windows, and nothing at all
+ * happens on POSIX. The startup calls it; embedders must too. */
+void  selene_platform_init(void);
+
 void* selene_alloc(size_t slots);
 void* selene_create(uint32_t slots, void* vmt);
 
-selene_result selene_send(void* receiver, selene_message message);
-selene_result selene_send_static(void* receiver, selene_message message, void* vmt);
-selene_result selene_redirect(void* receiver);
+/* The message parameter travels WITH the send: the byte code passes it on the
+ * evaluation stack and the method prologue (sprepparam) adopts it as local #1.
+ * A dispatcher that drops it hands every method a null argument -- which is
+ * exactly what the first translation did. */
+selene_result selene_send(void* receiver, void* param, selene_message message);
+selene_result selene_send_static(void* receiver, void* param,
+                                 selene_message message, void* vmt);
+
+/* Re-send the message currently in flight to another receiver. The in-flight
+ * message id is dispatcher state, not part of the method ABI: prepredir kept
+ * it in a frame slot on x86, here selene_send records it before calling in.
+ * Single-threaded until the MTA work lands. */
+selene_result selene_redirect(void* target, void* param);
+selene_result selene_redirect_super(void* target, void* param, void* vmt);
 
 void selene_barrier(void* field, void* value);
-void selene_shift(void* object, void* role);
+
+/* Roles ("shift" technology): install role VMT `index` from the class's role
+ * table into the live object's header, and put the owner class VMT back.
+ * This is why a VMT load at a send site can never be treated as invariant. */
+void selene_shift(void* object, uint32_t index);
+void selene_unshift(void* object);
 
 #endif /* SELENE_H */

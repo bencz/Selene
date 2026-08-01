@@ -232,6 +232,10 @@ Not a complete bug hunt — these surfaced incidentally and are worth recording.
 | Medium | Short/near jump selection is a guess (`jumpOffset < 0x10`) that, when wrong, **inserts bytes into already-emitted machine code** | `x86helper.cpp:302` |
 | Low | `-xunicode` sets the output path to the literal string `"unicode"` | `elc.cpp:197-199` |
 | Low | Missing `return` in non-void functions — undefined behaviour | `dump.h:112,175`, `lists.h:1791`, `streams.h:322` |
+| High | **`ircall` failure edges inside a branch were patched 4 bytes short** — the bltBranch `JumpInfo` never set `withExtraParam`, so `fixJumps` used −4 where the trailing VMT dword demands −8; the jump landed mid-instruction after the label. Latent since 2009: it only fires when a super-send fails inside a branch. Fixed in `saveProcedure` | `bccompiler.cpp` (call placeholder push) |
+| High | **A reopened class appended a second `[size][header]` into its VMT section** — the front end saves a class in two parts (body, then role/handler section), and each `saveClass` call wrote a fresh header mid-table, shifting every later entry by 12 bytes. Readers then took messages for code offsets. Fixed: continuation appends entries under the first header | `bccompiler.cpp:saveClass` |
+| Medium | **The class role table was only consumed when debug info was on** — without `-d` its `blEnd` terminated `saveVMT` before the first method, silently dropping every method of a role-bearing class. Fixed by hoisting the role-table handling out of the debug branch | `bccompiler.cpp:saveClass` |
+| Medium | **`bdBreakCoord` leaked into release bytecode** — with debug info off, the breakpoint-coordinate pseudo-command fell through `saveProcedure`'s `default:` and serialised as byte `0x02` plus the source column: five junk bytes per statement, indistinguishable from `freestack`. Fixed with an explicit drop | `bccompiler.cpp:saveProcedure` |
 
 ---
 

@@ -117,14 +117,54 @@ void selene_barrier(void* field, void* value)
 /*---------------------------------------------------------------------------
  * Roles ("shift")
  *
- * Rewrites a live object's VMT pointer. Five instructions, no allocation, and
- * identity is preserved -- the object stays the same object.
+ * Rewrites a live object's VMT pointer. No allocation, and identity is
+ * preserved -- the object stays the same object.
+ *
+ * The byte code names the role by INDEX into the class's role table, which
+ * hangs off the VMT header. When the object is already inside a role, the
+ * table is the owning class's -- roles do not nest.
  *
  * This is exactly why a send site may not cache the VMT, and why the load of
  * the VMT slot must never be marked invariant.
  *--------------------------------------------------------------------------*/
-void selene_shift(void* object, void* role)
+
+/* VMT header slots, below the entries: [-3] role table, [-2] flags,
+ * [-1] parent (or owner, for a role). Mirrors the accessors in dispatch.c. */
+static inline selene_uword vmt_flags(selene_vmt_entry* vmt)
 {
-   if (object)
-      selene_set_vmt(object, (selene_vmt_entry*)role);
+   return *((selene_uword*)vmt - 2);
+}
+
+static inline selene_vmt_entry* vmt_parent(selene_vmt_entry* vmt)
+{
+   return *((selene_vmt_entry**)vmt - 1);
+}
+
+static inline selene_vmt_entry** vmt_role_table(selene_vmt_entry* vmt)
+{
+   return *((selene_vmt_entry***)vmt - 3);
+}
+
+void selene_shift(void* object, uint32_t index)
+{
+   if (!object)
+      return;
+
+   selene_vmt_entry* vmt = selene_vmt_of(object);
+   if (vmt && (vmt_flags(vmt) & SELENE_VMT_ROLE))
+      vmt = vmt_parent(vmt);                    /* already in a role: its owner */
+
+   selene_vmt_entry** table = vmt ? vmt_role_table(vmt) : NULL;
+   if (table && table[index])
+      selene_set_vmt(object, table[index]);
+}
+
+void selene_unshift(void* object)
+{
+   if (!object)
+      return;
+
+   selene_vmt_entry* vmt = selene_vmt_of(object);
+   if (vmt && (vmt_flags(vmt) & SELENE_VMT_ROLE))
+      selene_set_vmt(object, vmt_parent(vmt));
 }
