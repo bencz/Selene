@@ -230,7 +230,7 @@ Unchanged in shape, but each step now produces C rather than a mix:
 | 5 | Object creation, roles, identity, frames | 267 | C, `always_inline` | |
 | 6 | Dispatch | 300 | C slow path + compiler-emitted inline cache | Binary search over the already-sorted VMT is a free win |
 | 7 | **GC** | 600 | C on a shadow stack | Last, because everything else must be stable first |
-| 8 | Delete `asm2bin`, `src/asm/`, `x86helper`, `[primitives]` | 3,335 + 6,146 | — | Only when nothing references them |
+| 8 | Delete `asm2bin`, `src/asm/`, `x86helper`, `[primitives]` | 3,335 + 6,146 | — | **DONE** — with the PE linker and the x86 JIT; `elc -c<prj>` links through LLVM on every platform |
 
 Steps 1-3 are leaf work: no GC interaction, so each routine can be swapped and verified
 independently against the legacy path. Step 7 is last for the same reason.

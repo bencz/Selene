@@ -529,6 +529,118 @@ bool LLVMGenerator :: emitEntry(const char* symbolName, const char** errorMessag
    return true;
 }
 
+bool LLVMGenerator :: emitStubs(const char* path, const char* const* provided,
+                                unsigned int providedCount,
+                                const char** errorMessage)
+{
+   Impl* impl = (Impl*)_impl;
+
+   std::set<std::string> known;
+   for (unsigned int i = 0 ; i < providedCount ; i++)
+      known.insert(provided[i]);
+
+   llvm::Module stubs("selene.stubs", impl->context);
+   stubs.setTargetTriple(llvm::Triple(impl->triple));
+   stubs.setDataLayout(impl->machine->createDataLayout());
+
+   llvm::Type* ptr = llvm::PointerType::get(impl->context, 0);
+   llvm::FunctionType* procType =
+      llvm::FunctionType::get(impl->resultType, { ptr, ptr }, false);
+
+   llvm::FunctionCallee report = stubs.getOrInsertFunction(
+      "selene_unimplemented",
+      llvm::FunctionType::get(llvm::Type::getVoidTy(impl->context),
+                              { ptr }, false));
+
+   for (llvm::Function& fn : *impl->module) {
+      if (!fn.isDeclaration())
+         continue;
+      if (!fn.getName().starts_with("selene."))
+         continue;                     // runtime C entry points are selene_*
+      if (known.count(fn.getName().str()))
+         continue;                     // the runtime archive has the real one
+      if (fn.getFunctionType() != procType)
+         continue;
+
+      llvm::Function* stub = llvm::Function::Create(
+         procType, llvm::GlobalValue::ExternalLinkage, fn.getName(), &stubs);
+
+      llvm::IRBuilder<> builder(
+         llvm::BasicBlock::Create(impl->context, "entry", stub));
+
+      builder.CreateCall(report,
+         { builder.CreateGlobalString(fn.getName(), ".name", 0, &stubs) });
+      builder.CreateRet(llvm::ConstantInt::get(impl->resultType, 0));
+   }
+
+   // Undefined DATA -- the VMT or constant of a class no linked module
+   // defines (the library still carries a few 2009-era orphan references).
+   // The stand-in is shaped like an empty dispatch table: three null header
+   // slots, then the terminator entry, public name at the entries. Sending
+   // anything to it fails the message; nothing crashes.
+   llvm::Type* word  = impl->module->getDataLayout().getIntPtrType(impl->context);
+   llvm::Type* i32   = llvm::Type::getInt32Ty(impl->context);
+   llvm::StructType* entry = llvm::StructType::get(impl->context, { i32, ptr });
+   llvm::StructType* image =
+      llvm::StructType::get(impl->context, { ptr, word, ptr, entry });
+
+   for (llvm::GlobalVariable& data : impl->module->globals()) {
+      if (!data.isDeclaration())
+         continue;
+      if (!data.getName().starts_with("selene."))
+         continue;
+      if (known.count(data.getName().str()))
+         continue;
+
+      llvm::Constant* init = llvm::ConstantStruct::get(image, {
+         llvm::ConstantPointerNull::get((llvm::PointerType*)ptr),
+         llvm::ConstantInt::get(word, 0),
+         llvm::ConstantPointerNull::get((llvm::PointerType*)ptr),
+         llvm::ConstantStruct::get(entry, {
+            llvm::ConstantInt::get(i32, 0x7FFFFFFFu),
+            llvm::ConstantPointerNull::get((llvm::PointerType*)ptr)
+         })
+      });
+
+      llvm::GlobalVariable* storage = new llvm::GlobalVariable(
+         stubs, image, false, llvm::GlobalValue::ExternalLinkage, init,
+         data.getName() + ".missing");
+
+      llvm::Constant* at = llvm::ConstantExpr::getGetElementPtr(
+         llvm::Type::getInt8Ty(impl->context), storage,
+         llvm::ConstantInt::get(word,
+            3ull * (unsigned long long)impl->target->slotBytes()));
+
+      llvm::GlobalAlias::create(llvm::Type::getInt8Ty(impl->context), 0,
+                                llvm::GlobalValue::ExternalLinkage,
+                                data.getName(), at, &stubs);
+   }
+
+   std::error_code code;
+   llvm::raw_fd_ostream out(path, code, llvm::sys::fs::OF_None);
+   if (code) {
+      impl->lastError = code.message();
+      if (errorMessage) *errorMessage = impl->lastError.c_str();
+
+      return false;
+   }
+
+   llvm::legacy::PassManager passes;
+   if (impl->machine->addPassesToEmitFile(passes, out, nullptr,
+                                          llvm::CodeGenFileType::ObjectFile))
+   {
+      impl->lastError = "this target cannot emit object files";
+      if (errorMessage) *errorMessage = impl->lastError.c_str();
+
+      return false;
+   }
+
+   passes.run(stubs);
+   out.flush();
+
+   return true;
+}
+
 bool LLVMGenerator :: optimize(int level, const char** errorMessage)
 {
    Impl* impl = (Impl*)_impl;

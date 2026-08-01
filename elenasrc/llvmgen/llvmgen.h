@@ -116,6 +116,16 @@ public:
    // the target; the runtime never needs to know a program's name.
    bool emitEntry(const char* symbolName, const char** errorMessage);
 
+   // Emits a SECOND object holding a failing body for every selene.* symbol
+   // the main object leaves undefined and the runtime archive does not
+   // provide (the caller reads the archive's symbol index and passes it).
+   // Procedures report themselves (selene_unimplemented) and fail the
+   // message; data gets an empty-dispatch-table image, so sending to a
+   // missing class fails cleanly instead of crashing. Strong definitions on
+   // purpose: COFF weak resolution under GNU ld is not dependable.
+   bool emitStubs(const char* path, const char* const* provided,
+                  unsigned int providedCount, const char** errorMessage);
+
    // Runs LLVM's standard optimization pipeline. Level 0..3.
    //
    // This is where the per-slot allocas the translator emits become SSA

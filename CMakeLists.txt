@@ -4,8 +4,9 @@
 #   Replaces the original CodeBlocks (.cbp) and Visual Studio (.vcproj)
 #   project files, neither of which had a makefile or build script of any kind.
 #
-#   Milestone 1: build the console toolchain (sg, asm2binx, elc) on Linux.
-#   The Win32 GUI IDE (elide) is not built here.
+#   Builds the console toolchain (sg, elc, semdump) and the C runtime.
+#   The Win32 GUI IDE (elide) is not built here; the 2009 code generation
+#   toolchain (asm2binx, PE linker, x86 JIT, assembly runtime) is deleted.
 #----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.16)
@@ -44,18 +45,6 @@ option(ELENA_BUILD_SEMDUMP  "Build the module dumper / disassembler" ON)
 # Requires a 64-bit build -- libLLVM is 64-bit only, which is why the 64-bit
 # port had to come first.
 option(ELENA_LLVM "Build the LLVM code generation backend" ON)
-
-# asm2binx assembles src/asm/*.asm into the bin/*.bin runtime primitives.
-#
-# It is deliberately NOT built off Windows. Porting it would be wasted effort:
-# the .bin files it produces contain x86 assembly that calls kernel32/user32
-# directly, and the only consumer is the PE linker. A working reference build
-# can therefore only exist on Windows -- where asm2binx already compiles with
-# MinGW or MSVC and needs no porting at all.
-#
-# The tool is scheduled for deletion once the runtime is reimplemented in C.
-#   See docs/plan/19-runtime-in-c.md
-option(ELENA_BUILD_ASM2BIN  "Build the x86 assembler (Windows only)" ${WIN32})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -157,21 +146,25 @@ endif()
 # LLVM
 #----------------------------------------------------------------------------
 
+# The LLVM back end is not optional: elc IS the LLVM compiler -- byte code in,
+# object out, system linker to finish. The only builds without it are the ones
+# that cannot link libLLVM at all (32-bit, cross), and those get no elc: they
+# exist for the remaining legacy tooling until its deletion.
 if(ELENA_LLVM AND ELENA_32BIT)
-    message(STATUS "LLVM backend: disabled (libLLVM is 64-bit only; use -DELENA_32BIT=OFF)")
+    message(STATUS "elc: not built (libLLVM is 64-bit only; use -DELENA_32BIT=OFF)")
     set(ELENA_LLVM OFF)
 endif()
 
 if(ELENA_LLVM AND CMAKE_CROSSCOMPILING)
-    message(STATUS "LLVM backend: disabled (cross build)")
+    message(STATUS "elc: not built (cross build cannot link the host libLLVM)")
     set(ELENA_LLVM OFF)
 endif()
 
 if(ELENA_LLVM)
     find_package(LLVM CONFIG)
     if(NOT LLVM_FOUND)
-        message(STATUS "LLVM backend: disabled (llvm-devel not found)")
-        set(ELENA_LLVM OFF)
+        message(FATAL_ERROR "llvm-devel not found -- the compiler cannot be "
+                            "built without its back end")
     endif()
 endif()
 
@@ -276,36 +269,14 @@ add_custom_target(runtime_data ALL
 )
 
 #----------------------------------------------------------------------------
-# asm2binx -- the custom x86 assembler
-#
-# Assembles src/asm/*.asm into the bin/*.bin runtime primitives.
-# Slated for deletion once the runtime is reimplemented in C, but nothing can
-# link until it has run at least once.
-#   See docs/plan/19-runtime-in-c.md
-#----------------------------------------------------------------------------
-
-if(ELENA_BUILD_ASM2BIN)
-    add_executable(asm2binx
-        ${SRC}/asm2bin/asm2binx.cpp
-        ${SRC}/asm2bin/x86assembler.cpp
-        ${SRC}/asm2bin/x86jumphelper.cpp
-        ${SRC}/elc/source.cpp
-        ${SRC}/engine/module.cpp
-        ${SRC}/engine/section.cpp
-        ${SRC}/engine/targetinfo.cpp
-        ${SRC}/engine/win32/x86helper.cpp
-        ${COMMON_SRC}
-    )
-    # engine/win32 contains no Windows API -- it is x86-specific, not
-    # OS-specific, and should be renamed engine/x86.
-    target_include_directories(asm2binx PRIVATE ${SRC}/engine/win32)
-endif()
-
-#----------------------------------------------------------------------------
 # elc -- the compiler
 #----------------------------------------------------------------------------
 
-if(ELENA_BUILD_ELC)
+# elc IS the LLVM compiler -- there is no conditional compilation and no
+# fallback mode. The 2009 toolchain (asm2binx, the PE linker, the x86 JIT and
+# the assembly runtime) has been DELETED: byte code goes through llvmgen and
+# the system linker on every platform.
+if(ELENA_BUILD_ELC AND ELENA_LLVM)
     # Front end, shared project handling, and the compiler proper.
     set(ELC_SRC
         ${SRC}/elc/${ELENA_PLATFORM_DIR}/elc.cpp
@@ -324,34 +295,14 @@ if(ELENA_BUILD_ELC)
         ${COMMON_SRC}
     )
 
-    # The code generator and linker are Win32/x86-only and are not built
-    # elsewhere: the linker emits PE/COFF and the JIT emits Win32-hosted x86,
-    # so on POSIX they could not produce a runnable image anyway. The POSIX
-    # build therefore stops after byte code generation until the LLVM backend
-    # replaces both.
-    if(WIN32)
-        list(APPEND ELC_SRC
-            ${SRC}/elc/win32/linker.cpp
-            ${SRC}/engine/jitcompiler.cpp
-            ${SRC}/engine/jitlinker.cpp
-            ${SRC}/engine/win32/x86jitcompiler.cpp
-            ${SRC}/engine/win32/x86helper.cpp
-            ${SRC}/engine/win32/imagesection.cpp
-        )
-    endif()
-
-    if(ELENA_LLVM)
-        list(APPEND ELC_SRC ${SRC}/llvmgen/llvmgen.cpp)
-    endif()
+    list(APPEND ELC_SRC ${SRC}/llvmgen/llvmgen.cpp)
 
     add_executable(elc ${ELC_SRC})
     target_include_directories(elc PRIVATE
-        ${SRC}/engine/win32
         ${SRC}/elc/${ELENA_PLATFORM_DIR}
     )
 
     if(ELENA_LLVM)
-        target_compile_definitions(elc PRIVATE ELENA_WITH_LLVM)
         target_include_directories(elc PRIVATE ${SRC}/llvmgen)
         target_include_directories(elc SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
         # LLVM headers are not C++17-clean under -Wall; they are not ours to fix.

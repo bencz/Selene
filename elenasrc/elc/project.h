@@ -100,6 +100,14 @@ public:
       return _settings.getIt(opSources);
    }
 
+   // The whole forward table -- alias name as key, full reference name as
+   // value. The link step replays these; resolveForward answers one at a
+   // time, which is the wrong shape for building a resolver.
+   SourceIterator getForwardIt()
+   {
+      return _settings.getIt(opForwards);
+   }
+
    virtual int getTabSize() { return 4; }
 
    virtual void printInfo(const TCHAR* msg, ...) = 0;

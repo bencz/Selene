@@ -10,6 +10,7 @@
 #include "selene.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 static void* host_acquire(size_t bytes)
 {
@@ -23,3 +24,11 @@ static void host_release(void* address, size_t bytes)
 }
 
 const selene_region_source selene_hosted_region = { host_acquire, host_release };
+
+/* Where the weak link-time stubs land: a native or symbol nothing defined
+ * was reached anyway. Reported loudly, failed cleanly -- the message-failure
+ * protocol turns it into an ordinary failure at the call site. */
+void selene_unimplemented(const char* name)
+{
+   fprintf(stderr, "[selene] unimplemented: %s\n", name);
+}
